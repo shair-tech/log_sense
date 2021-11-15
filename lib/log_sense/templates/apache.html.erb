@@ -218,14 +218,14 @@
                       <div class="col-10 column">
                         <span class="res-title">HTML:</span>
                         <ul>
-                          <% urls.map { |x| x[2] }.select { |x| x and x.match /.*\.html?/ }.each do |url| %>
+                          <% urls.map { |x| x[2] }.compact.select { |x| x.match /.*\.html?/ }.each do |url| %>
                             <li><%= url %></li>
                           <% end %>
                         </ul>
                         
                         <span class="res-title">Other Resources:</span>
                         <ul>
-                          <% urls.map { |x| x[2] }.sort.select { |x| x and not x.match /.*\.html?/ }.each do |url| %>
+                          <% urls.map { |x| x[2] }.compact.sort.select { |x| x and not x.match /.*\.html?/ }.each do |url| %>
                             <li><%= url %></li>
                           <% end %>
                         </ul>
