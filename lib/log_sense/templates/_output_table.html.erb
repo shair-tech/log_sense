@@ -1,0 +1,25 @@
+<%
+def slugify string
+  string.downcase.gsub(/ +/, '-')
+end
+%>
+
+<table id="<%= slugify(title || "") %>" class="table <%= slugify(title || "") %>">
+  <thead>
+    <tr>
+      <% header.each do |heading| %>
+        <th class="<%= slugify(heading) %>"><%= heading %></th>
+      <% end %>
+    </tr>
+  </thead>
+  <tbody>
+    <% rows.each do |row| %>
+      <tr>
+        <% row.each_with_index do |cell, i| %>
+          <td class="<%= slugify (header[i] || "") %>"><%= cell %></td>
+        <% end %>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+

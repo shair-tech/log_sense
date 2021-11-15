@@ -1,0 +1,39 @@
+Rails Log Analysis
+
+<%= data[:first_day] %>
+<%= data[:last_day] %>
+<%= data[:total_days] %>
+<%= data[:events] %>
+
+<%=
+table = Terminal::Table.new headings: ['Date', 'Day', 'Events'], rows: @data[:daily_distribution]
+table.align_column(3, :right)
+table
+%>
+
+<%=
+table = Terminal::Table.new headings: ['Hour', 'Events'], rows: @data[:time_distribution]
+table.align_column(2, :right)
+table
+%>
+
+<%=
+table = Terminal::Table.new headings: ['Status', 'Events'], rows: @data[:statuses]
+table.align_column(2, :right)
+table
+%>
+
+<%=
+table = Terminal::Table.new headings: ['IP', 'Events'], rows: @data[:ips]
+table.align_column(2, :right)
+table
+%>
+
+<%= table = Terminal::Table.new headings: ['Controller', 'Hits', 'Min', 'Avg', 'Max'], rows: @data[:performance]
+table.align_column(2, :right)
+table.align_column(3, :right)
+table.align_column(4, :right)
+table
+%>
+
+

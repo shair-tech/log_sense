@@ -1,0 +1,266 @@
+#+TITLE: Apache Log Analysis: <%= data[:log_file] %>
+#+DATE: <<%= Date.today %>>
+#+STARTUP: showall
+#+OPTIONS: ^:{}
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="ala-style.css" />
+#+OPTIONS: html-style:nil
+
+* Summary
+
+| Hits                | <%= "%10d" % data[:total_hits][0][0] %> |
+| Unique Visitors     | <%= "%10d" % data[:total_unique_visitors][0][0]  %> |
+| Tx                  | <%= "%10s" % data[:total_size][0][0] %> |
+| Logged Period       | <%= data[:first_day]  %> -- <%= data[:last_day] %> |
+| Days                | <%= "%10d" % data[:total_days]  %> |
+| Period Requested    | <%= data[:first_day_requested] %> -- <%= data[:last_day_requested] %> |
+| Period Analyzed     | <%= data[:first_day_in_analysis] %> -- <%= data[:last_day_in_analysis] %> |
+| Days in Analysis    | <%= data[:total_days_in_analysis] %> |
+
+* Daily Distribution
+
+<%= self.output_txt_table "daily_distribution", ["Day", "Hits", "Visits", "Size"], data[:daily_distribution]  %>
+
+#+BEGIN_SRC gnuplot :var data = daily_distribution :results output :exports <%= @export %> :file <%= @prefix %>daily<%= @suffix %>.svg
+reset 
+set grid ytics linestyle 0
+set grid xtics linestyle 0
+set terminal svg size 1200,800 fname 'Arial'
+
+set xdata time
+set timefmt "%Y-%m-%d"
+set format x "%a, %b %d"
+set xtics rotate by 60 right
+
+set title "Hits and Visitors"
+set xlabel "Date"
+set ylabel "Hits"
+set y2label "Visits"
+set y2tics
+
+set style fill transparent solid 0.2 noborder
+
+plot data using 1:2 with linespoints lw 3 lc rgb "#0000AA" pointtype 5 title "Hits" axes x1y2, \\
+data using 1:2 with filledcurves below x1 linecolor rgb "#0000AA" notitle axes x1y2, \\
+data using 1:3 with linespoints lw 3 lc rgb "#AA0000" pointtype 7 title "Visitors", \\
+data using 1:3 with filledcurves below x1 notitle linecolor rgb "#AA0000", \\
+data using 1:($3+0.1*$3):3 with labels notitle textcolor rgb "#AA0000", \\
+data using 1:($2+0.1*$2):2 with labels notitle textcolor rgb "#0000AA" axes x1y2
+#+END_SRC
+
+
+* Time Distribution
+
+<%=  self.output_txt_table "time_distribution", ["Hour", "Hits", "Visits", "Size"], data[:time_distribution]  %>
+
+
+#+BEGIN_SRC gnuplot :var data = time_distribution :results output :exports <%= @export %> :file <%= @prefix %>time<%= @suffix %>.svg
+reset 
+set terminal svg size 1200,800 fname 'Arial' fsize 10
+
+set grid ytics linestyle 0
+
+set title "Hits and Visitors"
+set xlabel "Date"
+set ylabel "Hits"
+set y2label "Visitors"
+set y2tics
+
+set style fill solid 0.25
+set boxwidth 0.6
+
+set style data histograms
+set style histogram clustered gap 1
+
+plot data using 2:xtic(1) lc rgb "#0000AA" title "Hits",     \\
+data using 3 lc rgb "#AA0000" title "Visitors" axes x1y2, \\
+data using ($0 - 0.2):($2 + 0.1*$2):2 with labels title "" textcolor rgb("#0000AA"), \\
+data using ($0 + 0.2):($3 + 0.1*$3):3 with labels title "" textcolor rgb("#AA0000") axes x1y2
+#+END_SRC
+
+#+BEGIN_SRC gnuplot :var data = time_distribution :results output :exports <%= @export %> :file <%= @prefix %>time-traffic<%= @suffix %>.svg
+reset 
+set terminal svg size 1200,800 fname 'Arial' fsize 10
+
+set grid ytics linestyle 0
+
+set title "Traffic"
+set xlabel "Date"
+set ylabel "Traffic"
+
+set style fill solid 0.50
+set boxwidth 0.6
+
+set style data histograms
+set style histogram clustered gap 1
+
+plot data using 2:xtic(1) lc rgb "#00AA00" title "Traffic", \\
+data using ($0):($2 + 0.1*$2):2 with labels title "" textcolor rgb("#00AA00")
+#+END_SRC
+
+* Most Requested Pages
+
+<%=  self.output_txt_table "most_requested_pages", ["Path", "Hits", "Visits", "Size"], data[:most_requested_pages]  %>
+
+* Most Requested URIs
+
+<%=  self.output_txt_table "most_requested_resources", ["Path", "Hits", "Visits", "Size"], data[:most_requested_resources]  %>
+
+* 404s on HTML files
+
+<%=  self.output_txt_table "pages_404", ["Path", "Hits", "Visitors"], data[:missed_pages]  %>
+
+* 404s on other resources
+
+<%=  self.output_txt_table "resources_404", ["Path", "Hits", "Visitors"], data[:missed_resources]  %>
+
+* Possible Attacks
+
+<%=  self.output_txt_table "attacks", ["Path", "Hits", "Visitors"], data[:attacks]  %>
+
+* Statuses
+
+<%=  self.output_txt_table "statuses", ["Status", "Count"], data[:statuses]  %>
+
+#+BEGIN_SRC gnuplot :var data = statuses :results output :exports <%= @export %> :file <%= @prefix %>statuses<%= @suffix %>.svg
+reset 
+set grid ytics linestyle 0
+set terminal svg size 1200,800 fname 'Arial' fsize 10
+
+set style fill solid 0.25
+set boxwidth 0.6
+
+plot data using 2:xtic(1) with boxes lc rgb "#0000AA" title "Hits", \\
+data using ($0):($2+0.1*$2):2 with labels textcolor rgb "#0000AA"
+#+END_SRC
+
+* Daily Statuses
+
+<%=  self.output_txt_table "daily_statuses", ["Status", "2xx", "3xx", "4xx"], data[:statuses_by_day]  %>
+
+#+BEGIN_SRC gnuplot :var data = daily_statuses :results output :exports <%= @export %> :file <%= @prefix %>daily-statuses<%= @suffix %>.svg
+reset 
+set terminal svg size 1200,800 fname 'Arial' fsize 10
+
+set grid ytics linestyle 0
+
+set title "Daily Statuses"
+set xlabel "Date"
+set ylabel "Number of Hits"
+set xtics rotate by 60 right
+
+set style fill solid 0.25
+set boxwidth 0.6
+
+set style data histograms
+set style histogram clustered gap 1
+
+plot data using 2:xtic(1) lc rgb "#00AA00" title "2xx",     \\
+data using 3 lc rgb "#0000CC" title "3xx", \\
+data using 4 lc rgb "#AA0000" title "4xx", \\
+data using ($0 - 1. / 4):($2 + 0.1*$2):2 with labels title "" textcolor rgb("#00AA00"), \\
+data using ($0):($3 + 0.1*$3):3 with labels title "" textcolor rgb("#0000CC"), \\
+data using ($0 + 1. / 4):($4 + 0.1*$4):4 with labels title "" textcolor rgb("#AA0000")
+#+END_SRC
+
+* Browsers
+
+<%=  self.output_txt_table "browsers", ["Browser", "Hits", "Visitors", "Size"], data[:browsers]  %>
+
+#+BEGIN_SRC gnuplot :var data = browsers :results output :exports <%= @export %> :file <%= @prefix %>browser<%= @suffix %>.svg
+reset 
+set grid ytics linestyle 0
+set terminal svg size 1200,800 fname 'Arial' fsize 10
+
+set style fill solid 0.25
+set boxwidth 0.6
+
+plot data using 2:xtic(1) with boxes lc rgb "#0000AA" title "Hits", \\
+data using ($0):($2+0.1*$2):2 with labels textcolor rgb "#0000AA"
+#+END_SRC
+
+* Platforms
+
+<%=  self.output_txt_table "platforms", ["Platform", "Hits", "Visitors", "Size"], data[:platforms]  %>
+
+#+BEGIN_SRC gnuplot :var data = platforms :results output :exports <%= @export %> :file <%= @prefix %>platforms<%= @suffix %>.svg
+reset 
+set grid ytics linestyle 0
+set terminal svg size 1200,800 fname 'Arial' fsize 10
+
+set style fill solid 0.25
+set boxwidth 0.6
+
+plot data using 2:xtic(1) with boxes lc rgb "#0000AA" title "Hits", \\
+data using ($0):($2+0.1*$2):2 with labels textcolor rgb "#0000AA"
+#+END_SRC
+
+* IPs
+
+<%=  self.output_txt_table "ips", ["IPs", "Hits", "Visitors", "Size"], data[:ips]  %>
+
+
+* Referers
+
+<%=  self.output_txt_table "referers", ["Referers", "Hits", "Visitors", "Size"], data[:referers]  %>
+
+#+BEGIN_SRC gnuplot :var data = referers :results output :exports <%= @export %> :file <%= @prefix %>referers<%= @suffix %>.svg
+reset 
+set terminal svg size 1200,800 fname 'Arial' fsize 10
+
+set grid ytics linestyle 0
+set grid xtics linestyle 0
+
+set title "Referers"
+set xlabel "Date"
+set xtics rotate by 60 right
+set ylabel "Hits and Visits"
+
+set style fill solid 0.45
+set boxwidth 0.7
+
+set style data histograms
+set style histogram clustered gap 1
+
+plot data using 2:xtic(1) lc rgb "#AA00AA" title "Hits",     \\
+data using 3 lc rgb "#0AAAA0" title "Visits", \\
+data using ($0 - 1. / 3):($2 + 0.1*$2):2 with labels title "" textcolor rgb("#AA00AA"), \\
+data using ($0 + 1. / 3):($3 + 0.1*$3):3 with labels title "" textcolor rgb("#0AAAA0")
+#+END_SRC
+
+* Command Invocation and Performance
+
+** Command Invocation
+
+#+BEGIN_EXAMPLE shell
+<%= data[:command] %>
+#+END_EXAMPLE
+
+| Input file           | <%= "%-50s" % (data[:log_file] || "stdin") %> |
+| Ignore crawlers      | <%= "%-50s" % options[:ignore_crawlers] %> |
+| Only crawlers        | <%= "%-50s" % options[:only_crawlers] %> |
+| No selfpoll          | <%= "%-50s" % options[:no_selfpoll] %> |
+| Filter by date       | <%= "%-50s" % (options[:from_date] != nil or options[:to_date] != nil) %> |
+| Prefix               | <%= "%-50s" % @prefix %> |
+| Suffix               | <%= "%-50s" % @suffix %> |
+
+** Log Structure
+
+| Log size                 | <%= "%10d" % data[:log_size][0][0] %> |
+| Self poll entries        | <%= "%10d" % data[:selfpolls_size][0][0] %> |
+| Crawlers                 | <%= "%10d" % data[:crawlers_size][0][0] %> |
+| Entries considered       | <%= "%10d" % data[:total_hits][0][0] %> |
+
+** Performance
+
+| Analysis started at | <%= data[:started_at].to_s %> |
+| Analysis ended at   | <%= data[:ended_at].to_s %> |
+| Duration (sec)      | <%= "%5.3d" % data[:duration]  %> |
+| Duration (min)      | <%= "%5.3d" % (data[:duration] / 60 ) %> |
+| Log size            | <%= "%9d"   % data[:log_size][0][0] %> |
+| Lines/sec           | <%= "%6.2f" % (data[:log_size][0][0] / data[:duration]) %> |
+
+* Local Variables                                                  :noexport:
+# Local Variables:
+# org-confirm-babel-evaluate: nil
+# org-display-inline-images: t
+# end:

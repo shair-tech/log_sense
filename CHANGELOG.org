@@ -1,0 +1,27 @@
+#+TITLE: ChangeLog
+#+AUTHOR: Adolfo Villafiorita
+#+STARTUP: showall
+
+* Unreleased
+
+This changes are in the repository but not yet released to Rubygems.
+
+** New Functions and Changes
+
+** Fixes
+
+** Documentation
+
+** Code
+
+
+* Version 1.0.0
+
+** New Functions and Changes
+
+** Fixes
+
+** Documentation
+
+** Code
+

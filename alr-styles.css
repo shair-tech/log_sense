@@ -1,0 +1,61 @@
+nav {
+    position: fixed;
+}
+
+section {
+    margin-left: 250px;
+}
+
+article {
+    margin-top: 1rem;
+}
+
+h1, h2 {
+    color: #222222 !important;
+}
+
+/*
+table {
+    border: 1px solid #222222;
+    border-collapse: collapse;
+}
+*/
+
+table th {
+    background: #444444;
+    color: white;
+}
+
+.ip {
+    vertical-align: top;
+}
+ 
+.summary th {
+    text-align: left;
+}
+
+.summary td {
+    text-align: right;
+}
+
+.hits, .visits, .size, .visitors, .count {
+    text-align: right;
+    font-weight: bold;
+}
+
+.referers .size {
+    width: 20%;
+    font-weight: bold;
+}
+
+.command-invocation, .log-structure, .performance {
+    width: 60%;
+}
+ 
+.command-invocation th, .log-structure th, .performance th {
+    text-align: left;
+}
+
+.log-structure td, .performance td {
+    text-align: right;
+}

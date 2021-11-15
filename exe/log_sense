@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+
+require 'log_sense.rb'
+
+#
+# Parse Command Line Arguments
+#
+
+# better be here... OptionsParser consumes ARGV
+@command_line = ARGV.join(" ")
+@options     = LogSense::OptionsParser.parse ARGV
+@input_file  = @options[:input_file]
+@output_file = @options[:output_file]
+
+if not @input_file
+  puts "Error: no input file specified."
+  exit
+end
+
+if not File.exist? @input_file
+  puts "Error: input file '#{@input_file}' does not exist"
+  exit 1
+end
+
+#
+# Parse Log and Track Statistics
+#
+
+@started_at = Time.now
+
+case @options[:input_format]
+when 'apache'
+  parser_klass = LogSense::ApacheLogParser
+  cruncher_klass = LogSense::ApacheDataCruncher
+when 'rails'
+  parser_klass = LogSense::RailsLogParser
+  cruncher_klass = LogSense::RailsDataCruncher
+end
+
+@db = parser_klass.parse @input_file
+
+if @options[:output_format]  == "sqlite"
+  ddb = SQLite3::Database.new(@output_file || "db.sqlite3")
+  b = SQLite3::Backup.new(ddb, 'main', @db, 'main')
+  b.step(-1) #=> DONE
+  b.finish
+else
+  @data = cruncher_klass.crunch @db, @options
+  @data = LogSense::IpLocator.geolocate @data
+
+  @ended_at = Time.now
+  @duration = @ended_at - @started_at
+
+  @data = @data.merge({
+                        command: @command_line,
+                        log_file: @input_file,
+                        started_at: @started_at,
+                        ended_at: @ended_at,
+                        duration: @duration
+                      })
+
+  #
+  # Emit Output
+  #
+  puts LogSense::Emitter.emit @data, @options
+end
