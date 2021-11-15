@@ -5,7 +5,7 @@ require 'iso_country_codes'
 
 module LogSense
   module IpLocator
-    DB_FILE = "ip_locations/dbip-country-lite.sqlite3"
+    DB_FILE = File.join(File.dirname(__FILE__), "..", "..", "ip_locations", "dbip-country-lite.sqlite3")
 
     def self.dbip_to_sqlite db_location
       db = SQLite3::Database.new ":memory:"
