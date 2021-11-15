@@ -36,7 +36,11 @@ module LogSense
     def self.locate_ip ip, db
       ip_n = IPAddr.new(ip).to_i
       res = db.execute "SELECT * FROM ip_location where from_ip_n <= #{ip_n} order by from_ip_n desc limit 1"
-      IsoCountryCodes.find(res[0][3]).name
+      begin
+        IsoCountryCodes.find(res[0][3]).name
+      rescue
+        res[0][3]
+      end
     end
 
     #
