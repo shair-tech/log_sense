@@ -51,7 +51,7 @@ module LogSense
           end
         end
 
-        opts.on("-np", "--ignore-selfpoll", "Ignore self poll entries (requests from ::1; applies to Apache Logs)") do
+        opts.on("-ns", "--no-selfpoll", "Ignore self poll entries (requests from ::1; applies to Apache Logs)") do
           args[:no_selfpoll] = true
         end
 
