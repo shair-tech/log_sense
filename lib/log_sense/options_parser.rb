@@ -66,7 +66,21 @@ module LogSense
 
         opts.on("-h", "--help", "Prints this help") do
           puts opts
+          puts ""
           puts "This is version #{LogSense::VERSION}"
+
+          puts ""
+          puts "Output formats"
+          pathname = File.join(File.dirname(__FILE__), "templates", "*")
+          templates = Dir.glob(pathname).select { |x| ! File.basename(x).start_with? /_|#/ and ! File.basename(x).end_with? "~" }
+          components = templates.map { |x| File.basename(x).split "." }.group_by { |x| x[0] }
+          components.each do |k, vs|
+            puts "#{k} parsing can produce the following outputs:"
+            vs.each do |v|
+              puts "  - #{v[1]}"
+            end
+          end
+
           exit
         end
       end
