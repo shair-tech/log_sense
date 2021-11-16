@@ -6,10 +6,11 @@ require 'log_sense.rb'
 # Parse Command Line Arguments
 #
 
-# better be here... OptionsParser consumes ARGV
+# this better be here... OptionsParser consumes ARGV
 @command_line = ARGV.join(" ")
+
 @options     = LogSense::OptionsParser.parse ARGV
-@input_file  = @options[:input_file]
+@input_file  = @options[:input_file] || ARGV[0]
 @output_file = @options[:output_file]
 
 if not @input_file
