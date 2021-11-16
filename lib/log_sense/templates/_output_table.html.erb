@@ -4,7 +4,7 @@ def slugify string
 end
 %>
 
-<table id="<%= slugify(title || "") %>" class="table <%= slugify(title || "") %>">
+<table id="<%= slugify(title || "") %>-table" class="table unstriped data-table <%= slugify(title || "") %>">
   <thead>
     <tr>
       <% header.each do |heading| %>

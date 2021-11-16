@@ -8,7 +8,7 @@
 * Summary
 
 | Hits                | <%= "%10d" % data[:total_hits][0][0] %> |
-| Unique Visitors     | <%= "%10d" % data[:total_unique_visitors][0][0]  %> |
+| Unique Visits     | <%= "%10d" % data[:total_unique_visits][0][0]  %> |
 | Tx                  | <%= "%10s" % data[:total_size][0][0] %> |
 | Logged Period       | <%= data[:first_day]  %> -- <%= data[:last_day] %> |
 | Days                | <%= "%10d" % data[:total_days]  %> |
@@ -31,7 +31,7 @@ set timefmt "%Y-%m-%d"
 set format x "%a, %b %d"
 set xtics rotate by 60 right
 
-set title "Hits and Visitors"
+set title "Hits and Visits"
 set xlabel "Date"
 set ylabel "Hits"
 set y2label "Visits"
@@ -41,7 +41,7 @@ set style fill transparent solid 0.2 noborder
 
 plot data using 1:2 with linespoints lw 3 lc rgb "#0000AA" pointtype 5 title "Hits" axes x1y2, \\
 data using 1:2 with filledcurves below x1 linecolor rgb "#0000AA" notitle axes x1y2, \\
-data using 1:3 with linespoints lw 3 lc rgb "#AA0000" pointtype 7 title "Visitors", \\
+data using 1:3 with linespoints lw 3 lc rgb "#AA0000" pointtype 7 title "Visits", \\
 data using 1:3 with filledcurves below x1 notitle linecolor rgb "#AA0000", \\
 data using 1:($3+0.1*$3):3 with labels notitle textcolor rgb "#AA0000", \\
 data using 1:($2+0.1*$2):2 with labels notitle textcolor rgb "#0000AA" axes x1y2
@@ -59,10 +59,10 @@ set terminal svg size 1200,800 fname 'Arial' fsize 10
 
 set grid ytics linestyle 0
 
-set title "Hits and Visitors"
+set title "Hits and Visits"
 set xlabel "Date"
 set ylabel "Hits"
-set y2label "Visitors"
+set y2label "Visits"
 set y2tics
 
 set style fill solid 0.25
@@ -72,7 +72,7 @@ set style data histograms
 set style histogram clustered gap 1
 
 plot data using 2:xtic(1) lc rgb "#0000AA" title "Hits",     \\
-data using 3 lc rgb "#AA0000" title "Visitors" axes x1y2, \\
+data using 3 lc rgb "#AA0000" title "Visits" axes x1y2, \\
 data using ($0 - 0.2):($2 + 0.1*$2):2 with labels title "" textcolor rgb("#0000AA"), \\
 data using ($0 + 0.2):($3 + 0.1*$3):3 with labels title "" textcolor rgb("#AA0000") axes x1y2
 #+END_SRC
@@ -107,15 +107,15 @@ data using ($0):($2 + 0.1*$2):2 with labels title "" textcolor rgb("#00AA00")
 
 * 404s on HTML files
 
-<%=  self.output_txt_table "pages_404", ["Path", "Hits", "Visitors"], data[:missed_pages]  %>
+<%=  self.output_txt_table "pages_404", ["Path", "Hits", "Visits"], data[:missed_pages]  %>
 
 * 404s on other resources
 
-<%=  self.output_txt_table "resources_404", ["Path", "Hits", "Visitors"], data[:missed_resources]  %>
+<%=  self.output_txt_table "resources_404", ["Path", "Hits", "Visits"], data[:missed_resources]  %>
 
 * Possible Attacks
 
-<%=  self.output_txt_table "attacks", ["Path", "Hits", "Visitors"], data[:attacks]  %>
+<%=  self.output_txt_table "attacks", ["Path", "Hits", "Visits"], data[:attacks]  %>
 
 * Statuses
 
@@ -164,7 +164,7 @@ data using ($0 + 1. / 4):($4 + 0.1*$4):4 with labels title "" textcolor rgb("#AA
 
 * Browsers
 
-<%=  self.output_txt_table "browsers", ["Browser", "Hits", "Visitors", "Size"], data[:browsers]  %>
+<%=  self.output_txt_table "browsers", ["Browser", "Hits", "Visits", "Size"], data[:browsers]  %>
 
 #+BEGIN_SRC gnuplot :var data = browsers :results output :exports <%= @export %> :file <%= @prefix %>browser<%= @suffix %>.svg
 reset 
@@ -180,7 +180,7 @@ data using ($0):($2+0.1*$2):2 with labels textcolor rgb "#0000AA"
 
 * Platforms
 
-<%=  self.output_txt_table "platforms", ["Platform", "Hits", "Visitors", "Size"], data[:platforms]  %>
+<%=  self.output_txt_table "platforms", ["Platform", "Hits", "Visits", "Size"], data[:platforms]  %>
 
 #+BEGIN_SRC gnuplot :var data = platforms :results output :exports <%= @export %> :file <%= @prefix %>platforms<%= @suffix %>.svg
 reset 
@@ -196,12 +196,12 @@ data using ($0):($2+0.1*$2):2 with labels textcolor rgb "#0000AA"
 
 * IPs
 
-<%=  self.output_txt_table "ips", ["IPs", "Hits", "Visitors", "Size"], data[:ips]  %>
+<%=  self.output_txt_table "ips", ["IPs", "Hits", "Visits", "Size"], data[:ips]  %>
 
 
 * Referers
 
-<%=  self.output_txt_table "referers", ["Referers", "Hits", "Visitors", "Size"], data[:referers]  %>
+<%=  self.output_txt_tabl e"referers", ["Referers", "Hits", "Visits", "Size"], data[:referers]  %>
 
 #+BEGIN_SRC gnuplot :var data = referers :results output :exports <%= @export %> :file <%= @prefix %>referers<%= @suffix %>.svg
 reset 
