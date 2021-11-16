@@ -14,19 +14,19 @@ module LogSense
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: log_sense [options] [logfile]"
 
-        opts.on("-fFORMAT", "--from=FORMAT", String, "Input format (either rails or apache)") do |n|
+        opts.on("-fFORMAT", "--input-format=FORMAT", String, "Input format (either rails or apache)") do |n|
           args[:input_format] = n
         end
 
-        opts.on("-iINPUT_FILE", "--input=INPUT_FILE", String, "Input file") do |n|
+        opts.on("-iINPUT_FILE", "--input-file=INPUT_FILE", String, "Input file") do |n|
           args[:input_file] = n
         end
 
-        opts.on("-tFORMAT", "--to=FORMAT", String, "Output format: html, org, txt, sqlite. Defaults to org mode") do |n|
+        opts.on("-tFORMAT", "--output-format=FORMAT", String, "Output format: html, org, txt, sqlite. Defaults to org mode") do |n|
           args[:output_format] = n
         end
 
-        opts.on("-oOUTPUT_FILE", "--output=OUTPUT_FILE", String, "Output file") do |n|
+        opts.on("-oOUTPUT_FILE", "--output-file=OUTPUT_FILE", String, "Output file") do |n|
           args[:output_file] = n
         end
 
@@ -57,10 +57,8 @@ module LogSense
 
         opts.on("-v", "--version", "Prints version information") do
           puts "log_sense version #{LogSense::VERSION}"
-          puts "Copyright (C) 2020 Adolfo Villafiorita"
+          puts "Copyright (C) 2021 Shair.Tech"
           puts "Distributed under the terms of the MIT license"
-          puts ""
-          puts "Written by Adolfo Villafiorita"
           exit
         end
 
