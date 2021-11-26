@@ -1,0 +1,37 @@
+<table class="table unstriped command-invocation">
+  <tbody>
+    <tr>
+      <th>CLI Command</th>
+      <td><code><%= data[:command] %></code></td>
+    </tr>
+    <tr>
+      <th>Input file</th>
+      <td><code><%= (data[:log_file] || "stdin") %></code></td>
+    </tr>
+    <tr>
+      <th>Ignore crawlers</th>
+      <td><code><%= options[:ignore_crawlers] %></code></td></tr>
+    <tr>
+      <th>Only crawlers</th>
+      <td><code><%= options[:only_crawlers] %></code></td>
+    </tr>
+    <tr>
+      <th>No selfpoll</th>
+      <td><code><%= options[:no_selfpoll] %></code></td>
+    </tr>
+    <tr>
+      <th>Filter by date</th>
+      <td>
+        <code><%= (options[:from_date] != nil or options[:to_date] != nil) %></code>
+      </td>
+    </tr>
+    <tr>
+      <th>Prefix</th>
+      <td><code><%= @prefix %></code></td>
+    </tr>
+    <tr>
+      <th>Suffix</th>
+      <td><code><%= @suffix %></code></td>
+    </tr>
+  </tbody>
+</table>

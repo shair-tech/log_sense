@@ -92,74 +92,12 @@
           <div class="grid-x grid-margin-x">
             <article class="small-12 large-6 cell">
               <h2 id="summary">Summary</h2>
-
-              <table class="table unstriped summary">
-                <tr>
-                  <th>Input file</th>
-                  <td><b><%= (data[:log_file] || "stdin") %></b></td>
-                </tr>
-                <tr>
-                  <th class="period">Period Analyzed</th>
-                  <td class="period">
-                    <%= data[:first_day_in_analysis] %>
-                    --
-                    <%= data[:last_day_in_analysis] %>
-                  </td>
-                </tr>
-                <tr>
-                  <th class="days">Days </th>
-                  <td class="days"><%= data[:total_days_in_analysis] %></td>
-                </tr>
-                <tr>
-                  <th class="hits">Hits</th>
-                  <td class="hits"><%= data[:total_hits] %></td>
-                </tr>
-                <tr>
-                  <th class="unique-visits">Unique Visits</th>
-                  <td class="unique-visits"><%= data[:total_unique_visits] %></td>
-                </tr>
-                <tr>
-                  <th class="tx">Tx</th>
-                  <td class="tx"><%= data[:total_size] %></td>
-                </tr>
-              </table>
+              <%= render "summary", data: data %>
             </article>
 
             <article class="cell small-12 large-6">
               <h2 id="log-structure">Log Structure</h2>
-
-              <table class="table unstriped log-structure">
-                <tbody>
-                  <tr>
-                    <th>Input file</th>
-                    <td><b><%= (data[:log_file] || "stdin") %></b></td>
-                  </tr>
-                  <tr>
-                    <th>Period in Log</th>
-                    <td><%= data[:first_day] %> -- <%= data[:last_day] %></td>
-                  </tr>
-                  <tr>
-                    <th>Total days</th>
-                    <td><%= data[:total_days] %></td>
-                  </tr>
-                  <tr>
-                    <th>Log size</th>
-                    <td><%= data[:log_size][0][0] %></td>
-                  </tr>
-                  <tr>
-                    <th>Self poll entries</th>
-                    <td><%= data[:selfpolls_size][0][0] %></td>
-                  </tr>
-                  <tr>
-                    <th>Crawlers</th>
-                    <td><%= data[:crawlers_size][0][0] %></td>
-                  </tr>
-                  <tr>
-                    <th>Entries considered</th>
-                    <td><%= data[:total_hits][0][0] %></td>
-                  </tr>
-                </tbody>
-              </table>
+              <%= render "total_hits", data: data %>
             </article>
           </div>
 
@@ -171,28 +109,22 @@
             { title: "404 on HTML Files", header: ["Path", "Hits", "Visits"], rows: data[:missed_pages] },
             { title: "404 on other Resources", header: ["Path", "Hits", "Visits"], rows: data[:missed_resources] },
             { title: "Attacks", header: ["Path", "Hits", "Visits"], rows: data[:attacks] },
-            { },
             { title: "Statuses", header: ["Status", "Count"], rows: data[:statuses] },
             { title: "Daily Statuses", header: ["Status", "2xx", "3xx", "4xx"], rows: data[:statuses_by_day] },
             { title: "Browsers", header: ["Browser", "Hits", "Visits", "Size"], rows: data[:browsers] },
             { title: "Platforms", header: ["Platform", "Hits", "Visits", "Size"], rows: data[:platforms] },
             { title: "Referers", header: ["Referers", "Hits", "Visits", "Size"], rows: data[:referers], col: "col-12" },
             { title: "IPs", header: ["IPs", "Hits", "Visits", "Size", "Country"], rows: data[:ips] },
-            { },
           ]
           %>
           <div class="grid-x grid-margin-x">
             <% @reports.each do |report| %>
-              <div class="cell <%= report[:col] || "small-12 large-6" %>">
-                <article>
-                  <% if report[:title] != nil %>
-                    <h2 id="<%= report[:title].downcase.gsub(/ +/, '-') %>">
-                      <%= report[:title] %>
-                    </h2>
-                    <%= render "output_table", report %>
-                  <% end %>
-                </article>
-              </div>
+              <article class="cell <%= report[:col] || "small-12 large-6" %>" >
+                <h2 id="<%= report[:title].downcase.gsub(/ +/, '-') %>">
+                  <%= report[:title] %>
+                </h2>
+                <%= render "output_table", report %>
+              </article>
             <% end %>
           </div>
 
@@ -279,43 +211,7 @@
               <article>
                 <h2 id="command-invocation">Command Invocation</h2>
 
-                <table class="table unstriped command-invocation">
-                  <tbody>
-                    <tr>
-                      <th>CLI Command</th>
-                      <td><code><%= data[:command] %></code></td>
-                    </tr>
-                    <tr>
-                      <th>Input file</th>
-                      <td><code><%= (data[:log_file] || "stdin") %></code></td>
-                    </tr>
-                    <tr>
-                      <th>Ignore crawlers</th>
-                      <td><code><%= options[:ignore_crawlers] %></code></td></tr>
-                    <tr>
-                      <th>Only crawlers</th>
-                      <td><code><%= options[:only_crawlers] %></code></td>
-                    </tr>
-                    <tr>
-                      <th>No selfpoll</th>
-                      <td><code><%= options[:no_selfpoll] %></code></td>
-                    </tr>
-                    <tr>
-                      <th>Filter by date</th>
-                      <td>
-                        <code><%= (options[:from_date] != nil or options[:to_date] != nil) %></code>
-                      </td>
-                    </tr>
-                    <tr>
-                      <th>Prefix</th>
-                      <td><code><%= @prefix %></code></td>
-                    </tr>
-                    <tr>
-                      <th>Suffix</th>
-                      <td><code><%= @suffix %></code></td>
-                    </tr>
-                  </tbody>
-                </table>
+                <%= render "command_invocation", data: data %>
               </article>
             </div>
 
@@ -323,33 +219,7 @@
               <article>
                 <h2 id="performance"> Performance</h2>
 
-                <table class="table unstriped performance">
-                  <tbody>
-                    <tr>
-                      <th>Analysis started at</th>
-                      <td><%= data[:started_at].to_s %></td>
-                    </tr>
-                    <tr>
-                      <th>Analysis ended at</th>
-                      <td><%= data[:ended_at].to_s %></td>
-                    </tr>
-                    <tr>
-                      <th>Duration (sec)</th>
-                      <td><%= "%.1f" % data[:duration]  %></td>
-                    </tr>
-                    <tr>
-                      <th>Duration (min)</th>
-                      <td><%= "%d" % (data[:duration] / 60 ) %></td>
-                    </tr>
-                    <tr>
-                      <th>Log size</th>
-                      <td><%= data[:log_size][0][0] %></td>
-                    </tr>
-                    <tr>
-                      <th>Lines/sec</th>
-                      <td><%= "%.2f" % (data[:log_size][0][0] / data[:duration]) %></td></tr>
-                  </tbody>
-                </table>
+                <%=  render "performance", data: data %>
               </article>
             </div>
           </div>

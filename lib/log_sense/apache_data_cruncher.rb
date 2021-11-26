@@ -20,8 +20,13 @@ module LogSense
       end
 
       @log_size       = db.execute "SELECT count(datetime) from LogLine"
-      @crawlers_size  = db.execute "SELECT count(datetime) from LogLine where bot == 1"
+      @log_size       = @log_size[0][0]
+
       @selfpolls_size = db.execute "SELECT count(datetime) from LogLine where ip == '::1'"
+      @selfpolls_size = @selfpolls_size[0][0]
+
+      @crawlers_size  = db.execute "SELECT count(datetime) from LogLine where bot == 1"
+      @crawlers_size = @crawlers_size[0][0]
 
       @first_day_requested = options[:from_date]
       @last_day_requested = options[:to_date]

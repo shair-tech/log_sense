@@ -1,0 +1,27 @@
+<table class="table unstriped performance">
+  <tbody>
+    <tr>
+      <th>Analysis started at</th>
+      <td><%= data[:started_at].to_s %></td>
+    </tr>
+    <tr>
+      <th>Analysis ended at</th>
+      <td><%= data[:ended_at].to_s %></td>
+    </tr>
+    <tr>
+      <th>Duration (sec)</th>
+      <td><%= "%.1f" % data[:duration]  %></td>
+    </tr>
+    <tr>
+      <th>Duration (min)</th>
+      <td><%= "%d" % (data[:duration] / 60 ) %></td>
+    </tr>
+    <tr>
+      <th>Log size</th>
+      <td><%= data[:log_size] %></td>
+    </tr>
+    <tr>
+      <th>Lines/sec</th>
+      <td><%= "%.2f" % (data[:log_size] / data[:duration]) %></td></tr>
+  </tbody>
+</table>

@@ -1,0 +1,30 @@
+<table class="table unstriped summary">
+  <tr>
+    <th>Input file</th>
+    <td><b><%= (data[:log_file] || "stdin") %></b></td>
+  </tr>
+  <tr>
+    <th class="period">Period Analyzed</th>
+    <td class="period">
+      <%= data[:first_day_in_analysis] %>
+      --
+      <%= data[:last_day_in_analysis] %>
+    </td>
+  </tr>
+  <tr>
+    <th class="days">Days </th>
+    <td class="days"><%= data[:total_days_in_analysis] %></td>
+  </tr>
+  <tr>
+    <th class="hits">Hits</th>
+    <td class="hits"><%= data[:total_hits] %></td>
+  </tr>
+  <tr>
+    <th class="unique-visits">Unique Visits</th>
+    <td class="unique-visits"><%= data[:total_unique_visits] %></td>
+  </tr>
+  <tr>
+    <th class="tx">Tx</th>
+    <td class="tx"><%= data[:total_size] %></td>
+  </tr>
+</table>
