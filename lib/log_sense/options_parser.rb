@@ -22,7 +22,7 @@ module LogSense
           args[:input_file] = n
         end
 
-        opts.on("-tFORMAT", "--output-format=FORMAT", String, "Output format: html, org, txt, sqlite. Defaults to org mode") do |n|
+        opts.on("-tFORMAT", "--output-format=FORMAT", String, "Output format: html, org, txt, sqlite. See below for available formats") do |n|
           args[:output_format] = n
         end
 
@@ -74,6 +74,7 @@ module LogSense
           components = templates.map { |x| File.basename(x).split "." }.group_by { |x| x[0] }
           components.each do |k, vs|
             puts "#{k} parsing can produce the following outputs:"
+            puts "  - sqlite"
             vs.each do |v|
               puts "  - #{v[1]}"
             end
