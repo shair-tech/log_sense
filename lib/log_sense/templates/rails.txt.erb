@@ -44,6 +44,12 @@ table.align_column(4, :right)
 table
 %>
 
+** Fatal Events
+
+<%= table = Terminal::Table.new headings: ['Date', 'IP', 'URL', 'Log ID'], rows: @data[:fatal]
+table
+%>
+
 ** Command Invocation
 
 <%= render "command_invocation.txt.erb", data: data %>
