@@ -1,6 +1,6 @@
 require 'optparse'
 require 'optparse/date'
-require 'apache_log_report/version'
+require 'log_sense/version'
 
 module LogSense
   module OptionsParser
