@@ -12,6 +12,7 @@ module LogSense
          ended_at TEXT,
          log_id TEXT,
          ip TEXT,
+         unique_visitor TEXT,
          url TEXT,
          controller TEXT,
          html_verb TEXT,
@@ -27,6 +28,7 @@ module LogSense
          ended_at,
          log_id,
          ip,
+         unique_visitor,
          url,
          controller,
          html_verb,
@@ -35,7 +37,7 @@ module LogSense
          duration_views_ms,
          duration_ar_ms,
          allocations)
-      values (#{Array.new(12, '?').join(', ')})")
+      values (#{Array.new(13, '?').join(', ')})")
 
       # requests in the log might be interleaved.
       #
@@ -90,6 +92,7 @@ module LogSense
               event[:ended_at],
               event[:log_id],
               event[:ip],
+              "#{DateTime.parse(event[:ended_at]).strftime("%Y-%m-%d")} #{event[:ip]}",
               event[:url],
               event[:controller],
               event[:html_verb],

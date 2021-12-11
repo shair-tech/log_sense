@@ -23,7 +23,13 @@ module LogSense
         @total_days = (@last_day - @first_day).to_i
       end
 
+      @log_size = db.execute "SELECT count(started_at) from Event"
+      @log_size = @log_size[0][0]
+
+      # SAME AS ABOVE (but log_size is wrong in the case of Rails
+      # logs, since an event takes more than one line)
       @events = db.execute "SELECT count(started_at) from Event"
+      @events = @events[0][0]
 
       @first_day_requested = options[:from_date]
       @last_day_requested = options[:to_date]
@@ -73,6 +79,9 @@ module LogSense
       EOS
 
       @total_events = db.execute "SELECT count(started_at) from Event where #{filter}"
+
+      @total_unique_visits = db.execute "SELECT count(distinct(unique_visitor)) from Event where #{filter}"
+      @total_unique_visits = @total_unique_visits[0][0]
 
       @daily_distribution = db.execute "SELECT date(started_at), #{human_readable_day}, count(started_at) from Event where #{filter} group by date(started_at)"
       @time_distribution = db.execute "SELECT strftime('%H', started_at), count(started_at) from Event where #{filter} group by strftime('%H', started_at)"
