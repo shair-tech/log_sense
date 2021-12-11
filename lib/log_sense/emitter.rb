@@ -33,12 +33,6 @@ module LogSense
 
     private
 
-    def self.output_txt_table name, headings, rows
-      name = "#+NAME: #{name}"
-      table = Terminal::Table.new headings: headings, rows: rows, style: { border_x: "-", border_i: "|" }
-      name + "\n" + table.to_s
-    end
-
     def self.render(template, vars)
       @template = File.join(File.dirname(__FILE__), "templates", "_#{template}.html.erb")
       erb_template = File.read @template
