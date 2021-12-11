@@ -24,6 +24,10 @@
     <td class="unique-visits"><%= data[:total_unique_visits] %></td>
   </tr>
   <tr>
+    <th class="avg-hits-per-unique-visits">Unique Visits</th>
+    <td class="avg-hits-per-unique-visits"><%= data[:total_hits] / data[:total_unique_visits] %></td>
+  </tr>
+  <tr>
     <th class="tx">Tx</th>
     <td class="tx"><%= data[:total_size] %></td>
   </tr>
