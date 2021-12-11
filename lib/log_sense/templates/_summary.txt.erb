@@ -4,7 +4,7 @@
                                      ["Days",            data[:total_days_in_analysis] ],
                                      ["Events",          data[:events] ],
                                      ["Unique Visits",   data[:total_unique_visits] ],
-                                     ["Avg. Events per Visit", data[:events] / data[:total_unique_visits] ]
+                                     ["Avg. Events per Visit", data[:total_unique_visits] != 0 ? data[:events] / data[:total_unique_visits] : "N/A" ]
                                    ]
  table
 %>
