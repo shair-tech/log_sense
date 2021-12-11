@@ -1,0 +1,9 @@
+<%=
+table = Terminal::Table.new rows: [ ["Analysis started at", data[:started_at].to_s ],
+                                    ["Analysis ended at",   data[:ended_at].to_s ],
+                                    ["Duration",            "%02d:%02d" % [data[:duration] / 60, data[:duration] % 60] ],
+                                    ["Events",              "%9d" % data[:log_size] ],
+                                    ["Parsed events/sec",   "%.2f" % (data[:log_size] / data[:duration]) ] ]
+table.align_column(2, :right)
+table
+%>

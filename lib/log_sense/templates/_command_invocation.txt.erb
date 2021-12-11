@@ -1,0 +1,6 @@
+<%=
+table = Terminal::Table.new rows: [ ["Command", data[:command] ],
+                                    ["Input file", data[:log_file] || "stdin" ]
+                                  ]
+table
+%>

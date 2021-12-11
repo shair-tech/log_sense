@@ -1,0 +1,10 @@
+<%=
+ table = Terminal::Table.new rows: [ ["Input File",      data[:log_file] || "stdin" ],
+                                     ["Period Analyzed", "#{data[:first_day_in_analysis]} -- #{data[:last_day_in_analysis]}" ],
+                                     ["Days",            data[:total_days_in_analysis] ],
+                                     ["Events",          data[:events] ],
+                                     ["Unique Visits",   data[:total_unique_visits] ],
+                                     ["Avg. Events per Visit", data[:events] / data[:total_unique_visits] ]
+                                   ]
+ table
+%>
