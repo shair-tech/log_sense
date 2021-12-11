@@ -8,7 +8,7 @@ module LogSense
     #
 
     def self.crunch db, options = { limit: 30 }
-      first_day_s = db.execute "SELECT started_at from Event order by started_at limit 1"
+      first_day_s = db.execute "SELECT started_at from Event where started_at not NULL order by started_at limit 1"
       # we could use ended_at to cover the full activity period, but I prefer started_at
       # with the meaning that the monitor event initiation
       last_day_s  = db.execute "SELECT started_at from Event order by started_at desc limit 1"
