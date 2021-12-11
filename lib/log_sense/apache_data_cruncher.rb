@@ -81,24 +81,24 @@ module LogSense
       @total_hits = db.execute "SELECT count(datetime) from LogLine where #{filter}"
       @total_hits = @total_hits[0][0]
 
-      @total_unique_visits = db.execute "SELECT count(distinct(unique_visit)) from LogLine where #{filter}"
+      @total_unique_visits = db.execute "SELECT count(distinct(unique_visitor)) from LogLine where #{filter}"
       @total_unique_visits = @total_unique_visits[0][0]
 
       @total_size = db.execute "SELECT #{human_readable_size} from LogLine where #{filter}"
       @total_size = @total_size[0][0]
 
-      @daily_distribution = db.execute "SELECT date(datetime), #{human_readable_day}, count(datetime), count(distinct(unique_visit)), #{human_readable_size} from LogLine  where #{filter} group by date(datetime)"
-      @time_distribution = db.execute "SELECT strftime('%H', datetime), count(datetime), count(distinct(unique_visit)), #{human_readable_size} from LogLine  where #{filter} group by strftime('%H', datetime)"
-      @most_requested_pages = db.execute "SELECT path, count(path), count(distinct(unique_visit)), #{human_readable_size} from LogLine where extension == '.html' and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
-      @most_requested_resources = db.execute "SELECT path, count(path), count(distinct(unique_visit)), #{human_readable_size} from LogLine  where #{filter} group by path order by count(path) desc limit #{options[:limit]}"
-      @missed_pages = db.execute "SELECT path, count(path), count(distinct(unique_visit)) from LogLine where status == '404' and extension == '.html' and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
-      @missed_resources = db.execute "SELECT path, count(path), count(distinct(unique_visit)) from LogLine where status == '404' and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
+      @daily_distribution = db.execute "SELECT date(datetime), #{human_readable_day}, count(datetime), count(distinct(unique_visitor)), #{human_readable_size} from LogLine  where #{filter} group by date(datetime)"
+      @time_distribution = db.execute "SELECT strftime('%H', datetime), count(datetime), count(distinct(unique_visitor)), #{human_readable_size} from LogLine  where #{filter} group by strftime('%H', datetime)"
+      @most_requested_pages = db.execute "SELECT path, count(path), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where extension == '.html' and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
+      @most_requested_resources = db.execute "SELECT path, count(path), count(distinct(unique_visitor)), #{human_readable_size} from LogLine  where #{filter} group by path order by count(path) desc limit #{options[:limit]}"
+      @missed_pages = db.execute "SELECT path, count(path), count(distinct(unique_visitor)) from LogLine where status == '404' and extension == '.html' and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
+      @missed_resources = db.execute "SELECT path, count(path), count(distinct(unique_visitor)) from LogLine where status == '404' and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
 
       @reasonable_requests_exts = [ ".html", ".css", ".js", ".jpg", ".svg", ".png", ".woff", ".xml", ".ttf", ".ico", ".pdf", ".htm", ".txt", ".org" ].map {  |x|
         "extension != '#{x}'"
       }.join " and "
 
-      @attacks = db.execute "SELECT path, count(path), count(distinct(unique_visit)) from LogLine where status == '404' and #{filter} and (#{@reasonable_requests_exts}) group by path order by count(path) desc  limit #{options[:limit]}"
+      @attacks = db.execute "SELECT path, count(path), count(distinct(unique_visitor)) from LogLine where status == '404' and #{filter} and (#{@reasonable_requests_exts}) group by path order by count(path) desc  limit #{options[:limit]}"
       @statuses = db.execute "SELECT status, count(status) from LogLine where #{filter} group by status order by status"
 
       @by_day_4xx = db.execute "SELECT date(datetime), count(datetime) from LogLine where substr(status, 1,1) == '4' and #{filter} group by date(datetime)"
@@ -109,11 +109,11 @@ module LogSense
         [x[0], x[1].map { |y| y[1] }].flatten
       }
 
-      @browsers = db.execute "SELECT browser, count(browser), count(distinct(unique_visit)), #{human_readable_size} from LogLine where #{filter} group by browser order by count(browser) desc"
-      @platforms = db.execute "SELECT platform, count(platform), count(distinct(unique_visit)), #{human_readable_size} from LogLine where #{filter} group by platform order by count(platform) desc"
-      @referers = db.execute "SELECT referer, count(referer), count(distinct(unique_visit)), #{human_readable_size} from LogLine where #{filter} group by referer order by count(referer) desc limit #{options[:limit]}"
+      @browsers = db.execute "SELECT browser, count(browser), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by browser order by count(browser) desc"
+      @platforms = db.execute "SELECT platform, count(platform), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by platform order by count(platform) desc"
+      @referers = db.execute "SELECT referer, count(referer), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by referer order by count(referer) desc limit #{options[:limit]}"
       
-      @ips = db.execute "SELECT ip, count(ip), count(distinct(unique_visit)), #{human_readable_size} from LogLine where #{filter} group by ip order by count(ip) desc limit #{options[:limit]}"
+      @ips = db.execute "SELECT ip, count(ip), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by ip order by count(ip) desc limit #{options[:limit]}"
 
       @streaks = db.execute "SELECT ip, substr(datetime, 1, 10), path from LogLine order by ip, datetime"
       data = {}
