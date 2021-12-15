@@ -97,7 +97,7 @@ module LogSense
               event[:ended_at],
               event[:log_id],
               event[:ip],
-              "#{DateTime.parse(event[:started_at] || event[:ended_at]).strftime("%Y-%m-%d")} #{event[:ip]}",
+              unique_visitor_id(event),
               event[:url],
               event[:controller],
               event[:html_verb],
@@ -129,7 +129,7 @@ module LogSense
               event[:ended_at],
               event[:log_id],
               event[:ip],
-              "#{DateTime.parse(event[:started_at] || event[:ended_at]).strftime("%Y-%m-%d")} #{event[:ip]}",
+              unique_visitor_id(event),
               event[:url],
               event[:controller],
               event[:html_verb],
@@ -286,6 +286,11 @@ module LogSense
       else
         nil
       end
+    end
+
+    # generate a unique visitor id from an event
+    def unique_visitor_id event
+      "#{DateTime.parse(event[:started_at] || event[:ended_at] || "1970-01-01").strftime("%Y-%m-%d")} #{event[:ip]}",
     end
 
   end
