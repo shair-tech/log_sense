@@ -11,8 +11,8 @@ module LogSense
       last_day_s  = db.execute "SELECT datetime from LogLine order by datetime desc limit 1"
 
       # make first and last day into dates or nil
-      @first_day = first_day_s[0][0] ? nil : Date.parse(first_day_s[0][0])
-      @last_day = last_day_s[0][0] ? nil : Date.parse(last_day_s[0][0])
+      @first_day = first_day_s&.first&.first ? Date.parse(first_day_s[0][0]) : nil
+      @last_day =  last_day_s&.first&.first ? Date.parse(last_day_s[0][0]) : nil
 
       @total_days = 0
       if @first_day and @last_day
