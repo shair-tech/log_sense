@@ -1,34 +1,26 @@
-<table class="table unstriped summary">
-  <tr>
-    <th>Input file</th>
-    <td><b><%= (data[:log_file] || "stdin") %></b></td>
-  </tr>
-  <tr>
-    <th class="period">Period Analyzed</th>
-    <td class="period">
-      <%= data[:first_day_in_analysis] %>
-      --
-      <%= data[:last_day_in_analysis] %>
-    </td>
-  </tr>
-  <tr>
-    <th class="days">Days </th>
-    <td class="days"><%= data[:total_days_in_analysis] %></td>
-  </tr>
-  <tr>
-    <th class="hits">Hits</th>
-    <td class="hits"><%= data[:total_hits] %></td>
-  </tr>
-  <tr>
-    <th class="unique-visits">Unique Visits</th>
-    <td class="unique-visits"><%= data[:total_unique_visits] %></td>
-  </tr>
-  <tr>
-    <th class="avg-hits-per-unique-visits">Unique Visits</th>
-    <td class="avg-hits-per-unique-visits"><%= data[:total_unique_visits] != 0 ? data[:total_hits] / data[:total_unique_visits] : "N/A" %></td>
-  </tr>
-  <tr>
-    <th class="tx">Tx</th>
-    <td class="tx"><%= data[:total_size] %></td>
-  </tr>
-</table>
+<ul class="stats-list">
+  <li>
+    <%= (data[:log_file] || "stdin") %> <span class="stats-list-label">Input File</span>
+  </li>
+  <li>
+    <%= data[:first_day_in_analysis].strftime("%b %d, %Y") %>
+    <span class="stats-list-label">From</span>
+  </li>
+  <li>
+    <%= data[:last_day_in_analysis].strftime("%b %d, %Y") %>
+    <span class="stats-list-label">To</span>
+  </li>
+  <li class="stats-list-positive">
+    <%= data[:total_days_in_analysis] %> <span class="stats-list-label">Days</span>
+  </li>
+  <li class="stats-list-negative">
+    <%= data[:total_hits] %> <span class="stats-list-label">Hits</span>
+  </li>
+  <li class="stats-list-negative">
+    <%= data[:total_unique_visits] %> <span class="stats-list-label">Unique Visits</span>
+  </li>
+  <li class="stats-list-negative">
+    <%= data[:total_unique_visits] != 0 ? data[:total_hits] / data[:total_unique_visits] : "N/A" %>
+    <span class="stats-list-label">Unique Visits / Day</span>
+  </li>
+</ul>

@@ -1,0 +1,27 @@
+<ul class="stats-list">
+  <li>
+    <%= (data[:log_file] || "stdin") %> <span class="stats-list-label">Input File</span>
+  </li>
+  <li>
+    <%= data[:first_day].strftime("%b %d, %Y") %>
+    <span class="stats-list-label">From</span>
+  </li>
+  <li>
+    <%= data[:last_day].strftime("%b %d, %Y") %>
+    <span class="stats-list-label">To</span>
+  </li>
+  <li class="stats-list-positive">
+    <%= data[:total_days] %> <span class="stats-list-label">Days in Log</span>
+  </li>
+  <li class="stats-list-negative">
+    <%= data[:log_size] %> <span class="stats-list-label">Total Entries</span>
+  </li>
+  <li class="stats-list-negative">
+    <%= data[:selfpolls_size] %> <span class="stats-list-label">Self Polls Entries</span>
+  </li>
+  <li class="stats-list-negative">
+    <td><%= data[:crawlers_size] %></td>
+    <span class="stats-list-label">Crawlers Entries</span>
+  </li>
+</ul>
+

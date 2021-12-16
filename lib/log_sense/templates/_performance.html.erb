@@ -1,23 +1,21 @@
-<table class="table unstriped performance">
-  <tbody>
-    <tr>
-      <th>Analysis started at</th>
-      <td><%= data[:started_at].to_s %></td>
-    </tr>
-    <tr>
-      <th>Analysis ended at</th>
-      <td><%= data[:ended_at].to_s %></td>
-    </tr>
-    <tr>
-      <th>Duration</th>
-      <td><%= "%02d:%02d" % [data[:duration] / 60, data[:duration] % 60] %></td>
-    </tr>
-    <tr>
-      <th>Events</th>
-      <td><%= data[:log_size] %></td>
-    </tr>
-    <tr>
-      <th>Parsed Events/sec</th>
-      <td><%= "%.2f" % (data[:log_size] / data[:duration]) %></td></tr>
-  </tbody>
-</table>
+<ul class="stats-list">
+  <li>
+    <%= data[:started_at].strftime("%b %d, %Y @ %H:%M:%S") %>
+    <span class="stats-list-label">Analysis Started</span>
+  </li>
+  <li>
+    <%= data[:ended_at].strftime("%b %d, %Y @ %H:%M:%S") %>
+    <span class="stats-list-label">Analysis Ended</span>
+  </li>
+  <li class="stats-list-negative">
+    <%= "%02d:%02d" % [data[:duration] / 60, data[:duration] % 60] %>
+    <span class="stats-list-label">Duration</span>
+  </li>
+  <li class="stats-list-negative">
+    <%= data[:log_size] %> <span class="stats-list-label">Events</span>
+  </li>
+  <li class="stats-list-positive">
+    <td><%= "%.2f" % (data[:log_size] / data[:duration]) %>
+    <span class="stats-list-label">Parsed Events/sec</span>
+  </li>
+</ul>

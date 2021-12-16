@@ -9,11 +9,19 @@
     <meta name="author" content="Log Sense">
     <meta name="description" content="Analysis of <%= data[:log_file] %>">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com"> 
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.css"/>
 
     <style>
+     body {
+       font-family: 'PT Sans', sans-serif;
+       font-size: 80%;
+     }
+
      #offCanvas {
        color: white;
        background: #333333;
@@ -32,6 +40,100 @@
      .main-section {
        margin-left: 45px;
      }
+
+     h1 {
+       font-size: 1.8rem;
+     }
+
+     h2 {
+       font-size: 1.5rem;
+     }
+
+     th {
+       padding: 0.2rem 1.2rem 0.2rem 0.2rem !important
+     }
+
+     td {
+       padding: 0.2rem 1rem 0.2rem 0.2rem !important;
+     }
+
+     .hits, .visits, .size, .count, .s2xx, .s3xx, .so4xx, .total-hits, .total-visits {
+       text-align: right !important;
+     }
+
+     .card-divider {
+       padding: 0.2rem 0.4rem 0.2rem 0.4rem;
+     }
+
+     input, select {
+       font-size: 0.8rem !important;
+       height: 1.5rem !important;
+       padding: 0.2rem 0.4rem 0.2rem 0.4rem !important;
+     }
+
+     .dataTables_info {
+       font-size: small;
+       color: rgb(202, 202, 202);
+     }
+
+     ul.pagination, li.paginate_button {
+       font-size: small;
+       margin-top: 0px !important;
+       margin-bottom: 0px !important;
+       padding-top: 0px !important;
+       padding-bottom: 0px !important;
+     }
+
+     .stats-list {
+       list-style-type: none;
+       clear: left;
+       margin: 0;
+       padding: 0;
+       text-align: center;
+       margin-bottom: 30px;
+     }
+
+     .stats-list .stats-list-positive {
+       color: #3adb76;
+     }
+
+     .stats-list .stats-list-negative {
+       color: #cc4b37;
+     }
+
+     .stats-list > li {
+       display: inline-block;
+       margin-right: 10px;
+       padding-right: 10px;
+       border-right: 1px solid #cacaca;
+       text-align: center;
+       font-size: 1.1em;
+       font-weight: bold;
+     }
+
+     .stats-list > li:last-child {
+       border: none;
+       margin: 0;
+       padding: 0;
+     }
+
+     .stats-list > li .stats-list-label {
+       display: block;
+       margin-top: 2px;
+       font-size: 0.9em;
+       font-weight: normal;
+     }
+
+     #streaks-table .ip {
+       vertical-align: top;
+     }
+     #streaks-table .date {
+       font-weight: bold;
+     }
+     #streaks-table .res-title {
+       font-decoration: underline;
+     }
+       
 
     </style>
 
@@ -87,17 +189,25 @@
         </div>
 
         <section class="main-section">
-          <h1>Apache Log Analysis: <%= data[:log_file] || "stdin" %></h1>
+          <h1>Apache Log Analysis</h1>
 
           <div class="grid-x grid-margin-x">
-            <article class="small-12 large-6 cell">
-              <h2 id="summary">Summary</h2>
-              <%= render "summary.html.erb", data: data %>
+            <article class="card small-12 large-6 cell">
+              <div class="card-divider">
+                <h2 id="summary">Summary</h2>
+              </div>
+              <div class="card-section">
+                <%= render "summary.html.erb", data: data %>
+              </div>
             </article>
 
-            <article class="cell small-12 large-6">
-              <h2 id="log-structure">Log Structure</h2>
-              <%= render "total_hits.html.erb", data: data %>
+            <article class="card cell small-12 large-6">
+              <div class="card-divider">
+                <h2 id="log-structure">Log Structure</h2>
+              </div>
+              <div class="card-section">
+                <%= render "log_structure.html.erb", data: data %>
+              </div>
             </article>
           </div>
 
@@ -113,97 +223,115 @@
             { title: "Daily Statuses", header: ["Status", "2xx", "3xx", "4xx"], rows: data[:statuses_by_day] },
             { title: "Browsers", header: ["Browser", "Hits", "Visits", "Size"], rows: data[:browsers] },
             { title: "Platforms", header: ["Platform", "Hits", "Visits", "Size"], rows: data[:platforms] },
-            { title: "Referers", header: ["Referers", "Hits", "Visits", "Size"], rows: data[:referers], col: "col-12" },
             { title: "IPs", header: ["IPs", "Hits", "Visits", "Size", "Country"], rows: data[:ips] },
+            { title: "Referers", header: ["Referers", "Hits", "Visits", "Size"], rows: data[:referers], col: "small-12 cell" },
           ]
           %>
           <div class="grid-x grid-margin-x">
             <% @reports.each do |report| %>
-              <article class="cell <%= report[:col] || "small-12 large-6" %>" >
-                <h2 id="<%= report[:title].downcase.gsub(/ +/, '-') %>">
-                  <%= report[:title] %>
-                </h2>
-                <%= render "output_table.html.erb", report %>
+              <article class="card cell <%= report[:col] || "small-12 large-6" %>" >
+                <div class="card-divider">
+                  <h2 id="<%= report[:title].downcase.gsub(/ +/, '-') %>">
+                    <%= report[:title] %>
+                  </h2>
+                </div>
+                <div class="card-section">
+                  <%= render "output_table.html.erb", report %>
+                </div>
               </article>
             <% end %>
           </div>
 
-          <article>
-            <h2 id="geolocation">Geolocation</h2>
-            <table id="geolocation-table" class="table unstriped">
-              <thead>
-                <tr>
-                  <th>Country Code</th>
-                  <th>Total Hits</th>
-                  <th>Total Visits</th>
-                  <th>IPs</th>
-                </tr>              
-              </thead>
-              <tbody>
-                <%# IP, Hits, Visits Size, Country%>
-                <% data[:ips].group_by { |x| x[4] }.each do |k, v| %>
+          <article class="card">
+            <div class="card-divider">
+              <h2 id="geolocation">Geolocation</h2>
+            </div>
+            <div class="card-section">
+              <table id="geolocation-table" class="table unstriped">
+                <thead>
                   <tr>
-                    <td><%= k %></td>
-                    <td><%= v.map { |x| x[1] }.inject(&:+) %></td>
-                    <td><%= v.map { |x| x[2] }.inject(&:+) %></td>
-                    <td><%= v.map { |x| x[0] }.join(", ") %></td>
-                  </tr>
-                <% end %>
-              </tbody>
-            </table>
+                    <th>Country Code</th>
+                    <th>Total Hits</th>
+                    <th>Total Visits</th>
+                    <th>IPs</th>
+                  </tr>              
+                </thead>
+                <tbody>
+                  <%# IP, Hits, Visits Size, Country%>
+                  <% data[:ips].group_by { |x| x[4] }.each do |k, v| %>
+                    <tr>
+                      <td class="country"><%= k %></td>
+                      <td class="total-hits"><%= v.map { |x| x[1] }.inject(&:+) %></td>
+                      <td class="total-visits"><%= v.map { |x| x[2] }.inject(&:+) %></td>
+                      <td class="ips">
+                        <%= v.map { |x| "<a href=\"https://whatismyipaddress.com/ip/#{x[0]}\">#{x[0]}</a>" }.join(", ") %>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
           </article>
 
-          <article>
-            <h2 id="streaks">Streaks</h2>
-
-            <table id="streaks-table" class="table data-table streaks">
-              <thead>
-                <tr>
-                  <th>IP</th>
-                  <th>
-                    <div class="grid-x grid-margin-x">
-                      <div class="col-2 cell">
-                        Day
-                      </div>
-                      <div class="col-10 cell">
-                        Resources
-                      </div>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <% data[:streaks].group_by(&:first).each do |ip, date_urls| %>
+          <article class="card">
+            <div class="card-divider">
+              <h2 id="streaks">Streaks</h2>
+            </div>
+            <div class="card-section">
+              <table id="streaks-table" class="table data-table streaks">
+                <thead>
                   <tr>
-                    <td class="ip"><%= ip %></td>
-                    <td class="streaks">
+                    <th>IP</th>
+                    <th>
                       <div class="grid-x grid-margin-x">
-                        <% date_urls.group_by { |x| x[1] }.each do |date, urls| %>
-                          <div class="col-2 cell">
-                            <%= date %>
-                          </div>
-                          <div class="col-10 cell">
-                            <span class="res-title">HTML:</span>
-                            <ul>
-                              <% urls.map { |x| x[2] }.compact.select { |x| x.match /.*\.html?/ }.each do |url| %>
-                                <li><%= url %></li>
-                              <% end %>
-                            </ul>
-                            
-                            <span class="res-title">Other Resources:</span>
-                            <ul>
-                              <% urls.map { |x| x[2] }.compact.sort.select { |x| x and not x.match /.*\.html?/ }.each do |url| %>
-                                <li><%= url %></li>
-                              <% end %>
-                            </ul>
-                          </div>
-                        <% end %>
+                        <div class="col-2 cell">
+                          Day
+                        </div>
+                        <div class="col-10 cell">
+                          Resources
+                        </div>
                       </div>
-                    </td>
+                    </th>
                   </tr>
-                <% end %>
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  <% data[:streaks].group_by(&:first).each do |ip, date_urls| %>
+                    <tr>
+                      <td class="ip">
+                        <a href="https://whatismyipaddress.com/ip/<%= ip %>"><%= ip %></a>
+                      </td>
+                      <td class="streaks">
+                        <div class="grid-x grid-margin-x">
+                          <% date_urls.group_by { |x| x[1] }.each do |date, urls| %>
+                            <div class="col-2 cell">
+                              <span class="date"><%= date %></span>
+                            </div>
+                            <div class="col-10 cell grid-x">
+                              <div class="small-12 medium-6 cell">
+                                <span class="res-title">HTML:</span>
+                                <ul>
+                                  <% urls.map { |x| x[2] }.compact.select { |x| x.match /.*\.html?/ }.each do |url| %>
+                                    <li><%= url %></li>
+                                  <% end %>
+                                </ul>
+                              </div>                              
+                              <div class=" small-12 medium-6 cell">
+                                <span class="res-title small-12 medium-6 cell">Other Resources:</span>
+                                <ul>
+                                  <% urls.map { |x| x[2] }.compact.sort.select { |x| x and not x.match /.*\.html?/ }.each do |url| %>
+                                    <li><%= url %></li>
+                                  <% end %>
+                                </ul>
+                              </div>
+                            </div>
+                          <% end %>
+                        </div>
+                      </td>
+                    </tr>
+                  <% end %>
+                </tbody>
+              </table>
+            </div>
           </article>
 
           <div class="grid-x grid-margin-x">
