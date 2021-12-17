@@ -2,26 +2,13 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
-* Unreleased
+* Changes in log_sense 1.1.2
+  <2021-12-17 Fri>
 
-This changes are in the repository but not yet released to Rubygems.
+- Added Rails Log HTML output
 
-** New Functions and Changes
+* Changes in log_sense 1.1.1 and earlier
+  <2021-12-17 Fri>
 
-** Fixes
-
-** Documentation
-
-** Code
-
-
-* Version 1.0.0
-
-** New Functions and Changes
-
-** Fixes
-
-** Documentation
-
-** Code
+- In the Git commit messages (not very informative, I am afraid).
 
