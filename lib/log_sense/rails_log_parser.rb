@@ -289,7 +289,7 @@ module LogSense
     end
 
     # generate a unique visitor id from an event
-    def unique_visitor_id event
+    def self.unique_visitor_id event
       "#{DateTime.parse(event[:started_at] || event[:ended_at] || "1970-01-01").strftime("%Y-%m-%d")} #{event[:ip]}"
     end
 
