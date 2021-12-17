@@ -26,6 +26,10 @@ module LogSense
       @log_size = db.execute "SELECT count(started_at) from Event"
       @log_size = @log_size[0][0]
 
+      # TODO: I should make the names of events/size/etc uniform betweeen Apache and Rails Logs
+      # SAME AS ABOVE
+      @total_hits = @log_size
+
       # SAME AS ABOVE (but log_size is wrong in the case of Rails
       # logs, since an event takes more than one line)
       @events = db.execute "SELECT count(started_at) from Event"
