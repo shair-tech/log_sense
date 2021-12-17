@@ -1,4 +1,5 @@
 require 'terminal-table'
+require 'json'
 require 'erb'
 require 'ostruct'
 

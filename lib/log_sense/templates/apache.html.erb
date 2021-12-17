@@ -12,9 +12,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com"> 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
     <link href="https://fonts.googleapis.com/css2?family=PT+Sans&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.css"/>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.21.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.2.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.20.2"></script>
 
     <style>
      body {
@@ -24,13 +30,13 @@
 
      #offCanvas {
        color: white;
-       background: #333333;
-       border-right: ;
+       background: #0D0630;
+       border-right: none;
        box-shadow: none;
        padding: 0.5rem;
      }
      #offCanvas a {
-       color: orange;
+       color: #E6F9AF;
      }
 
      .contents-button {
@@ -46,7 +52,7 @@
      }
 
      h2 {
-       font-size: 1.5rem;
+       font-size: 1.2rem;
      }
 
      th {
@@ -63,6 +69,8 @@
 
      .card-divider {
        padding: 0.2rem 0.4rem 0.2rem 0.4rem;
+       background: #0d0630;
+       color: white;
      }
 
      input, select {
@@ -94,11 +102,11 @@
      }
 
      .stats-list .stats-list-positive {
-       color: #3adb76;
+       color: #228b22;
      }
 
      .stats-list .stats-list-negative {
-       color: #cc4b37;
+       color: #a52a2a;
      }
 
      .stats-list > li {
@@ -133,8 +141,6 @@
      #streaks-table .res-title {
        font-decoration: underline;
      }
-       
-
     </style>
 
   </head>
@@ -191,6 +197,8 @@
         <section class="main-section">
           <h1>Apache Log Analysis</h1>
 
+          <p><b>Input File:</b>  <%= (data[:log_file] || "stdin") %></p>
+
           <div class="grid-x grid-margin-x">
             <article class="card small-12 large-6 cell">
               <div class="card-divider">
@@ -212,30 +220,140 @@
           </div>
 
           <% @reports = [
-            { title: "Daily Distribution", header: ["Day", "DOW", "Hits", "Visits", "Size"], rows: data[:daily_distribution] },
-            { title: "Time Distribution",  header: ["Hour", "Hits", "Visits", "Size"], rows: data[:time_distribution] },
-            { title: "Most Requested Pages", header: ["Path", "Hits", "Visits", "Size"], rows: data[:most_requested_pages] },
+            { title: "Daily Distribution",
+              header: ["Day", "DOW", "Hits", "Visits", "Size"],
+              rows: data[:daily_distribution],
+              vega_spec: {
+                "mark": {
+                  "type": "line",
+                  "point": {
+                    "filled": false,
+                    "fill": "white"
+                  }
+                },
+                "encoding": {
+                  "x": {"field": "Day", "type": "temporal"},
+                  "y": {"field": "Hits", "type": "quantitative"}
+                }
+              }
+            },
+            { title: "Time Distribution",
+              header: ["Hour", "Hits", "Visits", "Size"],
+              rows: data[:time_distribution],
+              vega_spec: {
+                "mark": "bar",
+                "encoding": {
+                  "x": {"field": "Hour", "type": "nominal"},
+                  "y": {"field": "Hits", "type": "quantitative"}
+                }
+              }
+            },
+            { title: "Most Requested Pages",
+              header: ["Path", "Hits", "Visits", "Size"],
+              rows: data[:most_requested_pages],
+            },
             { title: "Most Requested Resources", header: ["Path", "Hits", "Visits", "Size"], rows: data[:most_requested_resources] },
             { title: "404 on HTML Files", header: ["Path", "Hits", "Visits"], rows: data[:missed_pages] },
             { title: "404 on other Resources", header: ["Path", "Hits", "Visits"], rows: data[:missed_resources] },
-            { title: "Attacks", header: ["Path", "Hits", "Visits"], rows: data[:attacks] },
-            { title: "Statuses", header: ["Status", "Count"], rows: data[:statuses] },
-            { title: "Daily Statuses", header: ["Status", "2xx", "3xx", "4xx"], rows: data[:statuses_by_day] },
-            { title: "Browsers", header: ["Browser", "Hits", "Visits", "Size"], rows: data[:browsers] },
-            { title: "Platforms", header: ["Platform", "Hits", "Visits", "Size"], rows: data[:platforms] },
+            { title: "Attacks", header: ["Path", "Hits", "Visits"], rows: data[:attacks], col: "small-12 cell" },
+            { title: "Statuses",
+              header: ["Status", "Count"],
+              rows: data[:statuses],
+              vega_spec: {
+                "mark": "bar",
+                "encoding": {
+                  "x": {"field": "Status", "type": "nominal"},
+                  "y": {"field": "Count", "type": "quantitative"}
+                }
+              }
+            },
+            { title: "Daily Statuses",
+              header: ["Date", "S_2xx", "S_3xx", "S_4xx"],
+              rows: data[:statuses_by_day],
+              vega_spec: {
+                "transform": [ {"fold": ["S_2xx", "S_3xx", "S_4xx" ] }],
+                "mark": "bar",
+                "encoding": {
+                  "x": {
+                    "field": "Date",
+                    "type": "ordinal",
+                    "timeUnit": "day", 
+                  },
+                  "y": {
+                    "aggregate": "sum",
+                    "field": "value",
+                    "type": "quantitative"
+                  },
+                  "color": {
+                    "field": "key",
+                    "type": "nominal",
+                    "scale": {
+                      "domain": ["S_2xx", "S_3xx", "S_4xx"],
+                      "range": ["#228b22", "#ff8c00", "#a52a2a"]
+                    },
+                  }
+                }
+              }
+            },
+            { title: "Browsers",
+              header: ["Browser", "Hits", "Visits", "Size"],
+              rows: data[:browsers],
+              vega_spec: {
+                "mark": "bar",
+                "encoding": {
+                  "x": {"field": "Browser", "type": "nominal"},
+                  "y": {"field": "Hits", "type": "quantitative"}
+                }
+              }
+            },
+            { title: "Platforms",
+              header: ["Platform", "Hits", "Visits", "Size"],
+              rows: data[:platforms],
+              vega_spec: {
+                "mark": "bar",
+                "encoding": {
+                  "x": {"field": "Platform", "type": "nominal"},
+                  "y": {"field": "Hits", "type": "quantitative"}
+                }
+              }
+            },
             { title: "IPs", header: ["IPs", "Hits", "Visits", "Size", "Country"], rows: data[:ips] },
             { title: "Referers", header: ["Referers", "Hits", "Visits", "Size"], rows: data[:referers], col: "small-12 cell" },
           ]
           %>
           <div class="grid-x grid-margin-x">
-            <% @reports.each do |report| %>
+            <% @reports.each_with_index do |report, index| %>
               <article class="card cell <%= report[:col] || "small-12 large-6" %>" >
                 <div class="card-divider">
-                  <h2 id="<%= report[:title].downcase.gsub(/ +/, '-') %>">
+                  <h2>
                     <%= report[:title] %>
                   </h2>
                 </div>
-                <div class="card-section">
+
+                <% if report[:vega_spec] %>
+                  <div id="<%= "plot-#{index}" %>"></div>
+                  <script>
+                   plot_spec_<%= index %> = Object.assign(
+                     <%= report[:vega_spec].to_json %>,
+                     { "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                       width: "container",
+                       description: "<%= report[:title] %>",
+                       data: {
+                         values: [
+                           <% report[:rows].each do |row| %>
+                           {
+                             <% report[:header].each_with_index do |h, i| %>
+                             "<%= h %>": <%= (row[i].class == Integer or row[i].class == Float) ? row[i] : "\"#{row[i]}\"" %>,
+                             <% end %>
+                           },
+                           <% end %>
+                         ]
+                       },
+                   });
+                   vegaEmbed('#<%= "plot-#{index}"%>', plot_spec_<%= index %>);
+                  </script>
+                <% end %>
+                  <div class="card-section">
                   <%= render "output_table.html.erb", report %>
                 </div>
               </article>
