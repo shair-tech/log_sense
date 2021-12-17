@@ -14,6 +14,10 @@ module LogSense
       opt_parser = OptionParser.new do |opts|
         opts.banner = "Usage: log_sense [options] [logfile]"
 
+        opts.on("-tTITLE", "--title=TITLE", String, "Title to use in the report") do |n|
+          args[:title] = n
+        end
+
         opts.on("-fFORMAT", "--input-format=FORMAT", String, "Input format (either rails or apache)") do |n|
           args[:input_format] = n
         end

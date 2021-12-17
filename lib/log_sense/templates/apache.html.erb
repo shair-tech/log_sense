@@ -1,7 +1,7 @@
 <!doctype html>
 <html class="no-js" lang="en">
   <head>
-    <title>Log Sense: <%= data[:log_file] %></title>
+    <title><%= options[:title] || "Log Sense: #{data[:log_file]}" %></title>
 
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -195,7 +195,7 @@
         </div>
 
         <section class="main-section">
-          <h1>Apache Log Analysis</h1>
+          <h1><%= options[:title] || "Log Sense: #{data[:log_file]}" %></h1>
 
           <p><b>Input File:</b>  <%= (data[:log_file] || "stdin") %></p>
 
