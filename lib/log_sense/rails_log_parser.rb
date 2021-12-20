@@ -1,5 +1,4 @@
 require 'sqlite3'
-require 'byebug'
 
 module LogSense
   module RailsLogParser
