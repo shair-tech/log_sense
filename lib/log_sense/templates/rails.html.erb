@@ -69,7 +69,7 @@
 
      .card-divider {
        padding: 0.2rem 0.4rem 0.2rem 0.4rem;
-       background: #0d0630;
+       background: #D30001;
        color: white;
      }
 
@@ -156,19 +156,10 @@
               "Log Structure",
               "Daily Distribution",
               "Time Distribution",
-              "Most Requested Pages",
-              "Most Requested Resources",
-              "404 on HTML Files",
-              "404 on other Resources",
-              "Attacks",
               "Statuses",
-              "Daily Statuses",
-              "Browsers",
-              "Platforms",
-              "Referers",
+              "Rails Performance",
+              "Fatal Events",
               "IPs",
-              "Geolocation",
-              "Streaks",
               "Command Invocation",
               "Performance"
             ].each do |item| %>
@@ -262,11 +253,15 @@
             },
             { title: "Rails Performance",
               header: ['Controller', 'Hits', 'Min', 'Avg', 'Max'],
-              rows: @data[:performance] },
+              rows: @data[:performance]
+            },
             { title: "Fatal Events",
               header: ['Date', 'IP', 'URL', 'Log ID'], rows: @data[:fatal]
             },
-            { title: "IPs", header: ["IPs", "Hits", "Country"], rows: data[:ips] },
+            { title: "IPs",
+              header: ["IPs", "Hits", "Country"],
+              rows: data[:ips]
+            },
           ]
           %>
           <div class="grid-x grid-margin-x">
