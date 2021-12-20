@@ -146,37 +146,37 @@ module LogSense
         end
 
 
-        data = self.match_and_process_completed_no_alloc line
-        if data
-          id = data[:log_id]
+        # data = self.match_and_process_completed_no_alloc line
+        # if data
+        #   id = data[:log_id]
 
-          # it might as well be that the first event started before
-          # the log.  With this, we make sure we add only events whose
-          # start was logged and parsed
-          if pending[id]
-            event = data.merge (pending[id] || {})
+        #   # it might as well be that the first event started before
+        #   # the log.  With this, we make sure we add only events whose
+        #   # start was logged and parsed
+        #   if pending[id]
+        #     event = data.merge (pending[id] || {})
 
-            ins.execute(
-              event[:exit_status],
-              event[:started_at],
-              event[:ended_at],
-              event[:log_id],
-              event[:ip],
-              "#{DateTime.parse(event[:ended_at]).strftime("%Y-%m-%d")} #{event[:ip]}",
-              event[:url],
-              event[:controller],
-              event[:html_verb],
-              event[:status],
-              event[:duration_total_ms],
-              event[:duration_views_ms],
-              event[:duration_ar_ms],
-              event[:allocations],
-              event[:comment]
-            )
+        #     ins.execute(
+        #       event[:exit_status],
+        #       event[:started_at],
+        #       event[:ended_at],
+        #       event[:log_id],
+        #       event[:ip],
+        #       "#{DateTime.parse(event[:ended_at]).strftime("%Y-%m-%d")} #{event[:ip]}",
+        #       event[:url],
+        #       event[:controller],
+        #       event[:html_verb],
+        #       event[:status],
+        #       event[:duration_total_ms],
+        #       event[:duration_views_ms],
+        #       event[:duration_ar_ms],
+        #       event[:allocations],
+        #       event[:comment]
+        #     )
 
-            pending.delete(id)
-          end
-        end
+        #     pending.delete(id)
+        #   end
+        # end
 
       end
       
@@ -189,6 +189,7 @@ module LogSense
     URL = /(?<url>[^"]+)/
     IP = /(?<ip>[0-9.]+)/
     STATUS = /(?<status>[0-9]+)/
+    STATUS_IN_WORDS = /(OK|Unauthorized|Found|Internal Server Error|Bad Request|Method Not Allowed|Request Timeout|Not Implemented|Bad Gateway|Service Unavailable)/
     MSECS = /[0-9.]+/
 
     # I, [2021-10-19T08:16:34.343858 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Started GET "/grow/people/471" for 217.77.80.35 at 2021-10-19 08:16:34 +0000
@@ -209,11 +210,15 @@ module LogSense
       end
     end
 
+    # TODO: Add regexps for the performance data (Views ...). We have three cases (view, active records, allocations), (views, active records), (active records, allocations)
     # I, [2021-10-19T08:16:34.712331 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Completed 200 OK in 367ms (Views: 216.7ms | ActiveRecord: 141.3ms | Allocations: 168792)
-    COMPLETED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Completed #{STATUS} [^ ]+ in (?<total>#{MSECS})ms \(Views: (?<views>#{MSECS})ms \| ActiveRecord: (?<arec>#{MSECS})ms \| Allocations: (?<alloc>[0-9]+)\)/
+    # I, [2021-12-09T16:53:52.657727 #2735058]  INFO -- : [0064e403-9eb2-439d-8fe1-a334c86f5532] Completed 200 OK in 13ms (Views: 11.1ms | ActiveRecord: 1.2ms)
+    # I, [2021-12-06T14:28:19.736545 #2804090]  INFO -- : [34091cb5-3e7b-4042-aaf8-6c6510d3f14c] Completed 500 Internal Server Error in 66ms (ActiveRecord: 8.0ms | Allocations: 24885)
+    COMPLETED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Completed #{STATUS} #{STATUS_IN_WORDS} in (?<total>#{MSECS})ms \((Views: (?<views>#{MSECS})ms \| )?ActiveRecord: (?<arec>#{MSECS})ms( \| Allocations: (?<alloc>[0-9]+))?\)/
 
     def self.match_and_process_completed line
       matchdata = (COMPLETED_REGEXP.match line)
+      # exit_status = matchdata[:status].to_i == 500 ? "E" : "I"
       if matchdata
         {
           exit_status: "I",
@@ -230,29 +235,6 @@ module LogSense
         nil
       end
     end
-
-    # I, [2021-12-09T16:53:52.657727 #2735058]  INFO -- : [0064e403-9eb2-439d-8fe1-a334c86f5532] Completed 200 OK in 13ms (Views: 11.1ms | ActiveRecord: 1.2ms)
-    COMPLETED_NO_ALLOC_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Completed #{STATUS} [^ ]+ in (?<total>#{MSECS})ms \(Views: (?<views>#{MSECS})ms \| ActiveRecord: (?<arec>#{MSECS})ms\)/
-
-    def self.match_and_process_completed_no_alloc line
-      matchdata = (COMPLETED_NO_ALLOC_REGEXP.match line)
-      if matchdata
-        {
-          exit_status: "I",
-          ended_at: matchdata[:timestamp],
-          log_id: matchdata[:id],
-          status: matchdata[:status],
-          duration_total_ms: matchdata[:total],
-          duration_views_ms: matchdata[:views],
-          duration_ar_ms: matchdata[:arec],
-          allocations: -1,
-          comment: ""
-        }
-      else
-        nil
-      end
-    end
-
 
     # I, [2021-10-19T08:16:34.345162 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Processing by PeopleController#show as HTML
     PROCESSING_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Processing by (?<controller>[^ ]+) as/

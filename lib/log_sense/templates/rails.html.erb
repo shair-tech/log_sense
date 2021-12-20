@@ -258,6 +258,9 @@
             { title: "Fatal Events",
               header: ['Date', 'IP', 'URL', 'Log ID'], rows: @data[:fatal]
             },
+            { title: "Internal Server Errors",
+              header: ['Date', 'Status', 'IP', 'URL', 'Log ID'], rows: @data[:internal_server_error]
+            },
             { title: "IPs",
               header: ["IPs", "Hits", "Country"],
               rows: data[:ips]

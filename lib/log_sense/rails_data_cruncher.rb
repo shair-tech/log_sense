@@ -92,11 +92,12 @@ module LogSense
 
       @statuses = db.execute "SELECT status, count(status) from Event where #{filter} group by status order by status"
 
+      @by_day_5xx = db.execute "SELECT date(started_at), count(started_at) from Event where substr(status, 1,1) == '5' and #{filter} group by date(started_at)"
       @by_day_4xx = db.execute "SELECT date(started_at), count(started_at) from Event where substr(status, 1,1) == '4' and #{filter} group by date(started_at)"
       @by_day_3xx = db.execute "SELECT date(started_at), count(started_at) from Event where substr(status, 1,1) == '3' and #{filter} group by date(started_at)"
       @by_day_2xx = db.execute "SELECT date(started_at), count(started_at) from Event where substr(status, 1,1) == '2' and #{filter} group by date(started_at)"
 
-      @statuses_by_day = (@by_day_2xx + @by_day_3xx + @by_day_4xx).group_by { |x| x[0] }.to_a.map { |x|
+      @statuses_by_day = (@by_day_2xx + @by_day_3xx + @by_day_4xx + @by_day_5xx).group_by { |x| x[0] }.to_a.map { |x|
         [x[0], x[1].map { |y| y[1] }].flatten
       }
 
@@ -104,7 +105,9 @@ module LogSense
 
       @performance = db.execute "SELECT distinct(controller), count(controller), printf(\"%.2f\", min(duration_total_ms)), printf(\"%.2f\", avg(duration_total_ms)), printf(\"%.2f\", max(duration_total_ms)) from Event group by controller order by controller"
 
-      @fatal = db.execute "SELECT strftime(\"%Y-%m-%d %H:%M\", started_at), ip, url, log_id FROM Event WHERE exit_status == 'F'"
+      @fatal = db.execute ("SELECT strftime(\"%Y-%m-%d %H:%M\", started_at), ip, url, log_id FROM Event WHERE exit_status == 'F'") || [[]]
+
+      @internal_server_error = (db.execute "SELECT strftime(\"%Y-%m-%d %H:%M\", started_at), status, ip, url, log_id FROM Event WHERE status is 500") || [[]]
 
       data = {}
       self.instance_variables.each do |variable|
