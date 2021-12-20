@@ -105,10 +105,12 @@ module LogSense
 
       @performance = db.execute "SELECT distinct(controller), count(controller), printf(\"%.2f\", min(duration_total_ms)), printf(\"%.2f\", avg(duration_total_ms)), printf(\"%.2f\", max(duration_total_ms)) from Event group by controller order by controller"
 
-      @fatal = db.execute ("SELECT strftime(\"%Y-%m-%d %H:%M\", started_at), ip, url, log_id FROM Event WHERE exit_status == 'F'") || [[]]
+      @fatal = db.execute ("SELECT strftime(\"%Y-%m-%d %H:%M\", started_at), ip, url, error.description, event.log_id FROM Event JOIN Error ON event.log_id == error.log_id WHERE exit_status == 'F'") || [[]]
 
-      @internal_server_error = (db.execute "SELECT strftime(\"%Y-%m-%d %H:%M\", started_at), status, ip, url, log_id FROM Event WHERE status is 500") || [[]]
+      @internal_server_error = (db.execute "SELECT strftime(\"%Y-%m-%d %H:%M\", started_at), status, ip, url, error.description, event.log_id FROM Event JOIN Error ON event.log_id == error.log_id WHERE status is 500") || [[]]
 
+      @error = (db.execute "SELECT log_id, context, description, count(log_id) from Error GROUP BY description") || [[]]
+      
       data = {}
       self.instance_variables.each do |variable|
         var_as_symbol = variable.to_s[1..-1].to_sym

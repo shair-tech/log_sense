@@ -256,10 +256,16 @@
               rows: @data[:performance]
             },
             { title: "Fatal Events",
-              header: ['Date', 'IP', 'URL', 'Log ID'], rows: @data[:fatal]
+              header: ['Date', 'IP', 'URL', 'Description', 'Log ID'], rows: @data[:fatal],
+              col: "small-12 cell"
             },
             { title: "Internal Server Errors",
-              header: ['Date', 'Status', 'IP', 'URL', 'Log ID'], rows: @data[:internal_server_error]
+              header: ['Date', 'Status', 'IP', 'URL', 'Description', 'Log ID'], rows: @data[:internal_server_error],
+              col: "small-12 cell"
+            },
+            { title: "Errors",
+              header: ['Log ID', 'Context', 'Description', 'Count'], rows: @data[:error],
+              col: "small-12 cell"
             },
             { title: "IPs",
               header: ["IPs", "Hits", "Country"],

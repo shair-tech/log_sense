@@ -26,14 +26,6 @@ table.align_column(2, :right)
 table
 %>
 
-** IP and Country
-
-<%=
-table = Terminal::Table.new headings: ['IP', 'Events', 'Country'], rows: @data[:ips]
-table.align_column(1, :right)
-table
-%>
-
 ** Rails Performance
 
 <%= table = Terminal::Table.new headings: ['Controller', 'Hits', 'Min', 'Avg', 'Max'], rows: @data[:performance]
@@ -46,7 +38,27 @@ table
 
 ** Fatal Events
 
-<%= table = Terminal::Table.new headings: ['Date', 'IP', 'URL', 'Log ID'], rows: @data[:fatal]
+<%= table = Terminal::Table.new headings: ['Date', 'IP', 'URL', 'Description', 'Log ID'], rows: @data[:fatal]
+table
+%>
+
+** Internal Server Errors
+
+<%= table = Terminal::Table.new headings: ['Date', 'Status', 'IP', 'URL', 'Description', 'Log ID'], rows: @data[:internal_server_error]
+table
+%>
+
+** Errors
+
+<%= table = Terminal::Table.new headings: ['Log ID', 'Context', 'Description', 'Count'], rows: @data[:error]
+table
+%>
+
+** IPs
+
+<%=
+table = Terminal::Table.new headings: ['IP', 'Hits', 'Country'], rows: @data[:ips]
+table.align_column(1, :right)
 table
 %>
 

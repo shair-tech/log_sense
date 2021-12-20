@@ -1,4 +1,5 @@
 require 'sqlite3'
+require 'byebug'
 
 module LogSense
   module RailsLogParser
@@ -24,7 +25,7 @@ module LogSense
          allocations INTEGER,
          comment TEXT
       )'
-      
+
       ins = db.prepare("insert into Event(
          exit_status,
          started_at,
@@ -43,6 +44,22 @@ module LogSense
          comment
       )
       values (#{Array.new(15, '?').join(', ')})")
+
+      
+      db.execute 'CREATE TABLE IF NOT EXISTS Error(
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         log_id TEXT,
+         context TEXT,
+         description TEXT
+      )'
+
+      ins_error = db.prepare("insert into Error(
+         log_id,
+         context,
+         description
+      )
+      values (?, ?, ?)")
+      
 
       # requests in the log might be interleaved.
       #
@@ -65,8 +82,14 @@ module LogSense
       # Different requests might be interleaved, of course
       
       File.readlines(filename).each do |line|
-        # We discard LOG_LEVEL != 'I'
-        next if line[0] != 'I' and line[0] != 'F'
+        # I and F for completed requests, [ is for error messages
+        next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
+
+        data = self.match_and_process_error line
+        if data
+          ins_error.execute(data[:log_id], data[:context], data[:description])
+          next
+        end
         
         data = self.match_and_process_start line
         if data
@@ -145,39 +168,6 @@ module LogSense
           end
         end
 
-
-        # data = self.match_and_process_completed_no_alloc line
-        # if data
-        #   id = data[:log_id]
-
-        #   # it might as well be that the first event started before
-        #   # the log.  With this, we make sure we add only events whose
-        #   # start was logged and parsed
-        #   if pending[id]
-        #     event = data.merge (pending[id] || {})
-
-        #     ins.execute(
-        #       event[:exit_status],
-        #       event[:started_at],
-        #       event[:ended_at],
-        #       event[:log_id],
-        #       event[:ip],
-        #       "#{DateTime.parse(event[:ended_at]).strftime("%Y-%m-%d")} #{event[:ip]}",
-        #       event[:url],
-        #       event[:controller],
-        #       event[:html_verb],
-        #       event[:status],
-        #       event[:duration_total_ms],
-        #       event[:duration_views_ms],
-        #       event[:duration_ar_ms],
-        #       event[:allocations],
-        #       event[:comment]
-        #     )
-
-        #     pending.delete(id)
-        #   end
-        # end
-
       end
       
       db
@@ -191,6 +181,27 @@ module LogSense
     STATUS = /(?<status>[0-9]+)/
     STATUS_IN_WORDS = /(OK|Unauthorized|Found|Internal Server Error|Bad Request|Method Not Allowed|Request Timeout|Not Implemented|Bad Gateway|Service Unavailable)/
     MSECS = /[0-9.]+/
+
+    # Error Messages
+    # [584cffcc-f1fd-4b5c-bb8b-b89621bd4921] ActionController::RoutingError (No route matches [GET] "/assets/foundation-icons.svg"):
+    # [fd8df8b5-83c9-48b5-a056-e5026e31bd5e] ActionView::Template::Error (undefined method `all_my_ancestor' for nil:NilClass):
+    # [d17ed55c-f5f1-442a-a9d6-3035ab91adf0] ActionView::Template::Error (undefined method `volunteer_for' for #<DonationsController:0x007f4864c564b8>
+    CONTEXT = /(?<context>[^ ]+Error)/
+    ERROR_REGEXP = /^\[#{ID}\] #{CONTEXT} \((?<description>.*)\):/
+
+    def self.match_and_process_error line
+      matchdata = ERROR_REGEXP.match line
+      if matchdata
+        {
+          log_id: matchdata[:id],
+          context: matchdata[:context],
+          description: matchdata[:description]
+        }
+      else
+        nil
+      end
+    end
+
 
     # I, [2021-10-19T08:16:34.343858 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Started GET "/grow/people/471" for 217.77.80.35 at 2021-10-19 08:16:34 +0000
     STARTED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Started #{VERB} "#{URL}" for #{IP} at/
