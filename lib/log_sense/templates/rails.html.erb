@@ -159,12 +159,14 @@
               "Statuses",
               "Rails Performance",
               "Fatal Events",
+              "Internal Server Errrors",
+              "Errors",
               "IPs",
               "Command Invocation",
               "Performance"
             ].each do |item| %>
-                  <li class="nav-item">
-                    <a href="#<%= item.downcase.gsub(' ', '-') %>" data-close><%= item %></a>
+              <li class="nav-item">
+                <a href="#<%= item.downcase.gsub(' ', '-') %>" data-close><%= item %></a>
               </li>
             <% end %>
           </ul>
@@ -253,7 +255,14 @@
             },
             { title: "Rails Performance",
               header: ['Controller', 'Hits', 'Min', 'Avg', 'Max'],
-              rows: @data[:performance]
+              rows: @data[:performance],
+              vega_spec: {
+                "mark": "point",
+                "encoding": {
+                  "x": {"field": "Avg", "type": "quantitative"},
+                  "y": {"field": "Hits", "type": "quantitative"}
+                },
+              }
             },
             { title: "Fatal Events",
               header: ['Date', 'IP', 'URL', 'Description', 'Log ID'], rows: @data[:fatal],
@@ -305,7 +314,7 @@
                    vegaEmbed('#<%= "plot-#{index}"%>', plot_spec_<%= index %>);
                   </script>
                 <% end %>
-                  <div class="card-section">
+                <div class="card-section">
                   <%= render "output_table.html.erb", report %>
                 </div>
               </article>
