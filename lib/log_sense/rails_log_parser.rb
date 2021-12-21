@@ -185,8 +185,8 @@ module LogSense
     # [584cffcc-f1fd-4b5c-bb8b-b89621bd4921] ActionController::RoutingError (No route matches [GET] "/assets/foundation-icons.svg"):
     # [fd8df8b5-83c9-48b5-a056-e5026e31bd5e] ActionView::Template::Error (undefined method `all_my_ancestor' for nil:NilClass):
     # [d17ed55c-f5f1-442a-a9d6-3035ab91adf0] ActionView::Template::Error (undefined method `volunteer_for' for #<DonationsController:0x007f4864c564b8>
-    CONTEXT = /(?<context>[^ ]+Error)/
-    ERROR_REGEXP = /^\[#{ID}\] #{CONTEXT} \((?<description>.*)\):/
+    EXCEPTION = /[A-Za-z_0-9:]+(Error)?/
+    ERROR_REGEXP = /^\[#{ID}\] (?<context>#{EXCEPTION}) \((?<description>(#{EXCEPTION})?.*)\):/
 
     def self.match_and_process_error line
       matchdata = ERROR_REGEXP.match line
