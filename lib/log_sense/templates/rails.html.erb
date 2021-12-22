@@ -218,24 +218,55 @@
               header: ["Day", "DOW", "Hits"],
               rows: data[:daily_distribution],
               vega_spec: {
-                "mark": {
-                  "type": "line",
-                  "point": {
-                    "filled": false,
-                    "fill": "white"
-                  }
-                },
                 "encoding": {
                   "x": {"field": "Day", "type": "temporal"},
                   "y": {"field": "Hits", "type": "quantitative"}
-                }
+                },
+                "layer": [
+                  {
+                    "mark": {
+                      "type": "line",
+                      "point": {
+                        "filled": false,
+                        "fill": "white"
+                      }
+                    }
+                  },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "align": "left",
+                      "baseline": "middle",
+                      "dx": 5
+                    },
+                    "encoding": {
+                      "text": {"field": "Hits", "type": "quantitative"}
+                    }
+                  }
+                ]
               }
             },
             { title: "Time Distribution",
               header: ["Hour", "Hits"],
               rows: data[:time_distribution],
               vega_spec: {
-                "mark": "bar",
+                "layer": [
+                  {
+                    "mark": "bar",
+                  },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "align": "middle",
+                      "baseline": "top",
+                      "dx": -10,
+                      "yOffset": -15
+                    },
+                    "encoding": {
+                      "text": {"field": "Hits", "type": "quantitative"}
+                    }
+                  }
+                ],
                 "encoding": {
                   "x": {"field": "Hour", "type": "nominal"},
                   "y": {"field": "Hits", "type": "quantitative"}
@@ -246,7 +277,23 @@
               header: ["Status", "Count"],
               rows: data[:statuses],
               vega_spec: {
-                "mark": "bar",
+                "layer": [
+                  {
+                    "mark": "bar"
+                  },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "align": "left",
+                      "baseline": "top",
+                      "dx": -10,
+                      "yOffset": -20
+                    },
+                    "encoding": {
+                      "text": {"field": "Count", "type": "quantitative"}
+                    }
+                  }
+                ],
                 "encoding": {
                   "x": {"field": "Status", "type": "nominal"},
                   "y": {"field": "Count", "type": "quantitative"}
@@ -257,7 +304,11 @@
               header: ['Controller', 'Hits', 'Min', 'Avg', 'Max'],
               rows: @data[:performance],
               vega_spec: {
-                "mark": "point",
+                "layer": [
+                  {
+                    "mark": "point"
+                  },
+                ],
                 "encoding": {
                   "x": {"field": "Avg", "type": "quantitative"},
                   "y": {"field": "Hits", "type": "quantitative"}

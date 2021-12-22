@@ -224,24 +224,93 @@
               header: ["Day", "DOW", "Hits", "Visits", "Size"],
               rows: data[:daily_distribution],
               vega_spec: {
-                "mark": {
-                  "type": "line",
-                  "point": {
-                    "filled": false,
-                    "fill": "white"
-                  }
-                },
+                "layer": [
+                  {
+                    "mark": {
+                      "type": "line",
+                      "point": {
+                        "filled": false,
+                        "fill": "white"
+                      }
+                    },
+                    "encoding": {
+                      "y": {"field": "Hits", "type": "quantitative"}
+                    }
+                  },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "color": "#3E5772",
+                      "align": "middle",
+                      "baseline": "top",
+                      "dx": -10,
+                      "yOffset": -15
+                    },
+                    "encoding": {
+                      "text": {"field": "Hits", "type": "quantitative"},
+                      "y": {"field": "Hits", "type": "quantitative"}
+                    }
+                  },
+
+                  {
+                    "mark": {
+                      "type": "line",
+                      "color": "#A52A2A",
+                      "point": {
+                        "color": "#A52A2A",
+                        "filled": false,
+                        "fill": "white",
+                      }
+                    },
+                    "encoding": {
+                      "y": {"field": "Visits", "type": "quantitative"}
+                    }
+                  },
+
+                  {
+                    "mark": {
+                      "type": "text",
+                      "color": "#A52A2A",
+                      "align": "middle",
+                      "baseline": "top",
+                      "dx": -10,
+                      "yOffset": -15
+                    },
+                    "encoding": {
+                      "text": {"field": "Visits", "type": "quantitative"},
+                      "y": {"field": "Visits", "type": "quantitative"}
+                    }
+                  },
+                  
+                ],
                 "encoding": {
                   "x": {"field": "Day", "type": "temporal"},
-                  "y": {"field": "Hits", "type": "quantitative"}
                 }
               }
+              
             },
             { title: "Time Distribution",
               header: ["Hour", "Hits", "Visits", "Size"],
               rows: data[:time_distribution],
               vega_spec: {
-                "mark": "bar",
+                "layer": [
+                  {
+                    "mark": "bar"
+                  },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "align": "middle",
+                      "baseline": "top",
+                      "dx": -10,
+                      "yOffset": -15
+                    },
+                    "encoding": {
+                      "text": {"field": "Hits", "type": "quantitative"},
+                      "y": {"field": "Hits", "type": "quantitative"}
+                    }
+                  },
+                ],
                 "encoding": {
                   "x": {"field": "Hour", "type": "nominal"},
                   "y": {"field": "Hits", "type": "quantitative"}
@@ -299,7 +368,21 @@
               header: ["Browser", "Hits", "Visits", "Size"],
               rows: data[:browsers],
               vega_spec: {
-                "mark": "bar",
+                "layer": [
+                  { "mark": "bar" },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "align": "middle",
+                      "baseline": "top",
+                      "dx": -10,
+                      "yOffset": -15
+                    },
+                    "encoding": {
+                      "text": {"field": "Hits", "type": "quantitative"},
+                    }
+                  },
+                ],
                 "encoding": {
                   "x": {"field": "Browser", "type": "nominal"},
                   "y": {"field": "Hits", "type": "quantitative"}
@@ -310,7 +393,21 @@
               header: ["Platform", "Hits", "Visits", "Size"],
               rows: data[:platforms],
               vega_spec: {
-                "mark": "bar",
+                "layer": [
+                  { "mark": "bar" },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "align": "middle",
+                      "baseline": "top",
+                      "dx": -10,
+                      "yOffset": -15
+                    },
+                    "encoding": {
+                      "text": {"field": "Hits", "type": "quantitative"},
+                    }
+                  },
+                ],
                 "encoding": {
                   "x": {"field": "Platform", "type": "nominal"},
                   "y": {"field": "Hits", "type": "quantitative"}
