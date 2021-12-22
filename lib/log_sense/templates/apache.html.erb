@@ -422,7 +422,7 @@
             <% @reports.each_with_index do |report, index| %>
               <article class="card cell <%= report[:col] || "small-12 large-6" %>" >
                 <div class="card-divider">
-                  <h2>
+                  <h2 id="<%= report[:title].downcase.gsub(' ', '-') %>">
                     <%= report[:title] %>
                   </h2>
                 </div>
