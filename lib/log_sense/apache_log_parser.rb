@@ -1,4 +1,3 @@
-require 'apache_log/parser'
 require 'sqlite3'
 require 'browser'
 
@@ -50,21 +49,20 @@ module LogSense
                 platform_version)
               values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
 
-      parser = ApacheLog::Parser.new(options[:format] || 'combined')
+      parser = ApacheLogLineParser.new
       
       content.each do |line|
         begin
           hash = parser.parse line
-
           ua = Browser.new(hash[:user_agent], accept_language: "en-us")
           ins.execute(
-            hash[:datetime].iso8601,
-            hash[:remote_host],
-            hash[:user],
-            hash[:datetime].strftime("%Y-%m-%d") + " " + hash[:remote_host] + " " + hash[:user_agent],
-            hash[:request][:method],
-            hash[:request][:path],
-            (hash[:request][:path] ? File.extname(hash[:request][:path]) : ""),
+            DateTime.parse("#{hash[:date]}T#{hash[:time]}").iso8601,
+            hash[:ip],
+            hash[:userid],
+            unique_visitor_id(hash),
+            hash[:method],
+            hash[:url],
+            (hash[:url] ? File.extname(hash[:url]) : ""),
             hash[:status],
             hash[:size].to_i,
             hash[:referer],
@@ -75,12 +73,16 @@ module LogSense
             (ua.platform.name || ""),
             (ua.platform.version || "")
           )
-        rescue
-          STDERR.puts "Apache Log parser error: could not parse #{line}"
+        rescue StandardError => e
+          STDERR.puts e.message
         end
       end
       
       db
+    end
+
+    def self.unique_visitor_id hash
+      "#{hash[:date]} #{hash[:ip]} #{hash[:user_agent]}"
     end
 
   end

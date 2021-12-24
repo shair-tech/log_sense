@@ -1,5 +1,6 @@
 require 'log_sense/version'
 require 'log_sense/options_parser'
+require 'log_sense/apache_log_line_parser'
 require 'log_sense/apache_log_parser'
 require 'log_sense/apache_data_cruncher'
 require 'log_sense/rails_log_parser'
