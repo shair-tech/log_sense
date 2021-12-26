@@ -4,22 +4,26 @@ def slugify string
 end
 %>
 
-<table id="<%= slugify(title || "") %>-table" class="table unstriped data-table <%= slugify(title || "") %>">
+<table id="table-<%= index %>" class="table unstriped">
   <thead>
     <tr>
-      <% header.each do |heading| %>
-        <th class="<%= slugify(heading) %>"><%= heading %></th>
+      <% report[:header].each do |header| %>
+        <th><%= header %></th>
       <% end %>
     </tr>
   </thead>
   <tbody>
-    <% rows.each do |row| %>
-      <tr>
-        <% row.each_with_index do |cell, i| %>
-          <td class="<%= slugify (header[i] || "") %>"><%= cell %></td>
-        <% end %>
-      </tr>
-    <% end %>
   </tbody>
 </table>
-
+<script>
+ $(document).ready(function(){
+   $('#table-<%= index %>').dataTable({
+     data: data_<%= index %>,
+     columns: [
+       <% report[:header].each do |header| %>
+       { data: '<%= header %>', className: '<%= slugify(header) %>' },
+       <% end %>
+     ]
+   });
+ });
+</script>

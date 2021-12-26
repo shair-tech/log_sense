@@ -1,0 +1,12 @@
+<script>
+ /* this is used both by Vega and DataTable */
+ data_<%= index %> = [
+   <% report[:rows].each do |row| %>
+   {
+     <% report[:header].each_with_index do |h, i| %>
+     "<%= h %>": <%= (row[i].class == Integer or row[i].class == Float) ? row[i] : "\"#{row[i]}\"" %>,
+     <% end %>
+   },
+   <% end %>
+ ]
+</script>

@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.css"/>
 
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/vega@5.21.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.2.0"></script>
@@ -341,7 +343,7 @@
                     <%= report[:title] %>
                   </h2>
                 </div>
-
+                <%= render "report_data.html.erb", report: report, index: index %>
                 <% if report[:vega_spec] %>
                   <div id="<%= "plot-#{index}" %>"></div>
                   <script>
@@ -351,22 +353,14 @@
                        width: "container",
                        description: "<%= report[:title] %>",
                        data: {
-                         values: [
-                           <% report[:rows].each do |row| %>
-                           {
-                             <% report[:header].each_with_index do |h, i| %>
-                             "<%= h %>": <%= (row[i].class == Integer or row[i].class == Float) ? row[i] : "\"#{row[i]}\"" %>,
-                             <% end %>
-                           },
-                           <% end %>
-                         ]
+                         values: data_<%= index %>
                        },
                    });
                    vegaEmbed('#<%= "plot-#{index}"%>', plot_spec_<%= index %>);
                   </script>
                 <% end %>
                 <div class="card-section">
-                  <%= render "output_table.html.erb", report %>
+                  <%= render "output_table.html.erb", report: report, index: index %>
                 </div>
               </article>
             <% end %>
@@ -392,9 +386,7 @@
         </section>
       </div>
 
-      <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script type="text/javascript" src="js/vendor/what-input.js"></script>
-      <script type="text/javascript" src="https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>    
       <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/js/foundation.min.js" crossorigin="anonymous"></script>
       <script>
