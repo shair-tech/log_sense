@@ -2,6 +2,10 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.3.3 and 1.3.4
+
+- [Gem] Moved repository to Github and fixes to gemspec
+
 * 1.3.2
 
 - [Code] HTML reports now generate JSON data which is shared between
