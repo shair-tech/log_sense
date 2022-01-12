@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.description   = %q{Generate analystics in HTML, txt, and SQLite format from an Apache and Rails log files.}
   spec.homepage      = "https://www.ict4g.net/gitea/adolfo/log_sense"
   spec.license       = "MIT"
-  spec.required_ruby_version = Gem::Requirement.new(">= 2.3.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 2.6.9")
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org/"
 

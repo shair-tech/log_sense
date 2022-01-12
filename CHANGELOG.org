@@ -2,13 +2,20 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
-* Changes in log_sense 1.1.2
-  <2021-12-17 Fri>
+* 1.3.2
 
-- Added Rails Log HTML output
+- [Code] HTML reports now generate JSON data which is shared between
+  DataTable and Vega Light: this should reduce page size and loading
+  time of HTML reports
+- [Doc] Added screenshot and fixed some text
+- [Doc] Fixes requirements on Ruby version
 
-* Changes in log_sense 1.1.1 and earlier
-  <2021-12-17 Fri>
+* 1.3.1
 
-- In the Git commit messages (not very informative, I am afraid).
+- [Code] Strengthened parsing of Apache Logs (added WebDav and other methods)
 
+* 1.3.0
+
+- [Code] Removed dependency from =apache_log-parser= and implemented our own
+  parser for the combined format.
+  
