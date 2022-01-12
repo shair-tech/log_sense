@@ -43,7 +43,7 @@ stored on your computer and owned by you (like it should be)[fn:1].
 LogSense is also inspired by *static websites generators*: statistics
 are generated from the command line and accessed as static HTML files.
 LogSense thus significantly reduces the attack surface of your
-webserver and installation headaches.  We have, for instance, a Cron
+web server and installation headaches.  We have, for instance, a cron
 job running on our servers, generating statistics at night.  The
 generated files are then made available on a private area on the web.
 
@@ -76,22 +76,23 @@ generated files are then made available on a private area on the web.
       -v, --version                    Prints version information
       -h, --help                       Prints this help
 
-  This is version 1.1.1
+  This is version 1.3.1
 
   Output formats
-  apache parsing can produce the following outputs:
-    - sqlite
-    - html
   rails parsing can produce the following outputs:
     - sqlite
     - txt
+    - html
+  apache parsing can produce the following outputs:
+    - sqlite
+    - html
   #+end_example
 
 Examples:
 
 #+begin_example sh
 log_sense -f apache -i access.log -t txt > access-data.txt
-log_sense -f rails -i production.log -t html > performance.txt
+log_sense -f rails -i production.log -t html -o performance.txt
 #+end_example
 
 * Change Log
