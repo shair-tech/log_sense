@@ -4,7 +4,7 @@
    <% report[:rows].each do |row| %>
    {
      <% report[:header].each_with_index do |h, i| %>
-     "<%= h %>": <%= (row[i].class == Integer or row[i].class == Float) ? row[i] : "\"#{row[i]}\"" %>,
+     "<%= h %>": <%= (row[i].class == Integer or row[i].class == Float) ? row[i] : "\"#{Emitter::escape_javascript(row[i] || '')}\"" %>,
      <% end %>
    },
    <% end %>

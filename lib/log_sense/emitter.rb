@@ -40,5 +40,12 @@ module LogSense
       ERB.new(erb_template).result(OpenStruct.new(vars).instance_eval { binding })
     end
 
+    def self.escape_javascript(string)
+      js_escape_map = { "\\" => "\\\\", "</" => '<\/', "\r\n" => '\n', "\n" => '\n', "\r" => '\n', '"' => '\\"', "'" => "\\'", "`" => "\\`", "$" => "\\$" }
+      js_escape_map.each do |k, v|
+        string = string.gsub(k, v)
+      end
+      string
+    end
   end
 end

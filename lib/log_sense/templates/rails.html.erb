@@ -308,7 +308,24 @@
               vega_spec: {
                 "layer": [
                   {
-                    "mark": "point"
+                    "mark": {
+                      "type": "point",
+                      "name": "data_points"
+                    }
+                  },
+                  {
+                    "mark": {
+                      "name": "label",
+                      "type": "text",
+                      "align": "left",
+                      "baseline": "middle",
+                      "dx": 5,
+                      "yOffset": 0
+                    },
+                    "encoding": {
+                      "text": {"field": "Controller"},
+                      "fontSize": {"value": 8}
+                    },
                   },
                 ],
                 "encoding": {
