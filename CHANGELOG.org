@@ -2,6 +2,25 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.4.0
+
+- [User] The Apache Log report now organizes page requests in four
+  tables:
+  - success on HTML pages
+  - success on other resources
+  - failures on HTML pages
+  - failures on other resources
+- [User] Increased the default limit of pages in reports to 900
+- [User] The return status in now included in the page and resources
+  reports
+- [User] The "Attack" table has been removed, since the data can be
+  gotten from the previous tables
+- [Fixed] HTML pages are those with extension ".html" and ".htm"
+- [Fixed] Wrong data on summary table of the apache report has
+  been fixed
+- [Fixed] Better JavaScript escaping to avoid log poisoning
+- [Fixed] Strengthened the Apache log parser
+
 * 1.3.3 and 1.3.4
 
 - [Gem] Moved repository to Github and fixes to gemspec
