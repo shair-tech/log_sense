@@ -8,7 +8,7 @@ module LogSense
     # parse command line options
     #
     def self.parse options
-      limit = 30
+      limit = 900
       args = {} 
 
       opt_parser = OptionParser.new do |opts|
