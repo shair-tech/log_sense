@@ -494,10 +494,10 @@
                     <th>IP</th>
                     <th>
                       <div class="grid-x grid-margin-x">
-                        <div class="col-2 cell">
+                        <div class="small-2 cell">
                           Day
                         </div>
-                        <div class="col-10 cell">
+                        <div class="small-10 cell">
                           Resources
                         </div>
                       </div>
@@ -513,10 +513,10 @@
                       <td class="streaks">
                         <div class="grid-x grid-margin-x">
                           <% date_urls.group_by { |x| x[1] }.each do |date, urls| %>
-                            <div class="col-2 cell">
+                            <div class="small-2 cell">
                               <span class="date"><%= date %></span>
                             </div>
-                            <div class="col-10 cell grid-x">
+                            <div class="small-10 cell grid-x">
                               <div class="small-12 medium-6 cell">
                                 <span class="res-title">HTML:</span>
                                 <ul>
@@ -526,7 +526,7 @@
                                 </ul>
                               </div>                              
                               <div class=" small-12 medium-6 cell">
-                                <span class="res-title small-12 medium-6 cell">Other Resources:</span>
+                                <span class="res-title">Other Resources:</span>
                                 <ul>
                                   <% urls.map { |x| x[2] }.compact.sort.select { |x| x and not x.match /.*\.html?/ }.each do |url| %>
                                     <li><%= url %></li>
