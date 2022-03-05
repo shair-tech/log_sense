@@ -157,10 +157,10 @@
                   "Log Structure",
                   "Daily Distribution",
                   "Time Distribution",
-                  "Most Requested Pages",
-                  "Most Requested Resources",
-                  "404 on HTML Files",
-                  "404 on other Resources",
+                  "20_ and 30_ on HTML pages",
+                  "20_ and 30_ on other resources",
+                  "40_ and 50_ on HTML pages",
+                  "40_ and 50_ on other Resources",
                   "Attacks",
                   "Statuses",
                   "Daily Statuses",
@@ -319,14 +319,32 @@
                 }
               }
             },
-            { title: "Most Requested Pages",
-              header: ["Path", "Hits", "Visits", "Size"],
+            { title: "20_ and 30_ on HTML pages",
+              header: ["Path", "Hits", "Visits", "Size", "Status"],
               rows: data[:most_requested_pages],
+              datatable_options: "columnDefs: [{ width: \"40%\", targets: 0 } ]"
             },
-            { title: "Most Requested Resources", header: ["Path", "Hits", "Visits", "Size"], rows: data[:most_requested_resources] },
-            { title: "404 on HTML Files", header: ["Path", "Hits", "Visits"], rows: data[:missed_pages] },
-            { title: "404 on other Resources", header: ["Path", "Hits", "Visits"], rows: data[:missed_resources] },
-            { title: "Attacks", header: ["Path", "Hits", "Visits"], rows: data[:attacks], col: "small-12 cell" },
+            { title: "20_ and 30_ on other resources",
+              header: ["Path", "Hits", "Visits", "Size", "Status"],
+              rows: data[:most_requested_resources],
+              datatable_options: "columnDefs: [{ width: \"40%\", targets: 0 } ]"
+            },
+            { title: "40_ and 50_x on HTML pages",
+              header: ["Path", "Hits", "Visits", "Status"],
+              rows: data[:missed_pages],
+              datatable_options: "columnDefs: [{ width: \"40%\", targets: 0 } ]"
+            },
+            { title: "40_ and 50_ on other resources",
+              header: ["Path", "Hits", "Visits", "Status"],
+              rows: data[:missed_resources],
+              datatable_options: "columnDefs: [{ width: \"40%\", targets: 0 } ]"
+            },
+            { title: "Attacks",
+              header: ["Path", "Hits", "Visits", "Status"],
+              rows: data[:attacks],
+              col: "small-12 cell",
+              datatable_options: "columnDefs: [{ width: \"40%\", targets: 0 } ]"
+            },
             { title: "Statuses",
               header: ["Status", "Count"],
               rows: data[:statuses],
@@ -513,26 +531,25 @@
                       <td class="streaks">
                         <div class="grid-x grid-margin-x">
                           <% date_urls.group_by { |x| x[1] }.each do |date, urls| %>
-                            <div class="small-2 cell">
+                            <div class="small-12 medium-1 cell">
                               <span class="date"><%= date %></span>
                             </div>
-                            <div class="small-10 cell grid-x">
-                              <div class="small-12 medium-6 cell">
-                                <span class="res-title">HTML:</span>
-                                <ul>
-                                  <% urls.map { |x| x[2] }.compact.select { |x| x.match /.*\.html?/ }.each do |url| %>
-                                    <li><%= Emitter::escape_javascript url %></li>
-                                  <% end %>
-                                </ul>
-                              </div>                              
-                              <div class=" small-12 medium-6 cell">
-                                <span class="res-title">Other Resources:</span>
-                                <ul>
-                                  <% urls.map { |x| x[2] }.compact.sort.select { |x| x and not x.match /.*\.html?/ }.each do |url| %>
-                                    <li><%= Emitter::escape_javascript url %></li>
-                                  <% end %>
-                                </ul>
-                              </div>
+                            <div class="small-12 medium-5 cell">
+                              <span class="res-title">HTML:</span>
+                              <% unique_with_count = urls.map { |x| x[2] }.compact.group_by{|e| e}.map{|k, v| [k, v.length]} %>
+                              <ul class="no-bullet">
+                                <% unique_with_count.select { |x| x[0].match /.*\.html?/ }.each do |url| %>
+                                  <li>[<%= url[1] %>] <%= Emitter::escape_javascript url[0] %></li>
+                                <% end %>
+                              </ul>
+                            </div>                              
+                            <div class=" small-12 medium-5 cell">
+                              <span class="res-title">Other Resources:</span>
+                              <ul class="no-bullet">
+                                <% unique_with_count.select { |x| x[0] and ! x[0].match /.*\.html?/ }.each do |url| %>
+                                  <li>[<%= url[1] %>] <%= Emitter::escape_javascript url[0] %></li>
+                                <% end %>
+                              </ul>
                             </div>
                           <% end %>
                         </div>
