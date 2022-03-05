@@ -33,20 +33,19 @@ module LogSense
 
     HTTP_METHODS=/GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH/
     WEBDAV_METHODS=/COPY|LOCK|MKCOL|MOVE|PROPFIND|PROPPATCH|UNLOCK/
-    OTHER_METHODS=/SEARCH|REPORT/
+    OTHER_METHODS=/SEARCH|REPORT|PRI|HEAD\/robots.txt/
     METHOD=/(?<method>#{HTTP_METHODS}|#{WEBDAV_METHODS}|#{OTHER_METHODS})/
-    PROTOCOL=/(?<protocol>HTTP\/[0-9]\.[0-9])/
+    PROTOCOL=/(?<protocol>HTTP\/[0-9]\.[0-9]|-|.*)/
     URL=/(?<url>[^ ]+)/
-    REFERER=/(?<referer>[^ ]+)/
+    REFERER=/(?<referer>[^"]*)/
     RETURN_CODE=/(?<status>[1-5][0-9][0-9])/
     SIZE=/(?<size>[0-9]+|-)/
-
-    USER_AGENT = /(?<user_agent>[^"]+)/
+    USER_AGENT = /(?<user_agent>[^"]*)/
 
     attr_reader :format
 
     def initialize 
-      @format = /#{IP} #{IDENT} #{USERID} \[#{TIMESTAMP}\] "#{METHOD} #{URL} #{PROTOCOL}" #{RETURN_CODE} #{SIZE} "#{REFERER}" "#{USER_AGENT}"/
+      @format = /#{IP} #{IDENT} #{USERID} \[#{TIMESTAMP}\] "(#{METHOD} #{URL} #{PROTOCOL}|-|.+)" #{RETURN_CODE} #{SIZE} "#{REFERER}" "#{USER_AGENT}"/
     end
 
     def parse line
