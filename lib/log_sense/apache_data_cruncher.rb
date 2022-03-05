@@ -90,8 +90,8 @@ module LogSense
       @daily_distribution = db.execute "SELECT date(datetime), #{human_readable_day}, count(datetime), count(distinct(unique_visitor)), #{human_readable_size} from LogLine  where #{filter} group by date(datetime)"
       @time_distribution = db.execute "SELECT strftime('%H', datetime), count(datetime), count(distinct(unique_visitor)), #{human_readable_size} from LogLine  where #{filter} group by strftime('%H', datetime)"
 
-      good_statuses = "(status like '2__' or '3__')" 
-      bad_statuses = "(status like '4__' or '5__')"
+      good_statuses = "(status like '2%' or status like '3%')"
+      bad_statuses = "(status like '4%' or status like '5%')"
       html_page = "(extension like '.htm%')"
       non_html_page = "(extension not like '.htm%')"
 
@@ -101,11 +101,6 @@ module LogSense
       @missed_pages = db.execute "SELECT path, count(path), count(distinct(unique_visitor)), status from LogLine where #{bad_statuses} and #{html_page} and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
       @missed_resources = db.execute "SELECT path, count(path), count(distinct(unique_visitor)), status from LogLine where #{bad_statuses} and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
 
-      unreasonable_requests = [ ".html", ".css", ".js", ".jpg", ".svg", ".png", ".woff", ".xml", ".ttf", ".ico", ".pdf", ".htm", ".txt", ".org" ].map {  |x|
-        "extension != '#{x}'"
-      }.join " and "
-
-      @attacks = db.execute "SELECT path, count(path), count(distinct(unique_visitor)), status from LogLine where #{bad_statuses} and #{filter} and (#{unreasonable_requests}) group by path order by count(path) desc"
       @statuses = db.execute "SELECT status, count(status) from LogLine where #{filter} group by status order by status"
 
       @by_day_4xx = db.execute "SELECT date(datetime), count(datetime) from LogLine where substr(status, 1,1) == '4' and #{filter} group by date(datetime)"
