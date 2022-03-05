@@ -41,7 +41,7 @@ module LogSense
     end
 
     def self.escape_javascript(string)
-      js_escape_map = { "\\" => "\\\\", "</" => '<\/', "\r\n" => '\n', "\n" => '\n', "\r" => '\n', '"' => '\\"', "'" => "\\'", "`" => "\\`", "$" => "\\$" }
+      js_escape_map = { "<script" => "&lt;script", "</script" => "&lt;script", "</" => '<\/', "\\" => "\\\\", "\r\n" => '\\r\\n', "\n" => '\\n', "\r" => '\\r', '"' => '\\"', "'" => "\\'", "`" => "\\`", "$" => "\\$" }
       js_escape_map.each do |k, v|
         string = string.gsub(k, v)
       end
