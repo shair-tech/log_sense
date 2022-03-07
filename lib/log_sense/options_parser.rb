@@ -42,8 +42,12 @@ module LogSense
           args[:to_date] = n
         end
 
-        opts.on("-lN", "--limit=N", Integer, "Number of entries to show (defaults to #{limit})") do |n|
+        opts.on("-lN", "--limit=N", Integer, "Limit to the N most requested resources (defaults to #{limit})") do |n|
           args[:limit] = n
+        end
+
+        opts.on("-wWIDTH", "--width=WIDTH", Integer, "Width of URL and description columns in textual reports") do |n|
+          args[:width] = n
         end
 
         opts.on("-cPOLICY", "--crawlers=POLICY", String, "Decide what to do with crawlers (applies to Apache Logs)") do |n|

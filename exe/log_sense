@@ -43,7 +43,7 @@ end
 
 @db = parser_klass.parse @input_file
 
-if @options[:output_format]  == "sqlite"
+if @options[:output_format] == "sqlite"
   ddb = SQLite3::Database.new(@output_file || "db.sqlite3")
   b = SQLite3::Backup.new(ddb, 'main', @db, 'main')
   b.step(-1) #=> DONE
@@ -60,7 +60,8 @@ else
                         log_file: @input_file,
                         started_at: @started_at,
                         ended_at: @ended_at,
-                        duration: @duration
+                        duration: @duration,
+                        width: @options[:width]
                       })
 
   #

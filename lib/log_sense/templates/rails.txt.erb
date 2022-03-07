@@ -38,14 +38,18 @@ table
 
 ** Fatal Events
 
-<%= table = Terminal::Table.new headings: ['Date', 'IP', 'URL', 'Description', 'Log ID'], rows: @data[:fatal]
-table
+<%= rows = @data[:fatal]
+    rows = rows.map { |x| x[2] = x[2][0..@data[:width]];  x[3] = x[3][0..@data[:width]]; x } if @data[:width]
+    table = Terminal::Table.new headings: ['Date', 'IP', 'URL', 'Description', 'Log ID'], rows: rows
+    table
 %>
 
 ** Internal Server Errors
 
-<%= table = Terminal::Table.new headings: ['Date', 'Status', 'IP', 'URL', 'Description', 'Log ID'], rows: @data[:internal_server_error]
-table
+<%= rows = @data[:internal_server_error]
+    rows = rows.map { |x| x[2] = x[2][0..@data[:width]]; x[3] = x[3][0..@data[:width]]; x } if @data[:width]
+    table = Terminal::Table.new headings: ['Date', 'Status', 'IP', 'URL', 'Description', 'Log ID'], rows: rows
+    table
 %>
 
 ** Errors
