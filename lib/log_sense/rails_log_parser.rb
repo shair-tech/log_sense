@@ -2,8 +2,8 @@ require 'sqlite3'
 
 module LogSense
   module RailsLogParser
-    def self.parse filenames_or_stdin, options = {}
-      db = SQLite3::Database.new ":memory:"
+    def self.parse(streams, options = {})
+      db = SQLite3::Database.new ':memory:'
       db.execute 'CREATE TABLE IF NOT EXISTS Event(
          id INTEGER PRIMARY KEY AUTOINCREMENT,
          exit_status TEXT,
@@ -46,7 +46,6 @@ module LogSense
       )
       values (#{Array.new(17, '?').join(', ')})")
 
-      
       db.execute 'CREATE TABLE IF NOT EXISTS Error(
          id INTEGER PRIMARY KEY AUTOINCREMENT,
          log_id TEXT,
@@ -64,7 +63,6 @@ module LogSense
          line_number
       )
       values (?, ?, ?, ?, ?)")
-      
 
       # requests in the log might be interleaved.
       #
@@ -85,40 +83,42 @@ module LogSense
       # and they appears in the order shown above: started, processing, ...
       #
       # Different requests might be interleaved, of course
-      
-      filenames_or_stdin.each do |input|
-        (input.class == String ? File.readlines(input) : input).each_with_index do |line, line_number|
+      #
+      streams.each do |stream|
+        stream.readlines.each_with_index do |line, line_number|
+          filename = stream == $stdin ? "stdin" : stream.path
+
           # I and F for completed requests, [ is for error messages
           next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
 
-          data = self.match_and_process_error line
+          data = match_and_process_error line
           if data
             ins_error.execute(data[:log_id], data[:context], data[:description], filename, line_number)
             next
           end
           
-          data = self.match_and_process_start line
+          data = match_and_process_start line
           if data
             id = data[:log_id]
             pending[id] = data.merge(pending[id] || {})
             next
           end
 
-          data = self.match_and_process_processing_by line
+          data = match_and_process_processing_by line
           if data
             id = data[:log_id]
             pending[id] = data.merge(pending[id] || {})
             next
           end
 
-          data = self.match_and_process_fatal line
+          data = match_and_process_fatal line
           if data
             id = data[:log_id]
             # it might as well be that the first event started before
             # the log.  With this, we make sure we add only events whose
             # start was logged and parsed
             if pending[id]
-              event = data.merge (pending[id] || {})
+              event = data.merge(pending[id] || {})
 
               ins.execute(
                 event[:exit_status],
@@ -136,7 +136,7 @@ module LogSense
                 event[:duration_ar_ms],
                 event[:allocations],
                 event[:comment],
-                (input.class == String ? input : "stdin"),
+                filename,
                 line_number
               )
 
@@ -170,7 +170,7 @@ module LogSense
                 event[:duration_ar_ms],
                 event[:allocations],
                 event[:comment],
-                (input.class == String ? input : "stdin"),
+                filename,
                 line_number
               )
 
@@ -237,7 +237,7 @@ module LogSense
     # I, [2021-12-06T14:28:19.736545 #2804090]  INFO -- : [34091cb5-3e7b-4042-aaf8-6c6510d3f14c] Completed 500 Internal Server Error in 66ms (ActiveRecord: 8.0ms | Allocations: 24885)
     COMPLETED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Completed #{STATUS} #{STATUS_IN_WORDS} in (?<total>#{MSECS})ms \((Views: (?<views>#{MSECS})ms \| )?ActiveRecord: (?<arec>#{MSECS})ms( \| Allocations: (?<alloc>[0-9]+))?\)/
 
-    def self.match_and_process_completed line
+    def self.match_and_process_completed(line)
       matchdata = (COMPLETED_REGEXP.match line)
       # exit_status = matchdata[:status].to_i == 500 ? "E" : "I"
       if matchdata
@@ -278,7 +278,7 @@ module LogSense
     # F, [2021-12-04T00:34:05.839269 #2735058] FATAL -- : [3a16162e-a6a5-435e-a9d8-c4df5dc0f728] actionpack (5.2.4.4) lib/action_dispatch/middleware/debug_exceptions.rb:65:in `call'
     FATAL_REGEXP = /F, \[#{TIMESTAMP} #[0-9]+\] FATAL -- : \[#{ID}\] (?<comment>.*)$/
 
-    def self.match_and_process_fatal line
+    def self.match_and_process_fatal(line)
       matchdata = FATAL_REGEXP.match line
       if matchdata
         {
@@ -292,11 +292,8 @@ module LogSense
     end
 
     # generate a unique visitor id from an event
-    def self.unique_visitor_id event
+    def self.unique_visitor_id(event)
       "#{DateTime.parse(event[:started_at] || event[:ended_at] || "1970-01-01").strftime("%Y-%m-%d")} #{event[:ip]}"
     end
-
   end
-
 end
-

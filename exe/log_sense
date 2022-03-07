@@ -8,15 +8,14 @@ require 'log_sense.rb'
 
 # this better be here... OptionsParser consumes ARGV
 @command_line = ARGV.join(' ')
-@input_files = ARGV
 @options     = LogSense::OptionsParser.parse ARGV
 @output_file = @options[:output_file]
 
-if @input_files.map { |x| File.exist?(x) }.include?(false)
-  warn.puts "Error: input file(s) '#{@input_files.select { |x| !File.exist(x)}}' do not exist"
+if ARGV.map { |x| File.exist?(x) }.include?(false)
+  warn.puts "Error: input file(s) '#{ARGV.reject { |x| File.exist(x) }.join(', ')}' do not exist"
   exit 1
 end
-@input_files = [$stdin] if @input_files.empty?
+@input_files = ARGV.empty? ? [$stdin] : ARGV.map { |x| File.open(x, 'r') }
 
 #
 # Parse Log and Track Statistics

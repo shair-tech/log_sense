@@ -7,7 +7,7 @@ module LogSense
     # parse an Apache log file and return a SQLite3 DB
     #
 
-    def self.parse filenames_or_stdin, options = {}
+    def self.parse(streams, options = {})
       db = SQLite3::Database.new ':memory:'
 
       db.execute "CREATE TABLE IF NOT EXISTS LogLine(
@@ -56,8 +56,8 @@ module LogSense
 
       parser = ApacheLogLineParser.new
 
-      filenames_or_stdin.each do |input|
-        (input.class == String ? File.readlines(input) : input).each_with_index do |line, line_number|
+      streams.each do |stream|
+        stream.readlines.each_with_index do |line, line_number|
           begin
             hash = parser.parse line
             ua = Browser.new(hash[:user_agent], accept_language: 'en-us')
@@ -78,7 +78,7 @@ module LogSense
               (ua.version || ''),
               (ua.platform.name || ''),
               (ua.platform.version || ''),
-              (input.class == String ? input : "stdin"),
+              stream == $stdin ? "stdin" : stream.path,
               line_number
             )
           rescue StandardError => e
