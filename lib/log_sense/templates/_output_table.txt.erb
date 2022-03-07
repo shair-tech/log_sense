@@ -4,7 +4,7 @@ shortened = Emitter::shorten(report[:rows], report[:header], data[:width])
 
 # build and style the table
 table = Terminal::Table.new headings: report[:header], rows: shortened
-table.style border_i: "|"
+table.style = { border_i: "|" }
 columns = report[:header].size - 1
 (0..columns).map { |i| table.align_column(i, report[:column_alignment][i] || :left) }
 

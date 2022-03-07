@@ -6,7 +6,7 @@ table = Terminal::Table.new rows: [
   ["Events", "%9d" % data[:log_size] ],
   ["Parsed events/sec", "%.2f" % (data[:log_size] / data[:duration]) ]
 ]
-table.style border_i: "|"
+table.style = { border_i: "|" }
 table.align_column(2, :right)
 table
 %>

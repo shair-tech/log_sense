@@ -20,7 +20,8 @@ ips = data[:ips].group_by { |x| x[4] }.map { |k, v|
   [k, v.map { |x| x[1] }.inject(&:+), v.map { |x| x[2] }.inject(&:+) ]
 }
 table = Terminal::Table.new headings: ["Country", "Hits", "Total Visits"], rows: ips
-table.style border_i: "|"
+table.style = { border_i: "|" }
+(1..2).map { |i| table.align_column(i, :right) }
 table
 %>
 
