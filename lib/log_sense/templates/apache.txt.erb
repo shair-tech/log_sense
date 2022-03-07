@@ -12,11 +12,21 @@ table
 %>
 <% end %>
 
+** Geolocation
+
+<%=
+ips = data[:ips].group_by { |x| x[4] }.map { |k, v|
+  [k, v.map { |x| x[1] }.inject(&:+), v.map { |x| x[2] }.inject(&:+) ]
+}
+table = Terminal::Table.new headings: ["Country", "Hits", "Total Visits"], rows: ips
+table
+%>
+
 ** Command Invocation
 
 <%= render 'command_invocation.txt.erb', data: data %>
 
-** Log Sense Performance
+** Performance
 
 <%= render 'performance.txt.erb', data: data %>
 
