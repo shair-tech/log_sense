@@ -46,7 +46,7 @@ module LogSense
           args[:limit] = n
         end
 
-        opts.on("-wWIDTH", "--width=WIDTH", Integer, "Width of URL and description columns in textual reports") do |n|
+        opts.on("-wWIDTH", "--width=WIDTH", Integer, "Maximum width of URL and description columns in text reports") do |n|
           args[:width] = n
         end
 

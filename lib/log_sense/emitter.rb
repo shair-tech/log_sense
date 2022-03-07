@@ -67,6 +67,25 @@ module LogSense
       [Integer, Float].include?(klass) ? value : escape_javascript(value || '')
     end
 
+    # limit width of special columns, that is, URL, Path, and Description
+    # - data: array of arrays
+    # - heading: array with column names
+    # - width width to set
+    def self.shorten(data, heading, width)
+      # indexes of columns which have to be shortened
+      to_shorten = %w[URL Description Path].map { |x| heading.index x }.compact
+      if width.nil? || to_shorten.empty? || data[0].nil?
+        data
+      else
+        table_columns = data[0].size
+        data.map { |x|
+          (0..table_columns - 1).each.map { |col|
+            x[col] && x[col].size > width - 3 && to_shorten.include?(col) ? "#{x[col][0..(width - 3)]}..." : x[col]
+          }
+        }
+      end
+    end
+
     #
     # Specification of the reports to generate
     # Array of hashes with the following information:
