@@ -7,7 +7,7 @@ module LogSense
     # parse an Apache log file and return a SQLite3 DB
     #
 
-    def self.parse filename, options = {}
+    def self.parse filenames_or_stdin, options = {}
       db = SQLite3::Database.new ':memory:'
 
       db.execute "CREATE TABLE IF NOT EXISTS LogLine(
@@ -56,36 +56,37 @@ module LogSense
 
       parser = ApacheLogLineParser.new
 
-      content = filename ? File.readlines(filename) : ARGF.readlines
-      content.each_with_index do |line, line_number|
-        begin
-          hash = parser.parse line
-          ua = Browser.new(hash[:user_agent], accept_language: 'en-us')
-          ins.execute(
-            DateTime.parse("#{hash[:date]}T#{hash[:time]}").iso8601,
-            hash[:ip],
-            hash[:userid],
-            unique_visitor_id(hash),
-            hash[:method],
-            hash[:url],
-            (hash[:url] ? File.extname(hash[:url]) : ''),
-            hash[:status],
-            hash[:size].to_i,
-            hash[:referer],
-            hash[:user_agent],
-            ua.bot? ? 1 : 0,
-            (ua.name || ''),
-            (ua.version || ''),
-            (ua.platform.name || ''),
-            (ua.platform.version || ''),
-            filename,
-            line_number
-          )
-        rescue StandardError => e
-          warn.puts e.message
+      filenames_or_stdin.each do |input|
+        (input.class == String ? File.readlines(input) : input).each_with_index do |line, line_number|
+          begin
+            hash = parser.parse line
+            ua = Browser.new(hash[:user_agent], accept_language: 'en-us')
+            ins.execute(
+              DateTime.parse("#{hash[:date]}T#{hash[:time]}").iso8601,
+              hash[:ip],
+              hash[:userid],
+              unique_visitor_id(hash),
+              hash[:method],
+              hash[:url],
+              (hash[:url] ? File.extname(hash[:url]) : ''),
+              hash[:status],
+              hash[:size].to_i,
+              hash[:referer],
+              hash[:user_agent],
+              ua.bot? ? 1 : 0,
+              (ua.name || ''),
+              (ua.version || ''),
+              (ua.platform.name || ''),
+              (ua.platform.version || ''),
+              (input.class == String ? input : "stdin"),
+              line_number
+            )
+          rescue StandardError => e
+            warn.puts e.message
+          end
         end
       end
-      
+
       db
     end
 

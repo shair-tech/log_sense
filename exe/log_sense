@@ -8,20 +8,15 @@ require 'log_sense.rb'
 
 # this better be here... OptionsParser consumes ARGV
 @command_line = ARGV.join(' ')
-
+@input_files = ARGV
 @options     = LogSense::OptionsParser.parse ARGV
-@input_file  = @options[:input_file] || ARGV[0]
 @output_file = @options[:output_file]
 
-unless @input_file
-  warn.puts 'Error: no input file specified.'
-  exit
-end
-
-unless File.exist? @input_file
-  warn.puts "Error: input file '#{@input_file}' does not exist"
+if @input_files.map { |x| File.exist?(x) }.include?(false)
+  warn.puts "Error: input file(s) '#{@input_files.select { |x| !File.exist(x)}}' do not exist"
   exit 1
 end
+@input_files = [$stdin] if @input_files.empty?
 
 #
 # Parse Log and Track Statistics
@@ -41,7 +36,7 @@ else
   exit 1
 end
 
-@db = parser_klass.parse @input_file
+@db = parser_klass.parse @input_files
 
 if @options[:output_format] == 'sqlite'
   ddb = SQLite3::Database.new(@output_file || 'db.sqlite3')
@@ -57,7 +52,7 @@ else
 
   @data = @data.merge({
                         command: @command_line,
-                        log_file: @input_file,
+                        log_files: @input_files,
                         started_at: @started_at,
                         ended_at: @ended_at,
                         duration: @duration,

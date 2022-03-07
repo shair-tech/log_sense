@@ -2,9 +2,7 @@ require 'sqlite3'
 
 module LogSense
   module RailsLogParser
-    def self.parse filename, options = {}
-      content = filename ? File.readlines(filename) : ARGF.readlines
-
+    def self.parse filenames_or_stdin, options = {}
       db = SQLite3::Database.new ":memory:"
       db.execute 'CREATE TABLE IF NOT EXISTS Event(
          id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -88,97 +86,98 @@ module LogSense
       #
       # Different requests might be interleaved, of course
       
-      File.readlines(filename).each_with_index do |line, line_number|
-        # I and F for completed requests, [ is for error messages
-        next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
+      filenames_or_stdin.each do |input|
+        (input.class == String ? File.readlines(input) : input).each_with_index do |line, line_number|
+          # I and F for completed requests, [ is for error messages
+          next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
 
-        data = self.match_and_process_error line
-        if data
-          ins_error.execute(data[:log_id], data[:context], data[:description], filename, line_number)
-          next
-        end
-        
-        data = self.match_and_process_start line
-        if data
-          id = data[:log_id]
-          pending[id] = data.merge(pending[id] || {})
-          next
-        end
+          data = self.match_and_process_error line
+          if data
+            ins_error.execute(data[:log_id], data[:context], data[:description], filename, line_number)
+            next
+          end
+          
+          data = self.match_and_process_start line
+          if data
+            id = data[:log_id]
+            pending[id] = data.merge(pending[id] || {})
+            next
+          end
 
-        data = self.match_and_process_processing_by line
-        if data
-          id = data[:log_id]
-          pending[id] = data.merge(pending[id] || {})
-          next
-        end
+          data = self.match_and_process_processing_by line
+          if data
+            id = data[:log_id]
+            pending[id] = data.merge(pending[id] || {})
+            next
+          end
 
-        data = self.match_and_process_fatal line
-        if data
-          id = data[:log_id]
-          # it might as well be that the first event started before
-          # the log.  With this, we make sure we add only events whose
-          # start was logged and parsed
-          if pending[id]
-            event = data.merge (pending[id] || {})
+          data = self.match_and_process_fatal line
+          if data
+            id = data[:log_id]
+            # it might as well be that the first event started before
+            # the log.  With this, we make sure we add only events whose
+            # start was logged and parsed
+            if pending[id]
+              event = data.merge (pending[id] || {})
 
-            ins.execute(
-              event[:exit_status],
-              event[:started_at],
-              event[:ended_at],
-              event[:log_id],
-              event[:ip],
-              unique_visitor_id(event),
-              event[:url],
-              event[:controller],
-              event[:html_verb],
-              event[:status],
-              event[:duration_total_ms],
-              event[:duration_views_ms],
-              event[:duration_ar_ms],
-              event[:allocations],
-              event[:comment],
-              filename,
-              line_number
-            )
+              ins.execute(
+                event[:exit_status],
+                event[:started_at],
+                event[:ended_at],
+                event[:log_id],
+                event[:ip],
+                unique_visitor_id(event),
+                event[:url],
+                event[:controller],
+                event[:html_verb],
+                event[:status],
+                event[:duration_total_ms],
+                event[:duration_views_ms],
+                event[:duration_ar_ms],
+                event[:allocations],
+                event[:comment],
+                (input.class == String ? input : "stdin"),
+                line_number
+              )
 
-            pending.delete(id)
+              pending.delete(id)
+            end
+          end
+
+          data = self.match_and_process_completed line
+          if data
+            id = data[:log_id]
+
+            # it might as well be that the first event started before
+            # the log.  With this, we make sure we add only events whose
+            # start was logged and parsed
+            if pending[id]
+              event = data.merge (pending[id] || {})
+
+              ins.execute(
+                event[:exit_status],
+                event[:started_at],
+                event[:ended_at],
+                event[:log_id],
+                event[:ip],
+                unique_visitor_id(event),
+                event[:url],
+                event[:controller],
+                event[:html_verb],
+                event[:status],
+                event[:duration_total_ms],
+                event[:duration_views_ms],
+                event[:duration_ar_ms],
+                event[:allocations],
+                event[:comment],
+                (input.class == String ? input : "stdin"),
+                line_number
+              )
+
+              pending.delete(id)
+            end
           end
         end
-
-        data = self.match_and_process_completed line
-        if data
-          id = data[:log_id]
-
-          # it might as well be that the first event started before
-          # the log.  With this, we make sure we add only events whose
-          # start was logged and parsed
-          if pending[id]
-            event = data.merge (pending[id] || {})
-
-            ins.execute(
-              event[:exit_status],
-              event[:started_at],
-              event[:ended_at],
-              event[:log_id],
-              event[:ip],
-              unique_visitor_id(event),
-              event[:url],
-              event[:controller],
-              event[:html_verb],
-              event[:status],
-              event[:duration_total_ms],
-              event[:duration_views_ms],
-              event[:duration_ar_ms],
-              event[:allocations],
-              event[:comment],
-              filename,
-              line_number
-            )
-
-            pending.delete(id)
-          end
-        end
-
       end
       
       db

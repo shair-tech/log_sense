@@ -2,6 +2,18 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.4.1
+
+- [User] New textual report for Apache
+- [User] New option -w sets maximum width of URL, Path, and
+  Description columns in textual reports
+- [User] Removed option -i, since input filenames are now taken
+  as direct arguments
+- [User] Allow multiple files in input
+- [Fixed] Complain if input format is not supported
+- [Code] Refactoring of reports to manage better output to
+  multiple formats  
+
 * 1.4.0
 
 - [User] The Apache Log report now organizes page requests in four
