@@ -82,7 +82,7 @@ module LogSense
             line_number
           )
         rescue StandardError => e
-          STDERR.puts e.message
+          warn.puts e.message
         end
       end
       

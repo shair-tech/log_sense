@@ -7,19 +7,19 @@ require 'log_sense.rb'
 #
 
 # this better be here... OptionsParser consumes ARGV
-@command_line = ARGV.join(" ")
+@command_line = ARGV.join(' ')
 
 @options     = LogSense::OptionsParser.parse ARGV
 @input_file  = @options[:input_file] || ARGV[0]
 @output_file = @options[:output_file]
 
-if not @input_file
-  $stderr.puts "Error: no input file specified."
+unless @input_file
+  warn.puts 'Error: no input file specified.'
   exit
 end
 
-if not File.exist? @input_file
-  $stderr.puts "Error: input file '#{@input_file}' does not exist"
+unless File.exist? @input_file
+  warn.puts "Error: input file '#{@input_file}' does not exist"
   exit 1
 end
 
@@ -37,14 +37,14 @@ when 'rails'
   parser_klass = LogSense::RailsLogParser
   cruncher_klass = LogSense::RailsDataCruncher
 else
-  $stderr.puts "Error: input format #{@options[:input_format]} not understood."
+  warn.puts "Error: input format #{@options[:input_format]} not understood."
   exit 1
 end
 
 @db = parser_klass.parse @input_file
 
-if @options[:output_format] == "sqlite"
-  ddb = SQLite3::Database.new(@output_file || "db.sqlite3")
+if @options[:output_format] == 'sqlite'
+  ddb = SQLite3::Database.new(@output_file || 'db.sqlite3')
   b = SQLite3::Backup.new(ddb, 'main', @db, 'main')
   b.step(-1) #=> DONE
   b.finish
