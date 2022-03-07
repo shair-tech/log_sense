@@ -80,7 +80,8 @@ module LogSense
         table_columns = data[0].size
         data.map { |x|
           (0..table_columns - 1).each.map { |col|
-            x[col] && x[col].size > width - 3 && to_shorten.include?(col) ? "#{x[col][0..(width - 3)]}..." : x[col]
+            should_shorten = x[col] && x[col].size > width - 3 && to_shorten.include?(col)
+            should_shorten ? "#{x[col][0..(width - 3)]}..." : x[col]
           }
         }
       end
