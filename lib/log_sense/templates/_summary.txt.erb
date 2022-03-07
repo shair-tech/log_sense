@@ -8,5 +8,6 @@ table = Terminal::Table.new rows: [
   ["Unique Visits / Day", data[:total_days_in_analysis] > 0 ? "%.2f" % (data[:total_unique_visits] / data[:total_days_in_analysis].to_f) : "N/A"],
   ["Hits/Unique Visitor", data[:total_unique_visits] != 0 ? data[:total_hits] / data[:total_unique_visits] : "N/A"]
 ]
+table.style border_i: "|"
 table
 %>
