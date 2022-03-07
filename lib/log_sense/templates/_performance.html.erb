@@ -15,7 +15,7 @@
     <%= data[:log_size] %> <span class="stats-list-label">Events</span>
   </li>
   <li class="stats-list-positive">
-    <td><%= "%.2f" % (data[:log_size] / data[:duration]) %>
+    <%= "%.2f" % (data[:log_size] / data[:duration]) %>
     <span class="stats-list-label">Parsed Events/sec</span>
   </li>
 </ul>
