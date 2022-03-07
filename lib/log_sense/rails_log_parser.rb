@@ -17,12 +17,14 @@ module LogSense
          url TEXT,
          controller TEXT,
          html_verb TEXT,
-         status INTEGER, 
+         status INTEGER,
          duration_total_ms FLOAT,
          duration_views_ms FLOAT,
          duration_ar_ms FLOAT,
          allocations INTEGER,
-         comment TEXT
+         comment TEXT,
+         filename TEXT,
+         line_number INTEGER
       )'
 
       ins = db.prepare("insert into Event(
@@ -35,29 +37,35 @@ module LogSense
          url,
          controller,
          html_verb,
-         status, 
+         status,
          duration_total_ms,
          duration_views_ms,
          duration_ar_ms,
          allocations,
-         comment
+         comment,
+         filename,
+         line_number
       )
-      values (#{Array.new(15, '?').join(', ')})")
+      values (#{Array.new(17, '?').join(', ')})")
 
       
       db.execute 'CREATE TABLE IF NOT EXISTS Error(
          id INTEGER PRIMARY KEY AUTOINCREMENT,
          log_id TEXT,
          context TEXT,
-         description TEXT
+         description TEXT,
+         filename TEXT,
+         line_number INTEGER
       )'
 
       ins_error = db.prepare("insert into Error(
          log_id,
          context,
-         description
+         description,
+         filename,
+         line_number
       )
-      values (?, ?, ?)")
+      values (?, ?, ?, ?, ?)")
       
 
       # requests in the log might be interleaved.
@@ -80,27 +88,27 @@ module LogSense
       #
       # Different requests might be interleaved, of course
       
-      File.readlines(filename).each do |line|
+      File.readlines(filename).each_with_index do |line, line_number|
         # I and F for completed requests, [ is for error messages
         next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
 
         data = self.match_and_process_error line
         if data
-          ins_error.execute(data[:log_id], data[:context], data[:description])
+          ins_error.execute(data[:log_id], data[:context], data[:description], filename, line_number)
           next
         end
         
         data = self.match_and_process_start line
         if data
           id = data[:log_id]
-          pending[id] = data.merge (pending[id] || {})
+          pending[id] = data.merge(pending[id] || {})
           next
         end
 
         data = self.match_and_process_processing_by line
         if data
           id = data[:log_id]
-          pending[id] = data.merge (pending[id] || {})
+          pending[id] = data.merge(pending[id] || {})
           next
         end
 
@@ -128,7 +136,9 @@ module LogSense
               event[:duration_views_ms],
               event[:duration_ar_ms],
               event[:allocations],
-              event[:comment]
+              event[:comment],
+              filename,
+              line_number
             )
 
             pending.delete(id)
@@ -160,7 +170,9 @@ module LogSense
               event[:duration_views_ms],
               event[:duration_ar_ms],
               event[:allocations],
-              event[:comment]
+              event[:comment],
+              filename,
+              line_number
             )
 
             pending.delete(id)
