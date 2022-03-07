@@ -8,9 +8,8 @@ module LogSense
     #
 
     def self.parse filename, options = {}
-      content = filename ? File.readlines(filename) : ARGF.readlines
-
       db = SQLite3::Database.new ':memory:'
+
       db.execute "CREATE TABLE IF NOT EXISTS LogLine(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       datetime TEXT,
@@ -28,18 +27,18 @@ module LogSense
       browser TEXT,
       browser_version TEXT,
       platform TEXT,
-      platform_version TEXT
-      filename TEXT
+      platform_version TEXT,
+      source_file TEXT,
       line_number INTEGER
       )"
       
-      ins = db.prepare('insert into LogLine (
+      ins = db.prepare("insert into LogLine (
                 datetime,
                 ip,
                 user,
                 unique_visitor,
                 method,
-                path, 
+                path,
                 extension,
                 status,
                 size,
@@ -50,13 +49,14 @@ module LogSense
                 browser_version,
                 platform,
                 platform_version,
-                filename,
+                source_file,
                 line_number
                 )
-              values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+              values (#{Array.new(18, '?').join(', ')})")
 
       parser = ApacheLogLineParser.new
-      
+
+      content = filename ? File.readlines(filename) : ARGF.readlines
       content.each_with_index do |line, line_number|
         begin
           hash = parser.parse line

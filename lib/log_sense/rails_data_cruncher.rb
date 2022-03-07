@@ -22,7 +22,7 @@ module LogSense
       @total_days = (@last_day - @first_day).to_i if @first_day && @last_day
 
       # TODO should also look into Error
-      @source_files = db.execute "SELECT distinct(filename) from Event"
+      @source_files = db.execute "SELECT distinct(source_file) from Event"
 
       @log_size = db.execute "SELECT count(started_at) from Event"
       @log_size = @log_size[0][0]

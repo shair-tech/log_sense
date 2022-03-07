@@ -17,7 +17,7 @@ module LogSense
       @total_days = 0
       @total_days = (@last_day - @first_day).to_i if @first_day && @last_day
 
-      @source_files   = db.execute "SELECT distinct(filename) from LogLine"
+      @source_files   = db.execute "SELECT distinct(source_file) from LogLine"
 
       @log_size       = db.execute "SELECT count(datetime) from LogLine"
       @log_size       = @log_size[0][0]

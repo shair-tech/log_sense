@@ -23,7 +23,7 @@ module LogSense
          duration_ar_ms FLOAT,
          allocations INTEGER,
          comment TEXT,
-         filename TEXT,
+         source_file TEXT,
          line_number INTEGER
       )'
 
@@ -43,7 +43,7 @@ module LogSense
          duration_ar_ms,
          allocations,
          comment,
-         filename,
+         source_file,
          line_number
       )
       values (#{Array.new(17, '?').join(', ')})")
