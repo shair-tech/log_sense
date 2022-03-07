@@ -323,7 +323,7 @@ module LogSense
         {
           title: 'IPs',
           header: %w[IPs Hits Visits Size Country],
-          column_alignment: %i[left right right right right],
+          column_alignment: %i[left right right right left],
           rows: data[:ips]
         },
         {
