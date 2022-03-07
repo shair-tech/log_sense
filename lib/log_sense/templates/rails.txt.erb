@@ -2,70 +2,15 @@
 
 <%= render "summary.txt.erb", data: data %>
 
-** Access by Day
+<% @reports.each do |report| %>
+** <%= report[:title] %>
 
 <%=
-table = Terminal::Table.new headings: ['Date', 'Day', 'Events'], rows: @data[:daily_distribution]
-table.align_column(3, :right)
+table = Terminal::Table.new headings: report[:header], rows: report[:rows]
+(0..report[:header].size - 1).map { |i| table.align_column(i, report[:column_alignment][i]) }
 table
 %>
-
-** Access by Time
-
-<%=
-table = Terminal::Table.new headings: ['Hour', 'Events'], rows: @data[:time_distribution]
-table.align_column(2, :right)
-table
-%>
-
-** Statuses
-
-<%=
-table = Terminal::Table.new headings: ['Status', 'Events'], rows: @data[:statuses]
-table.align_column(2, :right)
-table
-%>
-
-** Rails Performance
-
-<%= table = Terminal::Table.new headings: ['Controller', 'Hits', 'Min', 'Avg', 'Max'], rows: @data[:performance]
-table.align_column(1, :right)
-table.align_column(2, :right)
-table.align_column(3, :right)
-table.align_column(4, :right)
-table
-%>
-
-** Fatal Events
-
-<%= rows = @data[:fatal]
-    rows = rows.map { |x| x[2] = x[2][0..@data[:width]];  x[3] = x[3][0..@data[:width]]; x } if @data[:width]
-    table = Terminal::Table.new headings: ['Date', 'IP', 'URL', 'Description', 'Log ID'], rows: rows
-    table
-%>
-
-** Internal Server Errors
-
-<%= rows = @data[:internal_server_error]
-    rows = rows.map { |x| x[2] = x[2][0..@data[:width]]; x[3] = x[3][0..@data[:width]]; x } if @data[:width]
-    table = Terminal::Table.new headings: ['Date', 'Status', 'IP', 'URL', 'Description', 'Log ID'], rows: rows
-    table
-%>
-
-** Errors
-
-<%= table = Terminal::Table.new headings: ['Log ID', 'Context', 'Description', 'Count'], rows: @data[:error]
-table
-%>
-
-** IPs
-
-<%=
-table = Terminal::Table.new headings: ['IP', 'Hits', 'Country'], rows: @data[:ips]
-table.align_column(1, :right)
-table
-%>
-
+<% end %>
 ** Command Invocation
 
 <%= render "command_invocation.txt.erb", data: data %>
