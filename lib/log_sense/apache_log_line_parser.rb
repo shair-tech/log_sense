@@ -31,15 +31,15 @@ module LogSense
 
     TIMESTAMP = /(?<date>#{DAY}\/#{MONTH}\/#{YEAR}):(?<time>#{TIMEC}:#{TIMEC}:#{TIMEC} #{TIMEZONE})/
 
-    HTTP_METHODS=/GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH/
-    WEBDAV_METHODS=/COPY|LOCK|MKCOL|MOVE|PROPFIND|PROPPATCH|UNLOCK/
-    OTHER_METHODS=/SEARCH|REPORT|PRI|HEAD\/robots.txt/
-    METHOD=/(?<method>#{HTTP_METHODS}|#{WEBDAV_METHODS}|#{OTHER_METHODS})/
-    PROTOCOL=/(?<protocol>HTTP\/[0-9]\.[0-9]|-|.*)/
-    URL=/(?<url>[^ ]+)/
-    REFERER=/(?<referer>[^"]*)/
-    RETURN_CODE=/(?<status>[1-5][0-9][0-9])/
-    SIZE=/(?<size>[0-9]+|-)/
+    HTTP_METHODS = /GET|HEAD|POST|PUT|DELETE|CONNECT|OPTIONS|TRACE|PATCH/
+    WEBDAV_METHODS = /COPY|LOCK|MKCOL|MOVE|PROPFIND|PROPPATCH|UNLOCK/
+    OTHER_METHODS = /SEARCH|REPORT|PRI|HEAD\/robots.txt/
+    METHOD = /(?<method>#{HTTP_METHODS}|#{WEBDAV_METHODS}|#{OTHER_METHODS})/
+    PROTOCOL = /(?<protocol>HTTP\/[0-9]\.[0-9]|-|.*)/
+    URL = /(?<url>[^ ]+)/
+    REFERER = /(?<referer>[^"]*)/
+    RETURN_CODE = /(?<status>[1-5][0-9][0-9])/
+    SIZE = /(?<size>[0-9]+|-)/
     USER_AGENT = /(?<user_agent>[^"]*)/
 
     attr_reader :format
