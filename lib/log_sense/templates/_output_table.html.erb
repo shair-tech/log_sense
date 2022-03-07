@@ -1,9 +1,3 @@
-<%
-def slugify string
-  string.downcase.gsub(/ +/, '-')
-end
-%>
-
 <table id="table-<%= index %>" class="table unstriped">
   <thead>
     <tr>
@@ -22,7 +16,7 @@ end
      <%= report[:datatable_options] + "," if report[:datatable_options] %>
      columns: [
        <% report[:header].each do |header| %>
-       { data: '<%= header %>', className: '<%= slugify(header) %>' },
+       { data: '<%= header %>', className: '<%= Emitter::slugify(header) %>' },
        <% end %>
      ]
    });
