@@ -14,12 +14,12 @@ require 'log_sense.rb'
 @output_file = @options[:output_file]
 
 if not @input_file
-  puts "Error: no input file specified."
+  $stderr.puts "Error: no input file specified."
   exit
 end
 
 if not File.exist? @input_file
-  puts "Error: input file '#{@input_file}' does not exist"
+  $stderr.puts "Error: input file '#{@input_file}' does not exist"
   exit 1
 end
 
@@ -36,6 +36,9 @@ when 'apache'
 when 'rails'
   parser_klass = LogSense::RailsLogParser
   cruncher_klass = LogSense::RailsDataCruncher
+else
+  $stderr.puts "Error: input format #{@options[:input_format]} not understood."
+  exit 1
 end
 
 @db = parser_klass.parse @input_file
