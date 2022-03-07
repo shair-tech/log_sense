@@ -7,7 +7,7 @@
 
 <%=
 table = Terminal::Table.new headings: report[:header], rows: report[:rows]
-#(0..report[:header].size - 1).map { |i| table.align_column(i, report[:column_alignment][i]) }
+(0..report[:header].size - 1).map { |i| table.align_column(i, report[:column_alignment][i] || :left) }
 table
 %>
 <% end %>

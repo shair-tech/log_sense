@@ -250,7 +250,7 @@ module LogSense
         },
         { title: 'Browsers',
           header: %w[Browser Hits Visits Size],
-          column_alignment: %i[left, right right right],
+          column_alignment: %i[left right right right],
           rows: data[:browsers],
           vega_spec: {
             'layer': [
