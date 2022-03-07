@@ -1,11 +1,10 @@
 <script>
- /* this is used both by Vega and DataTable */
+ /* this is used both by Vega and DataTable for <%= report[:title] %>*/
  data_<%= index %> = [
    <% report[:rows].each do |row| %>
    {
      <% report[:header].each_with_index do |h, i| %>
-     <% resized_row = (row[i] || '').size > 150 ? "#{row[i][0..150]...}" : (row[i] || "") %>
-     "<%= h %>": <%= (row[i].class == Integer or row[i].class == Float) ? row[i] : "\"#{Emitter::escape_javascript(resized_row)}\"" %>,
+     "<%= h %>": "<%= Emitter::process row[i] %>",
      <% end %>
    },
    <% end %>
