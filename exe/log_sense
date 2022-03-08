@@ -12,7 +12,7 @@ require 'log_sense.rb'
 @output_file = @options[:output_file]
 
 if ARGV.map { |x| File.exist?(x) }.include?(false)
-  warn.puts "Error: input file(s) '#{ARGV.reject { |x| File.exist(x) }.join(', ')}' do not exist"
+  $stderr.puts "Error: input file(s) '#{ARGV.reject { |x| File.exist(x) }.join(', ')}' do not exist"
   exit 1
 end
 @input_files = ARGV.empty? ? [$stdin] : ARGV.map { |x| File.open(x, 'r') }
@@ -31,22 +31,27 @@ when 'rails'
   parser_klass = LogSense::RailsLogParser
   cruncher_klass = LogSense::RailsDataCruncher
 else
-  warn.puts "Error: input format #{@options[:input_format]} not understood."
+  $stderr.puts "Error: input format #{@options[:input_format]} not understood."
   exit 1
 end
 
+$stderr.puts "Parsing input files..." if @options[:verbose]
 @db = parser_klass.parse @input_files
 
 if @options[:output_format] == 'sqlite'
+  $stderr.puts "Saving to SQLite3..." if @options[:verbose]
   ddb = SQLite3::Database.new(@output_file || 'db.sqlite3')
   b = SQLite3::Backup.new(ddb, 'main', @db, 'main')
   b.step(-1) #=> DONE
   b.finish
 else
+  $stderr.puts "Aggregating data..." if @options[:verbose]
   @data = cruncher_klass.crunch @db, @options
+
+  $stderr.puts "Geolocating..." if @options[:verbose]
   @data = LogSense::IpLocator.geolocate @data
 
-  # Enhance data with Geolocation information
+  $stderr.puts "Grouping by country..." if @options[:verbose]
   country_col = @data[:ips][0].size - 1
   @data[:countries] = @data[:ips].group_by { |x| x[country_col] }
 
@@ -64,5 +69,6 @@ else
   #
   # Emit Output
   #
+  $stderr.puts "Emitting..." if @options[:verbose]
   puts LogSense::Emitter.emit @data, @options
 end

@@ -82,7 +82,7 @@ module LogSense
               line_number
             )
           rescue StandardError => e
-            warn.puts e.message
+            $stderr.puts e.message
           end
         end
       end

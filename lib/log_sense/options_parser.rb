@@ -59,6 +59,10 @@ module LogSense
           args[:no_selfpoll] = true
         end
 
+        opts.on('--verbose', 'Inform about progress on STDERR') do
+          args[:verbose] = true
+        end
+
         opts.on('-v', '--version', 'Prints version information') do
           puts "log_sense version #{LogSense::VERSION}"
           puts 'Copyright (C) 2021 Shair.Tech'
@@ -96,6 +100,7 @@ module LogSense
       args[:ignore_crawlers] ||= false
       args[:only_crawlers] ||= false
       args[:no_selfpoll] ||= false
+      args[:verbose] ||= false
 
       args
     end
