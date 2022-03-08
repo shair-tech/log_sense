@@ -12,7 +12,7 @@ require 'log_sense.rb'
 @output_file = @options[:output_file]
 
 if ARGV.map { |x| File.exist?(x) }.include?(false)
-  $stderr.puts "Error: input file(s) '#{ARGV.reject { |x| File.exist(x) }.join(', ')}' do not exist"
+  $stderr.puts "Error: input file(s) '#{ARGV.reject { |x| File.exist?(x) }.join(', ')}' do not exist"
   exit 1
 end
 @input_files = ARGV.empty? ? [$stdin] : ARGV.map { |x| File.open(x, 'r') }
