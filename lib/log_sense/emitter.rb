@@ -345,7 +345,20 @@ module LogSense
           rows: data[:referers],
           col: 'small-12 cell'
         },
-        
+        {
+          title: 'Streaks',
+          header: ['IP', 'Date', 'Total HTML', 'Total Other', 'HTML', 'Other'],
+          rows: data[:streaks]&.group_by { |x| [x[0], x[1]] }&.map do |k, v|
+            [
+              k[0],
+              k[1],
+              v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.size,
+              v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.size,
+              v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.join(' '),
+              v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.join(' ')
+            ]
+          end
+        }
       ]
     end
 
@@ -512,6 +525,19 @@ module LogSense
             [
               k,
               v.map { |x| x[1] }.inject(&:+),
+              v.map { |x| x[0] }.join(', ')
+            ]
+          end
+        },
+        {
+          title: 'Streaks',
+          header: ['IP', 'Date', 'Total', 'Resources'],
+          rows: data[:streaks]&.group_by { |x| [x[0], x[1]] }&.map do |k, v|
+            [
+              k[0],
+              k[1],
+              v.size,
+              v.map { |x| x[2] }.join(' ')
             ]
           end
         }

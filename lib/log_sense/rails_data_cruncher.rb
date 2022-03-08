@@ -104,6 +104,9 @@ module LogSense
 
       @ips = db.execute "SELECT ip, count(ip) from Event where #{filter} group by ip order by count(ip) desc limit #{options[:limit]}"
 
+      @streaks = db.execute 'SELECT ip, substr(started_at, 1, 10), url from Event order by ip, started_at'
+      data = {}
+
       @performance = db.execute "SELECT distinct(controller), count(controller), printf(\"%.2f\", min(duration_total_ms)), printf(\"%.2f\", avg(duration_total_ms)), printf(\"%.2f\", max(duration_total_ms)) from Event group by controller order by controller"
 
       @fatal = db.execute ("SELECT strftime(\"%Y-%m-%d %H:%M\", started_at), ip, url, error.description, event.log_id FROM Event JOIN Error ON event.log_id == error.log_id WHERE exit_status == 'F'") || [[]]
