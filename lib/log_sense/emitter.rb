@@ -73,7 +73,9 @@ module LogSense
     # - width width to set
     def self.shorten(data, heading, width)
       # indexes of columns which have to be shortened
-      to_shorten = %w[URL Description Path].map { |x| heading.index x }.compact
+      keywords = %w[URL Referers Description Path]
+      to_shorten = keywords.map { |x| heading.index x }.compact
+
       if width.nil? || to_shorten.empty? || data[0].nil?
         data
       else
