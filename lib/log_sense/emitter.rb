@@ -33,7 +33,7 @@ module LogSense
 
     private_class_method
 
-    def self.render(template, vars)
+    def self.render(template, vars = {})
       @template = File.join(File.dirname(__FILE__), 'templates', "_#{template}")
       erb_template = File.read @template
       ERB.new(erb_template).result(OpenStruct.new(vars).instance_eval { binding })
