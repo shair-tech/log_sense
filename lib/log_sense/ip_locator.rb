@@ -39,14 +39,16 @@ module LogSense
     def self.locate_ip(ip, db)
       return unless ip
 
+      query = db.prepare 'SELECT * FROM ip_location where from_ip_n <= ? order by from_ip_n desc limit 1'
       begin
         ip_n = IPAddr.new(ip).to_i
-        res = db.execute "SELECT * FROM ip_location where from_ip_n <= #{ip_n} order by from_ip_n desc limit 1"
-        IsoCountryCodes.find(res[0][3]).name
+        result_set = query.execute ip_n
+        country_code = result_set.map { |x| x[3] }[0]
+        IsoCountryCodes.find(country_code).name
       rescue IPAddr::InvalidAddressError
         'INVALID IP'
       rescue IsoCountryCodes::UnknownCodeError
-        res[0][3]
+        country_code
       end
     end
 
