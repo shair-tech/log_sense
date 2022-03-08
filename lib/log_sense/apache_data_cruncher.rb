@@ -17,15 +17,15 @@ module LogSense
       @total_days = 0
       @total_days = (@last_day - @first_day).to_i if @first_day && @last_day
 
-      @source_files   = db.execute "SELECT distinct(source_file) from LogLine"
+      @source_files   = db.execute 'SELECT distinct(source_file) from LogLine'
 
-      @log_size       = db.execute "SELECT count(datetime) from LogLine"
+      @log_size       = db.execute 'SELECT count(datetime) from LogLine'
       @log_size       = @log_size[0][0]
 
       @selfpolls_size = db.execute "SELECT count(datetime) from LogLine where ip == '::1'"
       @selfpolls_size = @selfpolls_size[0][0]
 
-      @crawlers_size  = db.execute "SELECT count(datetime) from LogLine where bot == 1"
+      @crawlers_size  = db.execute 'SELECT count(datetime) from LogLine where bot == 1'
       @crawlers_size = @crawlers_size[0][0]
 
       @first_day_requested = options[:from_date]
@@ -35,7 +35,7 @@ module LogSense
       @last_day_in_analysis = date_intersect options[:to_date], @last_day, :min
 
       @total_days_in_analysis = 0
-      if @first_day_in_analysis and @last_day_in_analysis
+      if @first_day_in_analysis && @last_day_in_analysis
         @total_days_in_analysis = (@last_day_in_analysis - @first_day_in_analysis).to_i
       end
 
@@ -45,24 +45,24 @@ module LogSense
       filter = [
         (options[:from_date] ? "date(datetime) >= '#{options[:from_date]}'" : nil),
         (options[:to_date] ? "date(datetime) <= '#{options[:to_date]}'" : nil),
-        (options[:only_crawlers] ? "bot == 1" : nil),
-        (options[:ignore_crawlers] ? "bot == 0" : nil),
+        (options[:only_crawlers] ? 'bot == 1' : nil),
+        (options[:ignore_crawlers] ? 'bot == 0' : nil),
         (options[:no_selfpolls] ? "ip != '::1'" : nil),
-        "true"
+        'true'
       ].compact.join " and "
 
       mega = 1024 * 1024
       giga = mega * 1024
       tera = giga * 1024
-      
+ 
       # in alternative to sum(size)
       human_readable_size = <<-EOS
-      CASE 
+      CASE
       WHEN sum(size) <  1024 THEN sum(size) || ' B' 
       WHEN sum(size) >= 1024 AND sum(size) < (#{mega}) THEN ROUND((CAST(sum(size) AS REAL) / 1024), 2) || ' KB' 
       WHEN sum(size) >= (#{mega})  AND sum(size) < (#{giga}) THEN ROUND((CAST(sum(size) AS REAL) / (#{mega})), 2) || ' MB' 
       WHEN sum(size) >= (#{giga}) AND sum(size) < (#{tera}) THEN ROUND((CAST(sum(size) AS REAL) / (#{giga})), 2) || ' GB' 
-      WHEN sum(size) >= (#{tera}) THEN ROUND((CAST(sum(size) AS REAL) / (#{tera})), 2) || ' TB' 
+      WHEN sum(size) >= (#{tera}) THEN ROUND((CAST(sum(size) AS REAL) / (#{tera})), 2) || ' TB'
       END AS size
       EOS
 
@@ -117,20 +117,19 @@ module LogSense
       
       @ips = db.execute "SELECT ip, count(ip), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by ip order by count(ip) desc limit #{options[:limit]}"
 
-      @streaks = db.execute "SELECT ip, substr(datetime, 1, 10), path from LogLine order by ip, datetime"
+      @streaks = db.execute 'SELECT ip, substr(datetime, 1, 10), path from LogLine order by ip, datetime'
       data = {}
 
-      self.instance_variables.each do |variable|
-        var_as_symbol = variable.to_s[1..-1].to_sym
-        data[var_as_symbol] = eval(variable.to_s)
+      instance_variables.each do |variable|
+        var_as_symbol = variable.to_s[1..].to_sym
+        data[var_as_symbol] = instance_variable_get(variable)
       end
+
       data
     end
 
-    private
-
-    def self.date_intersect date1, date2, method
-      if date1 and date2
+    def self.date_intersect(date1, date2, method)
+      if date1 && date2
         [date1, date2].send(method)
       elsif date1
         date1
@@ -140,4 +139,3 @@ module LogSense
     end
   end
 end
-
