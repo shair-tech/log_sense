@@ -18,7 +18,7 @@
   </li>
   <li class="stats-list-negative">
     <% days = data[:last_day_in_analysis] - data[:first_day_in_analysis] %>
-    <%= days > 0 ? "%.2f" % (data[:total_unique_visits] / days.to_f) : "N/A" %>
+    <%= days > 0 ? "%d" % (data[:total_unique_visits] / days) : "N/A" %>
     <span class="stats-list-label">Unique Visits / Day</span>
   </li>
   <li class="stats-list-negative">

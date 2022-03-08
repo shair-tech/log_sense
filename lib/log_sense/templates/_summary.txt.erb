@@ -5,7 +5,7 @@ table = Terminal::Table.new rows: [
   ["Days", data[:total_days_in_analysis]],
   ["Hits", data[:total_hits]],
   ["Unique Visits", data[:total_unique_visits]],
-  ["Unique Visits / Day", data[:total_days_in_analysis] > 0 ? "%.2f" % (data[:total_unique_visits] / data[:total_days_in_analysis].to_f) : "N/A"],
+  ["Unique Visits / Day", data[:total_days_in_analysis] > 0 ? "%d" % (data[:total_unique_visits] / data[:total_days_in_analysis]) : "N/A"],
   ["Hits/Unique Visitor", data[:total_unique_visits] != 0 ? data[:total_hits] / data[:total_unique_visits] : "N/A"]
 ]
 table.style = { border_i: "|" }
