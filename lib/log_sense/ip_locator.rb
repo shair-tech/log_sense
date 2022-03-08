@@ -56,9 +56,9 @@ module LogSense
     def self.geolocate(data)
       @location_db = IpLocator.load_db
 
-      data[:ips].each do |ip|
-        country_code = IpLocator.locate_ip ip[0], @location_db
-        ip << country_code
+      data[:ips].each do |line|
+        country_code = IpLocator.locate_ip line[0], @location_db
+        line << country_code
       end
       data
     end
