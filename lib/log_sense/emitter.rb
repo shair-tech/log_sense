@@ -512,7 +512,6 @@ module LogSense
             [
               k,
               v.map { |x| x[1] }.inject(&:+),
-              v.map { |x| "<a href=\"https://whatismyipaddress.com/ip/#{x[0]}\">#{x[0]}</a>" }.join(', ')
             ]
           end
         }
