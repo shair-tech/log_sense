@@ -2,10 +2,20 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
-* 1.4.2
+* 1.5.0
 
-- [Code] Refactor warning message in textual reports.
-  URLs are not sanitized.
+- [User] Present Unique Visits / day as integer
+- [User] Added Country and Streaks report for rails
+- [User] Changed Streak report in Apache
+
+- [Gem] Updated DBIP
+- [Gem] Updated Bundle  
+
+- [Code] Refactored all reports, so that they are specified
+  in the same way  
+- [Code] Refactor warning message in textual reports
+- [Code] Build HTML menu for report specification
+- [Code] Various refactoring passes on the code
 
 * 1.4.1
 

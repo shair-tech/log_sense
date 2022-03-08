@@ -19,8 +19,6 @@ LogSense reports the following data:
 - OS, browsers, and devices
 - IP Country location, thanks to the DPIP lite country DB
 - Streaks: resources accessed by a given IP over time
-- Potential attacks: access to resources which are not meant to be
-  served by a web server serving static websites
 - Performance of Rails requests
  
 Filters from the command line allow to analyze specific periods and
@@ -32,6 +30,18 @@ And, of course, the compulsory screenshot:
 
 #+ATTR_HTML: :width 80%
 [[file:./apache-screenshot.png]]
+
+
+* An important word of warning
+
+[[https://owasp.org/www-community/attacks/Log_Injection][Log poisoning]] is a technique whereby attackers send requests with invalidated
+user input to forge log entries or inject malicious content into the logs.
+
+log_sense sanitizes entries of HTML reports, to try and protect from log
+poisoning.  *Log entries and URLs in SQLite3, however, are not sanitized*:
+they are stored and read from the log.  This is not, in general, an issue,
+unless you use the data from SQLite in environments in which URLs can be
+opened or code executed.
 
 * Motivation
 
@@ -54,6 +64,7 @@ generated files are then made available on a private area on the web.
   gem install log_sense
   #+end_src
 
+
 * Usage
 
   #+begin_src bash :results raw output :wrap example
@@ -73,10 +84,11 @@ generated files are then made available on a private area on the web.
       -w, --width=WIDTH                Maximum width of URL and description columns in text reports
       -c, --crawlers=POLICY            Decide what to do with crawlers (applies to Apache Logs)
       -n, --no-selfpolls               Ignore self poll entries (requests from ::1; applies to Apache Logs)
+          --verbose                    Inform about progress (prints to STDERR)
       -v, --version                    Prints version information
       -h, --help                       Prints this help
 
-  This is version 1.4.1
+  This is version 1.5.0
 
   Output formats
   rails parsing can produce the following outputs:
@@ -96,6 +108,7 @@ log_sense -f apache -i access.log -t txt > access-data.txt
 log_sense -f rails -i production.log -t html -o performance.txt
 #+end_example
 
+
 * Change Log
 
 See the [[file:CHANGELOG.org][CHANGELOG]] file.
@@ -110,8 +123,8 @@ Concerning the outputs:
 - HTML reports use [[https://get.foundation/][Zurb Foundation]], [[https://www.datatables.net/][Data Tables]], and [[https://vega.github.io/vega-lite/][Vega Light]], which
   are all downloaded from a CDN
 - The textual format is compatible with [[https://orgmode.org/][Org Mode]] and can be further
-  processed to any format [[https://orgmode.org/][Org Mode]] can be exported to (including HTML
-  and PDF)
+  processed to any format [[https://orgmode.org/][Org Mode]] can be exported to, including HTML
+  and PDF, with the word of warning in the section above. 
 
 * Author and Contributors
 
@@ -119,8 +132,8 @@ Concerning the outputs:
 
 * Known Bugs
 
-No known bugs; an unknown number of unknown bugs.
-(See the open issues for the known bugs.)
+No known bugs; an unknown number of unknown bugs.  (See the open issues for
+the known bugs.)
 
 * License
 

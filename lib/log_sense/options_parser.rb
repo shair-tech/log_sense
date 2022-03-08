@@ -59,7 +59,7 @@ module LogSense
           args[:no_selfpoll] = true
         end
 
-        opts.on('--verbose', 'Inform about progress on STDERR') do
+        opts.on('--verbose', 'Inform about progress (prints to STDERR)') do
           args[:verbose] = true
         end
 

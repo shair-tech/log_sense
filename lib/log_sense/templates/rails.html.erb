@@ -1,7 +1,9 @@
 <!doctype html>
 <html class="no-js" lang="en">
   <head>
-    <title><%= options[:title] || "Log Sense: #{data[:log_file]}" %></title>
+    <title>
+      <%= options[:title] || "Log Sense: #{data[:filenames].empty? ? "stdin" : data[:filenames].join(", ")}" %>
+    </title>
 
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -163,9 +165,9 @@
         </div>
 
         <section class="main-section">
-          <h1><%= options[:title] || "Log Sense: #{data[:log_file]}" %></h1>
+          <h1><%= options[:title] || "Log Sense Rails Log Report" %></h1>
 
-          <p><b>Input File:</b>  <%= (data[:log_file] || "stdin") %></p>
+          <p><b>Input File(s):</b>  <%= data[:filenames].empty? ? "stdin" : data[:filenames].join(", ") %></p>
 
           <div class="grid-x grid-margin-x">
             <article class="card small-12 large-6 cell">

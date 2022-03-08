@@ -60,6 +60,7 @@ else
 
   @data = @data.merge({
                         command: @command_line,
+                        filenames: ARGV,
                         log_files: @input_files,
                         started_at: @started_at,
                         ended_at: @ended_at,
