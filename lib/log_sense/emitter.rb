@@ -98,7 +98,7 @@ module LogSense
     #   column_alignment: specification of column alignments (works for txt reports)
     #   vega_spec: specifications for Vega output
     #   datatable_options: specific options for datatable
-    def self.apache_report_specification(data)
+    def self.apache_report_specification(data = {})
       [
         { title: 'Daily Distribution',
           header: %w[Day DOW Hits Visits Size],
@@ -338,7 +338,7 @@ module LogSense
       ]
     end
 
-    def self.rails_report_specification(data)
+    def self.rails_report_specification(data = {})
       [
         {
           title: "Daily Distribution",

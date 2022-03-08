@@ -153,22 +153,13 @@
         <nav>
           <h2>Navigation</h2>
           <ul class="no-bullet">
-            <% [
-              "Summary",
-              "Log Structure",
-              "Daily Distribution",
-              "Time Distribution",
-              "Statuses",
-              "Rails Performance",
-              "Fatal Events",
-              "Internal Server Errrors",
-              "Errors",
-              "IPs",
-              "Command Invocation",
-              "Performance"
-            ].each do |item| %>
+            <% (["Summary", "Log Structure"] +
+                Emitter::rails_report_specification.map { |x| x[:title] } +
+                ["Command Invocation", "Performance"]).each do |item| %>
               <li class="nav-item">
-                <a href="#<%= item.downcase.gsub(' ', '-') %>" data-close><%= item %></a>
+                <a href="#<%= Emitter::slugify item %>" data-close>
+                  <%= item %>
+                </a>
               </li>
             <% end %>
           </ul>
@@ -198,7 +189,7 @@
           <div class="grid-x grid-margin-x">
             <article class="card small-12 large-6 cell">
               <div class="card-divider">
-                <h2 id="summary">Summary</h2>
+                <h2 id="<%= Emitter::slugify "Summary" %>">Summary</h2>
               </div>
               <div class="card-section">
                 <%= render "summary.html.erb", data: data %>
@@ -207,7 +198,7 @@
 
             <article class="card cell small-12 large-6">
               <div class="card-divider">
-                <h2 id="log-structure">Log Structure</h2>
+                <h2 id="<%= Emitter::slugify "Log Structure" %>">Log Structure</h2>
               </div>
               <div class="card-section">
                 <%= render "log_structure.html.erb", data: data %>
@@ -249,7 +240,9 @@
           <div class="grid-x grid-margin-x">
             <div class="cell small-12 large-6">
               <article>
-                <h2 id="command-invocation">Command Invocation</h2>
+                <h2 id="<%= Emitter::slugify "Command Invocation" %>">
+                  Command Invocation
+                </h2>
 
                 <%= render "command_invocation.html.erb", data: data, options: options %>
               </article>
@@ -257,7 +250,7 @@
 
             <div class="small-12 large-6 cell">
               <article>
-                <h2 id="performance"> Performance</h2>
+                <h2 id="<%= Emitter::slugify "Performance" %>"> Performance</h2>
 
                 <%=  render "performance.html.erb", data: data %>
               </article>

@@ -153,28 +153,17 @@
         <nav>
           <h2>Navigation</h2>
           <ul class="no-bullet">
-                <% [ "Summary",
-                  "Log Structure",
-                  "Daily Distribution",
-                  "Time Distribution",
-                  "20_ and 30_ on HTML pages",
-                  "20_ and 30_ on other resources",
-                  "40_ and 50_ on HTML pages",
-                  "40_ and 50_ on other Resources",
-                  "Statuses",
-                  "Daily Statuses",
-                  "Browsers",
-                  "Platforms",
-                  "Referers",
-                  "IPs",
-                  "Geolocation",
+            <% ([ "Summary", "Log Structure" ] +
+               Emitter::apache_report_specification.map { |x| x[:title] } +
+                [ "Geolocation",
                   "Streaks",
                   "Command Invocation",
-                  "Performance"
-            ].each do |item| %>
+                  "Performance"]).each do |item| %>
                   <li class="nav-item">
-                    <a href="#<%= item.downcase.gsub(' ', '-') %>" data-close><%= item %></a>
-              </li>
+                    <a href="#<%= Emitter::slugify item %>" data-close>
+                      <%= item %>
+                    </a>
+                  </li>
             <% end %>
           </ul>
 
@@ -186,6 +175,7 @@
           </p>
         </nav>
       </div>
+      
       <div class="off-canvas-content grid-container grid-x fluid" data-off-canvas-content>
         <div data-sticky-container>
           <div class="sticky" data-sticky data-margin-top="0">
@@ -203,7 +193,7 @@
           <div class="grid-x grid-margin-x">
             <article class="card small-12 large-6 cell">
               <div class="card-divider">
-                <h2 id="summary">Summary</h2>
+                <h2 id="<%= Emitter::slugify "Summary" %>">Summary</h2>
               </div>
               <div class="card-section">
                 <%= render "summary.html.erb", data: data %>
@@ -212,7 +202,7 @@
 
             <article class="card cell small-12 large-6">
               <div class="card-divider">
-                <h2 id="log-structure">Log Structure</h2>
+                <h2 id="<%= Emitter::slugify "Summary" %>">Log Structure</h2>
               </div>
               <div class="card-section">
                 <%= render "log_structure.html.erb", data: data %>
@@ -224,7 +214,7 @@
             <% @reports.each_with_index do |report, index| %>
               <article class="card cell <%= report[:col] || "small-12 large-6" %>" >
                 <div class="card-divider">
-                  <h2 id="<%= report[:title].downcase.gsub(' ', '-') %>">
+                  <h2 id="<%= Emitter::slugify report[:title] %>">
                     <%= report[:title] %>
                   </h2>
                 </div>
@@ -254,7 +244,7 @@
 
           <article class="card">
             <div class="card-divider">
-              <h2 id="geolocation">Geolocation</h2>
+              <h2 id="<%= Emitter::slugify "Geolocation" %>">Geolocation</h2>
             </div>
             <div class="card-section">
               <table id="geolocation-table" class="table unstriped">
@@ -285,7 +275,7 @@
 
           <article class="card">
             <div class="card-divider">
-              <h2 id="streaks">Streaks</h2>
+              <h2 id="<%= Emitter::slugify "Geolocation" %>">Streaks</h2>
             </div>
             <div class="card-section">
               <table id="streaks-table" class="table data-table streaks">
@@ -346,7 +336,7 @@
           <div class="grid-x grid-margin-x">
             <div class="cell small-12 large-6">
               <article>
-                <h2 id="command-invocation">Command Invocation</h2>
+                <h2 id="<%= Emitter::slugify "Command Invocation" %>">Command Invocation</h2>
 
                 <%= render "command_invocation.html.erb", data: data, options: options %>
               </article>
@@ -354,7 +344,7 @@
 
             <div class="small-12 large-6 cell">
               <article>
-                <h2 id="performance">Performance</h2>
+                <h2 id="<%= Emitter::slugify "Performance" %>">Performance</h2>
 
                 <%=  render "performance.html.erb", data: data %>
               </article>
