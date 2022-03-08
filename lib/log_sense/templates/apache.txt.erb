@@ -6,23 +6,11 @@
 
 <%= render "summary.txt.erb", data: data %>
 
-<% @reports.each do |report| %>
+<% @reports.reject { |x| x[:report] == :html }.each do |report| %>
 ** <%= report[:title] %>
 
 <%= render "output_table.txt.erb", report: report, data: data %>
 <% end %>
-
-** Geolocation
-
-<%=
-ips = data[:ips].group_by { |x| x[4] }.map { |k, v|
-  [k, v.map { |x| x[1] }.inject(&:+), v.map { |x| x[2] }.inject(&:+) ]
-}
-table = Terminal::Table.new headings: ["Country", "Hits", "Total Visits"], rows: ips
-table.style = { border_i: "|" }
-(1..2).map { |i| table.align_column(i, :right) }
-table
-%>
 
 ** Command Invocation
 

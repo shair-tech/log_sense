@@ -334,7 +334,7 @@ module LogSense
               k,
               v.map { |x| x[1] }.inject(&:+),
               v.map { |x| x[2] }.inject(&:+),
-              v.map { |x| "<a href=\"https://whatismyipaddress.com/ip/#{x[0]}\">#{x[0]}</a>" }.join(', ')
+              v.map { |x| x[0] }.join(' ')
             ]
           end
         },
@@ -347,7 +347,9 @@ module LogSense
         },
         {
           title: 'Streaks',
+          report: :html,
           header: ['IP', 'Date', 'Total HTML', 'Total Other', 'HTML', 'Other'],
+          column_alignment: %i[left left right right left left],
           rows: data[:streaks]&.group_by { |x| [x[0], x[1]] }&.map do |k, v|
             [
               k[0],
@@ -357,7 +359,8 @@ module LogSense
               v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.join(' '),
               v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.join(' ')
             ]
-          end
+          end,
+          col: 'small-12 cell'
         }
       ]
     end
@@ -520,18 +523,20 @@ module LogSense
         {
           title: 'Countries',
           header: %w[Country Hits IPs],
-          column_alignment: %i[left right right left],
+          column_alignment: %i[left right left],
           rows: data[:countries]&.map do |k, v|
             [
               k,
               v.map { |x| x[1] }.inject(&:+),
-              v.map { |x| x[0] }.join(', ')
+              v.map { |x| x[0] }.join(' ')
             ]
           end
         },
         {
           title: 'Streaks',
-          header: ['IP', 'Date', 'Total', 'Resources'],
+          report: :html,
+          header: %w[IP Date Total Resources],
+          column_alignment: %i[left left right right left left],
           rows: data[:streaks]&.group_by { |x| [x[0], x[1]] }&.map do |k, v|
             [
               k[0],
@@ -539,7 +544,8 @@ module LogSense
               v.size,
               v.map { |x| x[2] }.join(' ')
             ]
-          end
+          end,
+          col: 'small-12 cell'
         }
       ]
     end

@@ -6,7 +6,7 @@
 
 <%= render "summary.txt.erb", data: data %>
 
-<% @reports.each do |report| %>
+<% @reports.reject { |x| x[:report] == :html }.each do |report| %>
 ** <%= report[:title] %>
 
 <%= render "output_table.txt.erb", report: report, data: data %>
@@ -14,9 +14,9 @@
 
 ** Command Invocation
 
-<%= render "command_invocation.txt.erb", data: data %>
+<%= render 'command_invocation.txt.erb', data: data %>
 
-** Log Sense Performance
+** Performance
 
-<%= render "performance.txt.erb", data: data %>
+<%= render 'performance.txt.erb', data: data %>
 
