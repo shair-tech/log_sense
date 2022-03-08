@@ -1,0 +1,144 @@
+body {
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 12px;
+}
+
+#offCanvas {
+    color: #DEDEDE;
+    background: #1C1C1C;
+    border-right: none;
+    box-shadow: none;
+    padding: 0.5rem;
+
+    font-size: 14px;
+}
+
+#offCanvas a {
+    color: #FFFFFF;
+}
+
+nav {
+    margin-left: 0.5rem;
+}
+
+nav h2 {
+    padding-left: 0rem;
+}    
+
+#toggle-button {
+    font-size: 2rem;
+    margin-left: 1rem;
+}
+
+.main-section {
+}
+
+h1 {
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+h2 {
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+
+    color: white;
+    background: #1C1C1C;
+
+    padding: 0.2rem 0.3rem 0.2rem 0.3rem;
+    border-radius: 5px 5px 0px 0px;
+}
+
+th {
+    padding: 0.2rem 1.2rem 0.2rem 0.2rem !important
+}
+
+td {
+    padding: 0.2rem 1rem 0.2rem 0.2rem !important;
+}
+
+.dataTables_wrapper {
+    width: 100%;
+    padding: 0.5rem;
+}
+
+article {
+    margin-top: 1rem;
+    border-radius: 5px;
+}
+                
+
+.plot-canvas {
+    width: 100%;
+}    
+
+input, select {
+    font-size: 0.8rem !important;
+    height: 1.5rem !important;
+    padding: 0.2rem 0.4rem 0.2rem 0.4rem !important;
+}
+
+.dataTables_info {
+    font-size: small;
+    color: rgb(202, 202, 202);
+}
+
+ul.pagination, li.paginate_button {
+    font-size: small;
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
+}
+
+.stats-list {
+    list-style-type: none;
+    clear: left;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.stats-list .stats-list-positive {
+    color: #228b22;
+}
+
+.stats-list .stats-list-negative {
+    color: #a52a2a;
+}
+
+.stats-list > li {
+    display: inline-block;
+    margin-right: 10px;
+    padding-right: 10px;
+    border-right: 1px solid #cacaca;
+    text-align: center;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.stats-list > li:last-child {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.stats-list > li .stats-list-label {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.9em;
+    font-weight: normal;
+}
+
+.hits, .visits, .size, .count, .s2xx, .s3xx, .so4xx, .total-hits, .total-visits {
+    text-align: right !important;
+}
+
+td  {
+    vertical-align: top;
+}
+
+

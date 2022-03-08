@@ -8,13 +8,14 @@
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="author" content="Log Sense">
-    <meta name="description" content="Analysis of <%= data[:log_file] %>">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com"> 
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
-    <link href="https://fonts.googleapis.com/css2?family=PT+Sans&display=swap" rel="stylesheet">
+    <meta name="author" content="Shair.Tech">
+    <meta name="description" content="Analysis of <%= data[:filenames].join(', ') %>">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;700&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.css"/>
@@ -27,126 +28,8 @@
     <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.20.2"></script>
 
     <style>
-     body {
-       font-family: 'PT Sans', sans-serif;
-       font-size: 80%;
-     }
-
-     #offCanvas {
-       color: #DEDEDE;
-       background: #1C1C1C;
-       border-right: none;
-       box-shadow: none;
-       padding: 0.5rem;
-     }
-     #offCanvas a {
-       color: #FFFFFF;
-     }
-
-     .contents-button {
-       font-size: xx-large;
-     }
-
-     .main-section {
-       margin-left: 45px;
-     }
-
-     h1 {
-       font-size: 1.8rem;
-     }
-
-     h2 {
-       font-size: 1.2rem;
-     }
-
-     th {
-       padding: 0.2rem 1.2rem 0.2rem 0.2rem !important
-     }
-
-     td {
-       padding: 0.2rem 1rem 0.2rem 0.2rem !important;
-     }
-
-     .hits, .visits, .size, .count, .s2xx, .s3xx, .so4xx, .total-hits, .total-visits {
-       text-align: right !important;
-     }
-
-     .card-divider {
-       padding: 0.2rem 0.4rem 0.2rem 0.4rem;
-       background: #1C1C1C;
-       color: white;
-     }
-
-     input, select {
-       font-size: 0.8rem !important;
-       height: 1.5rem !important;
-       padding: 0.2rem 0.4rem 0.2rem 0.4rem !important;
-     }
-
-     .dataTables_info {
-       font-size: small;
-       color: rgb(202, 202, 202);
-     }
-
-     ul.pagination, li.paginate_button {
-       font-size: small;
-       margin-top: 0px !important;
-       margin-bottom: 0px !important;
-       padding-top: 0px !important;
-       padding-bottom: 0px !important;
-     }
-
-     .stats-list {
-       list-style-type: none;
-       clear: left;
-       margin: 0;
-       padding: 0;
-       text-align: center;
-       margin-bottom: 30px;
-     }
-
-     .stats-list .stats-list-positive {
-       color: #228b22;
-     }
-
-     .stats-list .stats-list-negative {
-       color: #a52a2a;
-     }
-
-     .stats-list > li {
-       display: inline-block;
-       margin-right: 10px;
-       padding-right: 10px;
-       border-right: 1px solid #cacaca;
-       text-align: center;
-       font-size: 1.1em;
-       font-weight: bold;
-     }
-
-     .stats-list > li:last-child {
-       border: none;
-       margin: 0;
-       padding: 0;
-     }
-
-     .stats-list > li .stats-list-label {
-       display: block;
-       margin-top: 2px;
-       font-size: 0.9em;
-       font-weight: normal;
-     }
-
-     #streaks-table .ip {
-       vertical-align: top;
-     }
-     #streaks-table .date {
-       font-weight: bold;
-     }
-     #streaks-table .res-title {
-       font-decoration: underline;
-     }
+     <%= render "stylesheet.css" %>
     </style>
-
   </head>
 
   <body>
@@ -154,54 +37,37 @@
       <div class="off-canvas position-left" id="offCanvas" data-off-canvas>
         <%= render "navigation.html.erb",
                    menus: Emitter::apache_report_specification.map { |x| x[:title] }  +
-                   ["Streaks", "Command Invocation", "Performance"] %>
+                   ["Command Invocation", "Performance"] %>
       </div>
-      
-      <div class="off-canvas-content grid-container grid-x fluid" data-off-canvas-content>
-        <div data-sticky-container>
-          <div class="sticky" data-sticky data-margin-top="0">
-            <div class="contents-button">
-              <i id="hamburger" class="fi-list" data-toggle="offCanvas"></i>
-            </div>
-          </div>
-        </div>
+      <div class="off-canvas-content" data-off-canvas-content>
+        <button id="toggle-button" type="button" data-toggle="offCanvas">
+          &#9776;
+        </button>
 
-        <section class="main-section">
+        <section class="main-section grid-container fluid">
           <h1><%= options[:title] || "Log Sense Apache Log Report" %></h1>
 
           <p><b>Input File(s):</b>  <%= data[:filenames].empty? ? "stdin" : data[:filenames].join(", ") %></p>
 
-          <div class="grid-x grid-margin-x">
-            <article class="card small-12 large-6 cell">
-              <div class="card-divider">
-                <h2 id="<%= Emitter::slugify "Summary" %>">Summary</h2>
-              </div>
-              <div class="card-section">
-                <%= render "summary.html.erb", data: data %>
-              </div>
+          <div class="grid-x grid-padding-x">
+            <article class="small-12 large-6 cell">
+              <h2 id="<%= Emitter::slugify "Summary" %>">Summary</h2>
+              <%= render "summary.html.erb", data: data %>
             </article>
 
-            <article class="card cell small-12 large-6">
-              <div class="card-divider">
-                <h2 id="<%= Emitter::slugify "Summary" %>">Log Structure</h2>
-              </div>
-              <div class="card-section">
-                <%= render "log_structure.html.erb", data: data %>
-              </div>
+            <article class="small-12 large-6 cell">
+              <h2 id="<%= Emitter::slugify "Summary" %>">Log Structure</h2>
+              <%= render "log_structure.html.erb", data: data %>
             </article>
-          </div>
 
-          <div class="grid-x grid-margin-x">
             <% @reports.each_with_index do |report, index| %>
-              <article class="card cell <%= report[:col] || "small-12 large-6" %>" >
-                <div class="card-divider">
-                  <h2 id="<%= Emitter::slugify report[:title] %>">
-                    <%= report[:title] %>
-                  </h2>
-                </div>
+              <article class="<%= report[:col] || "small-12 large-6" %> cell">
+                <h2 id="<%= Emitter::slugify report[:title] %>"><%= report[:title] %></h2>
+
                 <%= render "report_data.html.erb", report: report, index: index %>
                 <% if report[:vega_spec] %>
-                  <div id="<%= "plot-#{index}" %>"></div>
+                  <div id="<%= "plot-#{index}" %>" class="plot-canvas">
+                  </div>
                   <script>
                    plot_spec_<%= index %> = Object.assign(
                      <%= report[:vega_spec].to_json %>,
@@ -216,45 +82,35 @@
                   </script>
                 <% end %>
 
-                <div class="card-section">
-                  <%= render "output_table.html.erb", report: report, index: index %>
-                </div>
+                <%= render "output_table.html.erb", report: report, index: index %>
               </article>
             <% end %>
-          </div>
 
-          <div class="grid-x grid-margin-x">
-            <div class="cell small-12 large-6">
-              <article>
-                <h2 id="<%= Emitter::slugify "Command Invocation" %>">Command Invocation</h2>
+            <article class="small-12 large-6 cell">
+              <h2 id="<%= Emitter::slugify "Command Invocation" %>">Command Invocation</h2>
+              <%= render "command_invocation.html.erb", data: data, options: options %>
+            </article>
 
-                <%= render "command_invocation.html.erb", data: data, options: options %>
-              </article>
-            </div>
-
-            <div class="small-12 large-6 cell">
-              <article>
-                <h2 id="<%= Emitter::slugify "Performance" %>">Performance</h2>
-
-                <%=  render "performance.html.erb", data: data %>
-              </article>
-            </div>
+            <article class="small-12 large-6 cell">
+              <h2 id="<%= Emitter::slugify "Performance" %>">Performance</h2>
+              <%=  render "performance.html.erb", data: data %>
+            </article>
           </div>
         </section>
       </div>
-
-      <script type="text/javascript" src="js/vendor/what-input.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>    
-      <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/js/foundation.min.js" crossorigin="anonymous"></script>
-      <script>
-       $(document).foundation();
-
-       $(document).ready(function () {
-         $('.data-table').each(function () {
-           $(this).DataTable();
-         });
-       });
-      </script>
     </div>
+
+    <script type="text/javascript" src="js/vendor/what-input.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/js/foundation.min.js" crossorigin="anonymous"></script>
+    <script>
+     $(document).foundation();
+
+     $(document).ready(function () {
+       $('.data-table').each(function () {
+         $(this).DataTable();
+       });
+     });
+    </script>
   </body>
 </html>

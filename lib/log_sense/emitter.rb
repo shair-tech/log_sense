@@ -357,8 +357,8 @@ module LogSense
               k[1],
               v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.size,
               v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.size,
-              v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.join(' ■ '),
-              v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.join(' ■ ')
+              v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.join(' · '),
+              v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.join(' · ')
             ]
           end,
           col: 'small-12 cell'
@@ -529,7 +529,7 @@ module LogSense
             [
               k,
               v.map { |x| x[1] }.inject(&:+),
-              v.map { |x| x[0] }.join(' ■ ')
+              v.map { |x| x[0] }.join(' · ')
             ]
           end
         },
@@ -543,7 +543,7 @@ module LogSense
               k[0],
               k[1],
               v.size,
-              v.map { |x| x[2] }.join(' ■ ')
+              v.map { |x| x[2] }.join(' · ')
             ]
           end,
           col: 'small-12 cell'
