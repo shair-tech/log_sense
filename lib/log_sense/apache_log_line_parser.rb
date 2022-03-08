@@ -44,7 +44,7 @@ module LogSense
 
     attr_reader :format
 
-    def initialize 
+    def initialize
       @format = /#{IP} #{IDENT} #{USERID} \[#{TIMESTAMP}\] "(#{METHOD} #{URL} #{PROTOCOL}|-|.+)" #{RETURN_CODE} #{SIZE} "#{REFERER}" "#{USER_AGENT}"/
     end
 
