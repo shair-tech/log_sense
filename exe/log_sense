@@ -46,6 +46,10 @@ else
   @data = cruncher_klass.crunch @db, @options
   @data = LogSense::IpLocator.geolocate @data
 
+  # Enhance data with Geolocation information
+  country_col = @data[:ips][0].size - 1
+  @data[:countries] = @data[:ips].group_by { |x| x[country_col] }
+
   @ended_at = Time.now
   @duration = @ended_at - @started_at
 
@@ -57,7 +61,6 @@ else
                         duration: @duration,
                         width: @options[:width]
                       })
-
   #
   # Emit Output
   #

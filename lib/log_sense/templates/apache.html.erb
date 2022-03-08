@@ -152,7 +152,7 @@
       <div class="off-canvas position-left" id="offCanvas" data-off-canvas>
         <%= render "navigation.html.erb",
                    menus: Emitter::apache_report_specification.map { |x| x[:title] }  +
-                   ["Geolocation", "Streaks", "Command Invocation", "Performance"] %>
+                   ["Streaks", "Command Invocation", "Performance"] %>
       </div>
       
       <div class="off-canvas-content grid-container grid-x fluid" data-off-canvas-content>
@@ -223,38 +223,7 @@
 
           <article class="card">
             <div class="card-divider">
-              <h2 id="<%= Emitter::slugify "Geolocation" %>">Geolocation</h2>
-            </div>
-            <div class="card-section">
-              <table id="geolocation-table" class="table unstriped">
-                <thead>
-                  <tr>
-                    <th>Country Code</th>
-                    <th>Total Hits</th>
-                    <th>Total Visits</th>
-                    <th>IPs</th>
-                  </tr>              
-                </thead>
-                <tbody>
-                  <%# IP, Hits, Visits Size, Country%>
-                  <% data[:ips].group_by { |x| x[4] }.each do |k, v| %>
-                    <tr>
-                      <td class="country"><%= k %></td>
-                      <td class="total-hits"><%= v.map { |x| x[1] }.inject(&:+) %></td>
-                      <td class="total-visits"><%= v.map { |x| x[2] }.inject(&:+) %></td>
-                      <td class="ips">
-                        <%= v.map { |x| "<a href=\"https://whatismyipaddress.com/ip/#{x[0]}\">#{x[0]}</a>" }.join(", ") %>
-                      </td>
-                    </tr>
-                  <% end %>
-                </tbody>
-              </table>
-            </div>
-          </article>
-
-          <article class="card">
-            <div class="card-divider">
-              <h2 id="<%= Emitter::slugify "Geolocation" %>">Streaks</h2>
+              <h2 id="<%= Emitter::slugify "Streaks" %>">Streaks</h2>
             </div>
             <div class="card-section">
               <table id="streaks-table" class="table data-table streaks">

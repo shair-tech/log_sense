@@ -2,6 +2,11 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.4.2
+
+- [Code] Refactor warning message in textual reports.
+  URLs are not sanitized.
+
 * 1.4.1
 
 - [User] New textual report for Apache

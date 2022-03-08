@@ -2,7 +2,6 @@ require 'terminal-table'
 require 'json'
 require 'erb'
 require 'ostruct'
-
 module LogSense
   #
   # Emit Data
@@ -31,8 +30,6 @@ module LogSense
       end
     end
 
-    private_class_method
-
     def self.render(template, vars = {})
       @template = File.join(File.dirname(__FILE__), 'templates', "_#{template}")
       erb_template = File.read @template
@@ -42,11 +39,11 @@ module LogSense
     def self.escape_javascript(string)
       js_escape_map = {
         '<' => '&lt;',
-        '</' => '&lt;\/',
-        '\\' => '\\\\',
+        '</' => '&lt;/',
         '\r\n' => '\\r\\n',
         '\n' => '\\n',
         '\r' => '\\r',
+        '\\' => ' \\\\',
         '"' => ' \\"',
         "'" => " \\'",
         '`' => ' \\`',
@@ -98,7 +95,7 @@ module LogSense
     #   column_alignment: specification of column alignments (works for txt reports)
     #   vega_spec: specifications for Vega output
     #   datatable_options: specific options for datatable
-    def self.apache_report_specification(data = {})
+    def self.apache_report_specification(data)
       [
         { title: 'Daily Distribution',
           header: %w[Day DOW Hits Visits Size],
@@ -329,12 +326,26 @@ module LogSense
           rows: data[:ips]
         },
         {
+          title: 'Countries',
+          header: %w[Country Hits Visits IPs],
+          column_alignment: %i[left right right left],
+          rows: data[:countries]&.map do |k, v|
+            [
+              k,
+              v.map { |x| x[1] }.inject(&:+),
+              v.map { |x| x[2] }.inject(&:+),
+              v.map { |x| "<a href=\"https://whatismyipaddress.com/ip/#{x[0]}\">#{x[0]}</a>" }.join(', ')
+            ]
+          end
+        },
+        {
           title: 'Referers',
           header: %w[Referers Hits Visits Size],
           column_alignment: %i[left right right right],
           rows: data[:referers],
           col: 'small-12 cell'
         },
+        
       ]
     end
 
@@ -471,27 +482,39 @@ module LogSense
           header: %w[Date IP URL Description Log ID],
           column_alignment: %i[left left left left left],
           rows: data[:fatal],
-          col: "small-12 cell"
+          col: 'small-12 cell'
         },
         {
-          title: "Internal Server Errors",
+          title: 'Internal Server Errors',
           header: %w[Date Status IP URL Description Log ID],
           column_alignment: %i[left left left left left left],
           rows: data[:internal_server_error],
-          col: "small-12 cell"
+          col: 'small-12 cell'
         },
         {
-          title: "Errors",
+          title: 'Errors',
           header: %w[Log ID Context Description Count],
           column_alignment: %i[left left left left],
           rows: data[:error],
-          col: "small-12 cell"
+          col: 'small-12 cell'
         },
         {
-          title: "IPs",
+          title: 'IPs',
           header: %w[IPs Hits Country],
           column_alignment: %i[left right left],
           rows: data[:ips]
+        },
+        {
+          title: 'Countries',
+          header: %w[Country Hits IPs],
+          column_alignment: %i[left right right left],
+          rows: data[:countries]&.map do |k, v|
+            [
+              k,
+              v.map { |x| x[1] }.inject(&:+),
+              v.map { |x| "<a href=\"https://whatismyipaddress.com/ip/#{x[0]}\">#{x[0]}</a>" }.join(', ')
+            ]
+          end
         }
       ]
     end
