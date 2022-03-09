@@ -7,6 +7,7 @@
 - [User] Option --input-files allows to specify input files
   in addition to passing filenames to the command line
 - [User] Minor changes to the layout of HTML reports
+- [User] Add version number in reports
 - [Fixed] Duplicated entries in navigation
 - [Code] Updated and added minitest(s)
 

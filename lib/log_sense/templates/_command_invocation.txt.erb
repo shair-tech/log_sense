@@ -1,6 +1,7 @@
 <%=
 table = Terminal::Table.new rows: [
   ["Command", data[:command] ],
+  ["Version", LogSense::VERSION]
 ]
 table.style = { border_i: "|" }
 table
