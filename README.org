@@ -76,6 +76,7 @@ generated files are then made available on a private area on the web.
   Usage: log_sense [options] [logfile ...]
           --title=TITLE                Title to use in the report
       -f, --input-format=FORMAT        Input format (either rails or apache)
+      -i, --input-files=file,file,     Input files (can also be passed directly)
       -t, --output-format=FORMAT       Output format: html, org, txt, sqlite. See below for available formats
       -o, --output-file=OUTPUT_FILE    Output file
       -b, --begin=DATE                 Consider entries after or on DATE
@@ -88,7 +89,7 @@ generated files are then made available on a private area on the web.
       -v, --version                    Prints version information
       -h, --help                       Prints this help
 
-  This is version 1.5.0
+  This is version 1.5.1
 
   Output formats
   rails parsing can produce the following outputs:

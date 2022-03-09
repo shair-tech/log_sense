@@ -2,15 +2,21 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.5.1
+
+- [User] Option --input-files allows to specify input files
+  in addition to passing filenames to the command line
+- [User] Minor changes to the layout of HTML reports
+- [Fixed] Duplicated entries in navigation
+- [Code] Updated and added minitest(s)
+
 * 1.5.0
 
 - [User] Present Unique Visits / day as integer
 - [User] Added Country and Streaks report for rails
 - [User] Changed Streak report in Apache
-
 - [Gem] Updated DBIP
 - [Gem] Updated Bundle  
-
 - [Code] Refactored all reports, so that they are specified
   in the same way  
 - [Code] Refactor warning message in textual reports
