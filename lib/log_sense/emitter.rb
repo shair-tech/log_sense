@@ -8,7 +8,7 @@ module LogSense
   # Emit Data
   #
   module Emitter
-    def self.emit data = {}, options = {}
+    def self.emit(data = {}, options = {})
       @input_format = options[:input_format] || 'apache'
       @output_format = options[:output_format] || 'html'
 
@@ -78,12 +78,12 @@ module LogSense
         data
       else
         table_columns = data[0].size
-        data.map { |x|
-          (0..table_columns - 1).each.map { |col|
+        data.map do |x|
+          (0..table_columns - 1).each.map do |col|
             should_shorten = x[col] && x[col].size > width - 3 && to_shorten.include?(col)
             should_shorten ? "#{x[col][0..(width - 3)]}..." : x[col]
-          }
-        }
+          end
+        end
       end
     end
 
