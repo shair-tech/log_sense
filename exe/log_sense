@@ -11,11 +11,21 @@ require 'log_sense.rb'
 @options     = LogSense::OptionsParser.parse ARGV
 @output_file = @options[:output_file]
 
-if ARGV.map { |x| File.exist?(x) }.include?(false)
-  $stderr.puts "Error: input file(s) '#{ARGV.reject { |x| File.exist?(x) }.join(', ')}' do not exist"
+#
+# Input files can be gotten from an option and from what remains in
+# ARGV
+#
+@input_filenames = @options[:input_filenames] + ARGV
+@non_existing = @input_filenames.reject { |x| File.exist?(x) }
+
+unless @non_existing.empty?
+  $stderr.puts "Error: input file(s) '#{@non_existing.join(', ')}' do not exist"
   exit 1
 end
-@input_files = ARGV.empty? ? [$stdin] : ARGV.map { |x| File.open(x, 'r') }
+@input_files = @input_filenames.empty? ? [$stdin] : @input_filenames.map { |x| File.open(x, 'r') }
+
+puts @input_files
+exit
 
 #
 # Parse Log and Track Statistics

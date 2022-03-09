@@ -22,6 +22,10 @@ module LogSense
           args[:input_format] = n
         end
 
+        opts.on('-iFORMAT', '--input-files=file,file,', Array, 'Input files (can also be passed directly)') do |n|
+          args[:input_filenames] = n
+        end
+
         opts.on('-tFORMAT', '--output-format=FORMAT', String, 'Output format: html, org, txt, sqlite. See below for available formats') do |n|
           args[:output_format] = n
         end
@@ -95,6 +99,7 @@ module LogSense
       opt_parser.parse!(options)
 
       args[:limit] ||= limit
+      args[:input_filenames] ||= []
       args[:input_format] ||= 'apache'
       args[:output_format] ||= 'html'
       args[:ignore_crawlers] ||= false
