@@ -98,7 +98,8 @@ module LogSense
     #   datatable_options: specific options for datatable
     def self.apache_report_specification(data = {})
       [
-        { title: 'Daily Distribution',
+        {
+          title: 'Daily Distribution',
           header: %w[Day DOW Hits Visits Size],
           column_alignment: %i[left left right right right],
           rows: data[:daily_distribution],
@@ -166,9 +167,9 @@ module LogSense
                                     'x': {'field': 'Day', 'type': 'temporal'},
                                   }
           }
-          
         },
-        { title: 'Time Distribution',
+        {
+          title: 'Time Distribution',
           header: %w[Hour Hits Visits Size],
           column_alignment: %i[left right right right],
           rows: data[:time_distribution],
@@ -268,7 +269,8 @@ module LogSense
                                   }
           }
         },
-        { title: 'Browsers',
+        {
+          title: 'Browsers',
           header: %w[Browser Hits Visits Size],
           column_alignment: %i[left right right right],
           rows: data[:browsers],
@@ -294,7 +296,8 @@ module LogSense
                                   }
           }
         },
-        { title: 'Platforms',
+        {
+          title: 'Platforms',
           header: %w[Platform Hits Visits Size],
           column_alignment: %i[left right right right],
           rows: data[:platforms],
