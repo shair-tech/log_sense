@@ -24,9 +24,6 @@ unless @non_existing.empty?
 end
 @input_files = @input_filenames.empty? ? [$stdin] : @input_filenames.map { |x| File.open(x, 'r') }
 
-puts @input_files
-exit
-
 #
 # Parse Log and Track Statistics
 #
