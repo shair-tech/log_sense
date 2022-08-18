@@ -3,7 +3,7 @@ require_relative 'lib/log_sense/version'
 Gem::Specification.new do |spec|
   spec.name          = 'log_sense'
   spec.version       = LogSense::VERSION
-  spec.authors       = ['Adolfo Fibrillation']
+  spec.authors       = ['Adolfo Villafiorita']
   spec.email         = ['adolfo@shair.tech']
 
   spec.summary       = %q{Generate analytics for Apache and Rails log file.}
@@ -33,6 +33,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'sqlite3'
   spec.add_dependency 'terminal-table'
 
-  spec.add_development_dependency 'byebug'
+  spec.add_development_dependency 'debug'
   spec.add_development_dependency 'minitest'
 end
