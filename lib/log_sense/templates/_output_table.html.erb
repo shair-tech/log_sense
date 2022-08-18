@@ -13,11 +13,59 @@
  $(document).ready(function(){
    $('#table-<%= index %>').dataTable({
      data: data_<%= index %>,
+     pageLength: 25,
      <%= report[:datatable_options] + "," if report[:datatable_options] %>
      columns: [
        <% report[:header].each do |header| %>
+       <% if header == "Size" -%>
+       {
+         data: 'Size',
+         className: '<%= Emitter::slugify("Size") %>',
+         render: function(data, type, row) {
+           // If display or filter data is requested, format the date
+           if ( type === 'display' || type === 'filter' ) {
+            return data;
+           }
+           // Otherwise the data type requested (`type`) is type detection or
+           // sorting data, for which we want to use an integer value
+           value = data.split(/(\s+)/);
+           size = parseInt(value[0])
+           switch(value[2]) {
+             case 'B':
+               multiplier = 1
+               break;
+             case 'KB':
+               multiplier = 1024
+               break;
+             case 'MB':
+               multiplier = 1024 * 1024
+               break;
+             case 'GB':
+               multiplier = 1024 * 1024 * 1024
+               break;
+             default:
+               multiplier = 1
+           } 
+           return size * multiplier;
+         }
+       },
+       <% elsif header == "IP" -%>
+       {
+         data: 'IP',
+         className: '<%= Emitter::slugify("IP") %>',
+         render: function(data, type, row) {
+           // If display or filter data is requested, format the date
+           if ( type === 'display' || type === 'filter' ) {
+             return "<a target=\"_blank\" href=\"https://db-ip.com/" + data + "\">" + data + "</a>";
+           }
+           // For any other purpose return data
+           return data;
+         }
+       },
+       <% else -%>
        { data: '<%= header %>', className: '<%= Emitter::slugify(header) %>' },
-       <% end %>
+       <% end -%>
+       <% end -%>
      ]
    });
  });
