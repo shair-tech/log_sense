@@ -2,6 +2,29 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.5.2
+
+- [User] Updated DB-IP country file.
+- [User] Added reports "Missed Pages by IP" and "Missed Resources by
+  IP".  It can help pinpoint attack sources.
+- [User] Added report "Combined Platform", which puts together
+  Browser, OS, and IP.
+- [User] Summary now shows total size transferred.
+- [User] Added link to DB-IP page for IPs in some tables.
+- [User] Added count of IPs by Country.
+- [User] Improved textual report: values in cells holding multiple
+  values (e.g. IPs) are now shown in distinct lines in the cell. A new
+  option -r limits the number of lines shown per cell.
+- [Default] The number of rows initially shown in HTML reports is now 25.
+- [Default] Default for number of entries in textual report is now
+  100 (used to be 900).
+- [Fixed] The size column in HTML reports is now sorted numerically.
+- [Code] Improved performances of DataTable rendering, using the
+  dataRender flag.
+- [Code] Use trim_mode in ERB to avoid empty lines in HTML output.
+- [Code] Moved to the debug gem.
+- [Gem] Updated email and author's name.
+
 * 1.5.1
 
 - [User] Option --input-files allows to specify input files
@@ -16,7 +39,7 @@
 - [User] Present Unique Visits / day as integer
 - [User] Added Country and Streaks report for rails
 - [User] Changed Streak report in Apache
-- [Gem] Updated DBIP
+- [Gem] Updated DB-IP
 - [Gem] Updated Bundle  
 - [Code] Refactored all reports, so that they are specified
   in the same way  
