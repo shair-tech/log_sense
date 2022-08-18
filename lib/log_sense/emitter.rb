@@ -45,6 +45,9 @@ module LogSense
       end
     end
 
+    #
+    # This is used in templates
+    #
     def self.render(template, vars = {})
       @template = File.join(File.dirname(__FILE__), 'templates', "_#{template}")
       erb_template = File.read @template
