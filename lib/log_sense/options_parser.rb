@@ -8,7 +8,7 @@ module LogSense
     # parse command line options
     #
     def self.parse(options)
-      limit = 900
+      limit = 100
       args = {} 
 
       opt_parser = OptionParser.new do |opts|
@@ -46,7 +46,7 @@ module LogSense
           args[:limit] = n
         end
 
-        opts.on('-wWIDTH', '--width=WIDTH', Integer, 'Maximum width of URL and description columns in text reports') do |n|
+        opts.on('-wWIDTH', '--width=WIDTH', Integer, 'Maximum width of long columns in textual reports') do |n|
           args[:width] = n
         end
 
