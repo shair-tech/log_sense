@@ -8,13 +8,20 @@
     <span class="stats-list-label">To</span>
   </li>
   <li class="stats-list-positive">
-    <%= data[:total_days_in_analysis] %> <span class="stats-list-label">Days</span>
+    <%= data[:total_days_in_analysis] %>
+    <span class="stats-list-label">Days</span>
+  </li>
+  <li class="stats-list-positive">
+    <%= data[:total_size] %>
+    <span class="stats-list-label">Data Transferred</span>
   </li>
   <li class="stats-list-negative">
-    <%= data[:total_hits] %> <span class="stats-list-label">Hits</span>
+    <%= data[:total_hits] %>
+    <span class="stats-list-label">Hits</span>
   </li>
   <li class="stats-list-negative">
-    <%= data[:total_unique_visits] %> <span class="stats-list-label">Unique Visits</span>
+    <%= data[:total_unique_visits] %>
+    <span class="stats-list-label">Unique Visits</span>
   </li>
   <li class="stats-list-negative">
     <% days = data[:last_day_in_analysis] - data[:first_day_in_analysis] %>
