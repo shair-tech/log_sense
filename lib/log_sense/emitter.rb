@@ -10,6 +10,18 @@ module LogSense
   # Emit Data
   #
   module Emitter
+    def self.human_readable_size(size)
+      if size < 1024
+        "%d B" % size
+      elsif size < 1024 * 1024
+        "%.2f KB" % (size.to_f / 1024)
+      elsif size < 1024 * 1024 * 1024
+        "%.2f MB" % (size.to_f / (1024 * 1024))
+      else
+        "%.2f GB" % (size.to_f / (1024 * 1024 * 1024))
+      end
+    end
+    
     def self.emit(data = {}, options = {})
       @input_format = options[:input_format] || 'apache'
       @output_format = options[:output_format] || 'html'
