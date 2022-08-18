@@ -34,7 +34,7 @@ module LogSense
       # determine the main template to read
       @template = File.join(File.dirname(__FILE__), 'templates', "#{@input_format}.#{@output_format}.erb")
       erb_template = File.read @template
-      output = ERB.new(erb_template).result(binding)
+      output = ERB.new(erb_template, trim_mode: "-").result(binding)
 
       if options[:output_file]
         file = File.open options[:output_file], 'w'
@@ -48,7 +48,8 @@ module LogSense
     def self.render(template, vars = {})
       @template = File.join(File.dirname(__FILE__), 'templates', "_#{template}")
       erb_template = File.read @template
-      ERB.new(erb_template).result(OpenStruct.new(vars).instance_eval { binding })
+      ERB.new(erb_template, trim_mode: "-")
+        .result(OpenStruct.new(vars).instance_eval { binding })
     end
 
     def self.escape_javascript(string)
