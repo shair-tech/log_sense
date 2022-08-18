@@ -4,6 +4,8 @@ require 'json'
 require 'erb'
 require 'ostruct'
 module LogSense
+  WORDS_SEPARATOR = ' · '
+
   #
   # Emit Data
   #
@@ -119,7 +121,7 @@ module LogSense
                        },
                        {
                          'mark': {
-                                   'type': 'text',
+                                  'type': 'text',
                                   'color': '#3E5772',
                                   'align': 'middle',
                                   'baseline': 'top',
@@ -127,14 +129,14 @@ module LogSense
                                   'yOffset': -15
                                  },
                         'encoding': {
-                                      'text': {'field': 'Hits', 'type': 'quantitative'},
+                                     'text': {'field': 'Hits', 'type': 'quantitative'},
                                      'y': {'field': 'Hits', 'type': 'quantitative'}
                                     }
                        },
 
                        {
                          'mark': {
-                                   'type': 'line',
+                                  'type': 'line',
                                   'color': '#A52A2A',
                                   'point': {
                                              'color': '#A52A2A',
@@ -149,7 +151,7 @@ module LogSense
 
                        {
                          'mark': {
-                                   'type': 'text',
+                                  'type': 'text',
                                   'color': '#A52A2A',
                                   'align': 'middle',
                                   'baseline': 'top',
@@ -203,28 +205,58 @@ module LogSense
           header: %w[Path Hits Visits Size Status],
           column_alignment: %i[left right right right right],
           rows: data[:most_requested_pages],
-          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 } ]'
+          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 }, { width: \'15%\', targets: [1, 2, 3, 4] }], dataRender: true'
         },
         {
           title: '20_ and 30_ on other resources',
           header: %w[Path Hits Visits Size Status],
           column_alignment: %i[left right right right right],
           rows: data[:most_requested_resources],
-          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 } ]'
+          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 }, { width: \'15%\', targets: [1, 2, 3, 4] }], dataRender: true'
         },
         {
           title: '40_ and 50_x on HTML pages',
           header: %w[Path Hits Visits Status],
           column_alignment: %i[left right right right],
           rows: data[:missed_pages],
-          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 } ]'
+          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 }, { width: \'20%\', targets: [1, 2, 3] }], dataRender: true'
         },
         {
           title: '40_ and 50_ on other resources',
           header: %w[Path Hits Visits Status],
           column_alignment: %i[left right right right],
           rows: data[:missed_resources],
-          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 } ]'
+          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 }, { width: \'20%\', targets: [1, 2, 3] }], dataRender: true'
+        },
+        {
+          title: '40_ and 50_x on HTML pages by IP',
+          header: %w[IP Hits Paths],
+          column_alignment: %i[left right left],
+          # Value is something along the line of:
+          # [["66.249.79.93", "/adolfo/notes/calendar/2014/11/16.html", "404"],
+          #  ["66.249.79.93", "/adolfo/website-specification/generate-xml-sitemap.org.html", "404"]]
+          rows: data[:missed_pages_by_ip]&.group_by { |x| x[0] }&.map { |k, v|
+            [
+              k,
+              v.size,
+              v.map { |x| x[1] }.join(WORDS_SEPARATOR)
+            ]
+          }&.sort { |x, y| y[1] <=> x[1] }
+        },
+        {
+          title: '40_ and 50_ on other resources by IP',
+          header: %w[IP Hits Paths],
+          column_alignment: %i[left right left],
+          # Value is something along the line of:
+          # [["66.249.79.93", "/adolfo/notes/calendar/2014/11/16.html", "404"],
+          #  ["66.249.79.93", "/adolfo/website-specification/generate-xml-sitemap.org.html", "404"]]
+          rows: data[:missed_resources_by_ip]&.group_by { |x| x[0] }&.map { |k, v|
+            [
+              k,
+              v.size,
+              v.map { |x| x[1] }.join(WORDS_SEPARATOR)
+            ]
+          }&.sort { |x, y| y[1] <=> x[1] }
         },
         {
           title: 'Statuses',
@@ -233,10 +265,10 @@ module LogSense
           rows: data[:statuses],
           vega_spec: {
             'mark': 'bar',
-                      'encoding': {
-                                    'x': {'field': 'Status', 'type': 'nominal'},
-                                   'y': {'field': 'Count', 'type': 'quantitative'}
-                                  }
+            'encoding': {
+               'x': {'field': 'Status', 'type': 'nominal'},
+               'y': {'field': 'Count', 'type': 'quantitative'}
+            }
           }
         },
         {
@@ -246,27 +278,27 @@ module LogSense
           rows: data[:statuses_by_day],
           vega_spec: {
             'transform': [ {'fold': ['S_2xx', 'S_3xx', 'S_4xx' ] }],
-                      'mark': 'bar',
-                      'encoding': {
-                                    'x': {
-                                           'field': 'Date',
-                                          'type': 'ordinal',
-                                          'timeUnit': 'day', 
-                                         },
-                                   'y': {
-                                          'aggregate': 'sum',
-                                         'field': 'value',
-                                         'type': 'quantitative'
-                                        },
-                                   'color': {
-                                              'field': 'key',
-                                             'type': 'nominal',
-                                             'scale': {
-                                                        'domain': ['S_2xx', 'S_3xx', 'S_4xx'],
-                                                       'range': ['#228b22', '#ff8c00', '#a52a2a']
-                                                      },
-                                            }
-                                  }
+            'mark': 'bar',
+            'encoding': {
+              'x': { 
+                'field': 'Date',
+                'type': 'ordinal',
+                'timeUnit': 'day', 
+              },
+              'y': {
+                'aggregate': 'sum',
+                'field': 'value',
+                'type': 'quantitative'
+              },
+              'color': {
+                'field': 'key',
+                'type': 'nominal',
+                'scale': {
+                  'domain': ['S_2xx', 'S_3xx', 'S_4xx'],
+                  'range': ['#228b22', '#ff8c00', '#a52a2a']
+                },
+              }
+            }
           }
         },
         {
@@ -325,27 +357,36 @@ module LogSense
         },
         {
           title: 'IPs',
-          header: %w[IPs Hits Visits Size Country],
+          header: %w[IP Hits Visits Size Country],
           column_alignment: %i[left right right right left],
           rows: data[:ips]
         },
         {
           title: 'Countries',
-          header: %w[Country Hits Visits IPs],
-          column_alignment: %i[left right right left],
-          rows: data[:countries]&.map do |k, v|
+          header: ["Country", "Hits", "Visits", "IPs", "IP List"],
+          column_alignment: %i[left right right right left],
+          rows: data[:countries]&.map { |k, v|
             [
               k,
               v.map { |x| x[1] }.inject(&:+),
               v.map { |x| x[2] }.inject(&:+),
-              v.map { |x| x[0] }.join(' ')
+              v.map { |x| x[0] }.size,
+              v.map { |x| x[0] }.join(WORDS_SEPARATOR)
             ]
-          end
+          }&.sort { |x, y| y[3] <=> x[3] }
+        },
+        {
+          title: 'Combined Platform Data',
+          header: %w[ Browser OS IP Hits Size],
+          column_alignment: %i[left left left right right],
+          col: 'small-12 cell',
+          rows: data[:combined_platforms],
         },
         {
           title: 'Referers',
           header: %w[Referers Hits Visits Size],
           column_alignment: %i[left right right right],
+          datatable_options: 'columnDefs: [{ width: \'50%\', targets: 0 } ], dataRender: true',
           rows: data[:referers],
           col: 'small-12 cell'
         },
@@ -354,14 +395,15 @@ module LogSense
           report: :html,
           header: ['IP', 'Date', 'Total HTML', 'Total Other', 'HTML', 'Other'],
           column_alignment: %i[left left right right left left],
+          datatable_options: 'columnDefs: [{ width: \'30%\', targets: [4, 5] }, { width: \'10%\', targets: [0, 1, 2, 3]} ], dataRender: true',
           rows: data[:streaks]&.group_by { |x| [x[0], x[1]] }&.map do |k, v|
             [
               k[0],
               k[1],
               v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.size,
               v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.size,
-              v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.join(' · '),
-              v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.join(' · ')
+              v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.join(WORDS_SEPARATOR),
+              v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.join(WORDS_SEPARATOR)
             ]
           end,
           col: 'small-12 cell'
@@ -528,13 +570,13 @@ module LogSense
           title: 'Countries',
           header: %w[Country Hits IPs],
           column_alignment: %i[left right left],
-          rows: data[:countries]&.map do |k, v|
+          rows: data[:countries]&.map { |k, v|
             [
               k,
               v.map { |x| x[1] }.inject(&:+),
-              v.map { |x| x[0] }.join(' · ')
+              v.map { |x| x[0] }.join(WORDS_SEPARATOR)
             ]
-          end
+          }&.sort { |x, y| x[0] <=> y[0] }
         },
         {
           title: 'Streaks',
@@ -546,7 +588,7 @@ module LogSense
               k[0],
               k[1],
               v.size,
-              v.map { |x| x[2] }.join(' · ')
+              v.map { |x| x[2] }.join(WORDS_SEPARATOR)
             ]
           end,
           col: 'small-12 cell'

@@ -101,6 +101,9 @@ module LogSense
       @missed_pages = db.execute "SELECT path, count(path), count(distinct(unique_visitor)), status from LogLine where #{bad_statuses} and #{html_page} and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
       @missed_resources = db.execute "SELECT path, count(path), count(distinct(unique_visitor)), status from LogLine where #{bad_statuses} and #{filter} group by path order by count(path) desc limit #{options[:limit]}"
 
+      @missed_pages_by_ip = db.execute "SELECT ip, path, status from LogLine where #{bad_statuses} and #{html_page} and #{filter} limit #{options[:limit]}"
+      @missed_resources_by_ip = db.execute "SELECT ip, path, status from LogLine where #{bad_statuses} and #{filter} limit #{options[:limit]}"
+
       @statuses = db.execute "SELECT status, count(status) from LogLine where #{filter} group by status order by status"
 
       @by_day_4xx = db.execute "SELECT date(datetime), count(datetime) from LogLine where substr(status, 1,1) == '4' and #{filter} group by date(datetime)"
@@ -113,6 +116,9 @@ module LogSense
 
       @browsers = db.execute "SELECT browser, count(browser), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by browser order by count(browser) desc"
       @platforms = db.execute "SELECT platform, count(platform), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by platform order by count(platform) desc"
+
+      @combined_platforms = db.execute "SELECT browser, platform, ip, count(datetime), #{human_readable_size} from LogLine where #{filter} group by browser, platform, ip order by count(datetime) desc limit #{options[:limit]}"
+
       @referers = db.execute "SELECT referer, count(referer), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by referer order by count(referer) desc limit #{options[:limit]}"
       
       @ips = db.execute "SELECT ip, count(ip), count(distinct(unique_visitor)), #{human_readable_size} from LogLine where #{filter} group by ip order by count(ip) desc limit #{options[:limit]}"
