@@ -80,23 +80,37 @@ module LogSense
       [Integer, Float].include?(klass) ? value : escape_javascript(value || '')
     end
 
-    # limit width of special columns, that is, URL, Path, and Description
+    # limit width of special columns, that is, those in keywords
     # - data: array of arrays
     # - heading: array with column names
     # - width width to set
-    def self.shorten(data, heading, width)
-      # indexes of columns which have to be shortened
-      keywords = %w[URL Referers Description Path]
-      to_shorten = keywords.map { |x| heading.index x }.compact
+    def self.shorten(data, heading, width, inner_rows)
+      # columns which need to be shortened
+      keywords = ["URL", "Referers", "Description", "Path", "Paths", "IP List"]
+      # indexes of columns which have to be shortened (= index in array)
+      to_shorten = keywords.map { |idx| heading.index idx }.compact
 
-      if width.nil? || to_shorten.empty? || data[0].nil?
+      if data[0].nil? || width.nil? || to_shorten.empty?
         data
       else
+        # how many columns do we have?
         table_columns = data[0].size
         data.map do |x|
+          # we iterate over all columns, because we want to return a table
+          # with the same structure of the input table
           (0..table_columns - 1).each.map do |col|
-            should_shorten = x[col] && x[col].size > width - 3 && to_shorten.include?(col)
-            should_shorten ? "#{x[col][0..(width - 3)]}..." : x[col]
+            # split cell into (internal) rows, if necessary
+            content_in_rows = x[col].to_s.split WORDS_SEPARATOR
+            # remove excess rows, shorten each string and return what's left
+            # single cells are returned as they are
+            rows_limit = inner_rows || content_in_rows.size
+            content = content_in_rows[0..(rows_limit - 1)].map { |x|
+              if x.size > width && to_shorten.include?(col)
+                "#{x[0..(width - 3)]}..."
+              else
+                x
+              end
+            }.join("\n")
           end
         end
       end

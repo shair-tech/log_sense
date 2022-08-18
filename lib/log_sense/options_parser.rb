@@ -50,6 +50,10 @@ module LogSense
           args[:width] = n
         end
 
+        opts.on('-rROWS', '--rows=ROWS', Integer, 'Maximum number of rows for columns with multiple entries in textual reports') do |n|
+          args[:inner_rows] = n
+        end
+
         opts.on('-cPOLICY', '--crawlers=POLICY', String, 'Decide what to do with crawlers (applies to Apache Logs)') do |n|
           case n
           when 'only'
