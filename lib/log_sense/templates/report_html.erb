@@ -1,42 +1,22 @@
 <!doctype html>
 <html class="no-js" lang="en">
   <head>
-    <title>
-      <%= options[:title] || "Log Sense: #{data[:filenames].empty? ? "stdin" : data[:filenames].join(", ")}" %>
-    </title>
+    <title><%= @report_title %></title>
 
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <meta name="author" content="Shair.Tech">
-    <meta name="description" content="Analysis of <%= data[:filenames].join(', ') %>">
+    <meta name="description"
+          content="Analysis of <%= @data[:filenames].join(', ') %>">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;700&display=swap" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.css"/>
-
-    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/vega@5.21.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.2.0"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.20.2"></script>
+    <%= render "cdn_links.html.erb" %>
 
     <style>
      <%= render "stylesheet.css" %>
-    </style>
-    <style>
-     #offCanvas {
-       background: #d30001 !important;
-     }
-     h2 {
-       background: #d30001 !important;
-     }
+
+     <%= render @format_specific_css %>
     </style>
   </head>
 
@@ -44,7 +24,7 @@
     <div class="off-canvas-wrapper">
       <div class="off-canvas position-left" id="offCanvas" data-off-canvas>
         <%= render "navigation.html.erb",
-                   menus: Emitter::rails_report_specification.map { |x| x[:title] } %>
+                   menus: @reports.map { |x| x[:title] } %>
       </div>
       <div class="off-canvas-content" data-off-canvas-content>
         <button id="toggle-button" type="button" data-toggle="offCanvas">
@@ -52,24 +32,29 @@
         </button>
 
         <section class="main-section grid-container fluid">
-          <h1><%= options[:title] || "Log Sense Rails Log Report" %></h1>
+          <h1><%= options[:title] || "Log Sense #{@report_title} Log Report" %></h1>
 
-          <p><b>Input File(s):</b>  <%= data[:filenames].empty? ? "stdin" : data[:filenames].join(", ") %></p>
+          <p>
+            <b>Input File(s):</b>
+            <%= @data[:filenames].empty? ? "stdin" : @data[:filenames].join(", ") %>
+          </p>
 
           <div class="grid-x grid-padding-x">
             <article class="small-12 large-6 cell">
               <h2 id="<%= Emitter::slugify "Summary" %>">Summary</h2>
-              <%= render "summary.html.erb", data: data %>
+              <%= render "summary.html.erb", data: @data %>
             </article>
 
             <article class="small-12 large-6 cell">
               <h2 id="<%= Emitter::slugify "Summary" %>">Log Structure</h2>
-              <%= render "log_structure.html.erb", data: data %>
+              <%= render "log_structure.html.erb", data: @data %>
             </article>
 
             <% @reports.each_with_index do |report, index| %>
               <article class="cell <%= report[:col] || "small-12 large-6" %>" >
-                <h2 id="<%= Emitter::slugify report[:title] %>"><%= report[:title] %></h2>
+                <h2 id="<%= Emitter::slugify report[:title] %>">
+                  <%= report[:title] %>
+                </h2>
 
                 <%= render "report_data.html.erb", report: report, index: index %>
                 <% if report[:vega_spec] %>
@@ -95,21 +80,18 @@
 
             <article class="small-12 large-6 cell">
               <h2 id="<%= Emitter::slugify "Command Invocation" %>">Command Invocation</h2>
-              <%= render "command_invocation.html.erb", data: data, options: options %>
+              <%= render "command_invocation.html.erb", data: @data, options: options %>
             </article>
 
             <article class="small-12 large-6 cell">
               <h2 id="<%= Emitter::slugify "Performance" %>">Performance</h2>
-              <%=  render "performance.html.erb", data: data %>
+              <%=  render "performance.html.erb", data: @data %>
             </article>
           </div>
         </section>
       </div>
     </div>
 
-    <script type="text/javascript" src="js/vendor/what-input.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>    
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/js/foundation.min.js" crossorigin="anonymous"></script>
     <script>
      $(document).foundation();
 

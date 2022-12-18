@@ -1,14 +1,14 @@
-require 'sqlite3'
-require 'browser'
+require "sqlite3"
+require "browser"
+require "log_sense/apache_log_line_parser"
 
 module LogSense
-  module ApacheLogParser
-    #
-    # parse an Apache log file and return a SQLite3 DB
-    #
-
-    def self.parse(streams, options = {})
-      db = SQLite3::Database.new ':memory:'
+  #
+  # parse an Apache log file and return a SQLite3 DB
+  #
+  class ApacheLogParser
+    def parse(streams, options = {})
+      db = SQLite3::Database.new ":memory:"
 
       db.execute "CREATE TABLE IF NOT EXISTS LogLine(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +31,7 @@ module LogSense
       source_file TEXT,
       line_number INTEGER
       )"
-      
+
       ins = db.prepare("insert into LogLine (
                 datetime,
                 ip,
@@ -82,7 +82,7 @@ module LogSense
               line_number
             )
           rescue StandardError => e
-            $stderr.puts e.message
+            warn e.message
           end
         end
       end
@@ -90,8 +90,11 @@ module LogSense
       db
     end
 
-    def self.unique_visitor_id hash
+    private
+
+    def unique_visitor_id hash
       "#{hash[:date]} #{hash[:ip]} #{hash[:user_agent]}"
     end
   end
 end
+

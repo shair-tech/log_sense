@@ -1,24 +1,25 @@
 module LogSense
+  # parses a log line and returns a hash
+  # LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
+  #
+  # %h: IP
+  # %l: ident or -
+  # %u: userid or -
+  # %t: [10/Oct/2000:13:55:36 -0700]
+  #   day = 2*digit
+  #   month = 3*letter
+  #   year = 4*digit
+  #   hour = 2*digit
+  #   minute = 2*digit
+  #   second = 2*digit
+  #   zone = (`+' | `-') 4*digit
+  # %r: GET /apache_pb.gif HTTP/1.0
+  # %{User-agent}: "
+  #
+  # Example
+  # 116.179.32.16 - - [19/Dec/2021:22:35:11 +0100] "GET / HTTP/1.1" 200 135 "-" "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+  #
   class ApacheLogLineParser
-    # parses a query and makes it into an expression which can be evaluated
-    # LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\"" combined
-    #
-    # %h: IP
-    # %l: ident or -
-    # %u: userid or -
-    # %t: [10/Oct/2000:13:55:36 -0700]
-    #   day = 2*digit
-    #   month = 3*letter
-    #   year = 4*digit
-    #   hour = 2*digit
-    #   minute = 2*digit
-    #   second = 2*digit
-    #   zone = (`+' | `-') 4*digit
-    # %r: GET /apache_pb.gif HTTP/1.0
-    # %{User-agent}: "
-    #
-    # 116.179.32.16 - - [19/Dec/2021:22:35:11 +0100] "GET / HTTP/1.1" 200 135 "-" "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
-
     DAY = /[0-9]{2}/
     MONTH = /[A-Za-z]{3}/
     YEAR = /[0-9]{4}/
@@ -48,8 +49,9 @@ module LogSense
       @format = /#{IP} #{IDENT} #{USERID} \[#{TIMESTAMP}\] "(#{METHOD} #{URL} #{PROTOCOL}|-|.+)" #{RETURN_CODE} #{SIZE} "#{REFERER}" "#{USER_AGENT}"/
     end
 
-    def parse line
-      hash = @format.match(line) || raise("Apache LogLine Parser Error: Could not parse #{line}")
+    def parse(line)
+      @format.match(line) ||
+        raise("Apache LogLine Parser Error: Could not parse #{line}")
     end
   end
 end

@@ -11,17 +11,23 @@
     <%= data[:total_days] %>
     <span class="stats-list-label">Days in Log</span>
   </li>
+  <% if data[:log_size] %>
   <li class="stats-list-negative">
     <%= data[:log_size] %>
     <span class="stats-list-label">Total Entries</span>
   </li>
+  <% end %>
+  <% if data[:selfpolls_size] %>
   <li class="stats-list-negative">
     <%= data[:selfpolls_size] %>
     <span class="stats-list-label">Self Polls</span>
   </li>
-  <li class="stats-list-negative">
+  <% end %>
+  <% if data[:crawlers] %>
+    <li class="stats-list-negative">
     <td><%= data[:crawlers_size] %></td>
     <span class="stats-list-label">Crawlers</span>
+  <% end %>
   </li>
 </ul>
 

@@ -1,43 +1,51 @@
 # coding: utf-8
-require 'terminal-table'
-require 'json'
-require 'erb'
-require 'ostruct'
-module LogSense
-  WORDS_SEPARATOR = ' · '
+require "terminal-table"
+require "json"
+require "erb"
+require "ostruct"
 
+module LogSense
   #
   # Emit Data
   #
-  module Emitter
-    def self.human_readable_size(size)
-      if size < 1024
-        "%d B" % size
-      elsif size < 1024 * 1024
-        "%.2f KB" % (size.to_f / 1024)
-      elsif size < 1024 * 1024 * 1024
-        "%.2f MB" % (size.to_f / (1024 * 1024))
-      else
-        "%.2f GB" % (size.to_f / (1024 * 1024 * 1024))
-      end
-    end
-    
-    def self.emit(data = {}, options = {})
-      @input_format = options[:input_format] || 'apache'
-      @output_format = options[:output_format] || 'html'
+  class Emitter
+    CDN_CSS = [
+      "https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css",
+      "https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css",
+      "https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.css"
+    ].freeze
 
-      # for the ERB binding
-      @reports = method("#{@input_format}_report_specification".to_sym).call(data)
+    CDN_JS = [
+      "https://code.jquery.com/jquery-3.6.2.min.js",
+      "https://cdn.datatables.net/v/zf/dt-1.13.1/datatables.min.js",
+      "https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js",
+      "https://cdn.jsdelivr.net/npm/vega@5.22.1",
+      "https://cdn.jsdelivr.net/npm/vega-lite@5.6.0",
+      "https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"
+    ].freeze
+
+    def self.emit(reports = {}, data = {}, options = {})
+      # These are used in templates
+      @reports = reports
       @data = data
       @options = options
+      @report_title = options[:input_format].capitalize
+      @format_specific_css = "#{@options[:input_format]}.css.erb"
 
-      # determine the main template to read
-      @template = File.join(File.dirname(__FILE__), 'templates', "#{@input_format}.#{@output_format}.erb")
-      erb_template = File.read @template
+      # Chooses template and destination
+      output_format = @options[:output_format]
+      output_file = @options[:output_file]
+
+      # read template and compile
+      template = File.join(File.dirname(__FILE__),
+                           "templates",
+                           "report_#{output_format}.erb")
+      erb_template = File.read template
       output = ERB.new(erb_template, trim_mode: "-").result(binding)
 
-      if options[:output_file]
-        file = File.open options[:output_file], 'w'
+      # output
+      if output_file
+        file = File.open output_file, "w"
         file.write output
         file.close
       else
@@ -46,41 +54,42 @@ module LogSense
     end
 
     #
-    # This is used in templates
+    # These are used in templates
     #
+
     def self.render(template, vars = {})
-      @template = File.join(File.dirname(__FILE__), 'templates', "_#{template}")
-      erb_template = File.read @template
-      ERB.new(erb_template, trim_mode: "-")
-        .result(OpenStruct.new(vars).instance_eval { binding })
+      @template = File.join(File.dirname(__FILE__), "templates", "_#{template}")
+      if File.exist? @template
+        erb_template = File.read @template
+        ERB.new(erb_template, trim_mode: "-")
+          .result(OpenStruct.new(vars).instance_eval { binding })
+      end
     end
 
     def self.escape_javascript(string)
       js_escape_map = {
-        '<' => '&lt;',
-        '</' => '&lt;/',
-        '\r\n' => '\\r\\n',
-        '\n' => '\\n',
-        '\r' => '\\r',
-        '\\' => ' \\\\',
+        #"&" => "&amp;",
+        #"%" => "&#37;",
+        "<" => "&lt;",
+        "\\" => "&bsol;",
         '"' => ' \\"',
         "'" => " \\'",
-        '`' => ' \\`',
-        '$' => ' \\$'
+        "`" => " \\`",
+        "$" => " \\$"
       }
-      js_escape_map.each do |k, v|
-        string = string.gsub(k, v)
+      js_escape_map.each do |match, replace|
+        string = string.gsub(match, replace)
       end
       string
     end
 
     def self.slugify(string)
-      (string.start_with?(/[0-9]/) ? 'slug-' : '') + string.downcase.gsub(' ', '-')
+      (string.start_with?(/[0-9]/) ? "slug-" : "") + string.downcase.gsub(" ", "-")
     end
 
     def self.process(value)
       klass = value.class
-      [Integer, Float].include?(klass) ? value : escape_javascript(value || '')
+      [Integer, Float].include?(klass) ? value : escape_javascript(value || "")
     end
 
     # limit width of special columns, that is, those in keywords
@@ -117,513 +126,6 @@ module LogSense
           end
         end
       end
-    end
-
-    #
-    # Specification of the reports to generate
-    # Array of hashes with the following information:
-    # - title: report_title
-    #   header: header of tabular data
-    #   rows: data to show
-    #   column_alignment: specification of column alignments (works for txt reports)
-    #   vega_spec: specifications for Vega output
-    #   datatable_options: specific options for datatable
-    def self.apache_report_specification(data = {})
-      [
-        {
-          title: 'Daily Distribution',
-          header: %w[Day DOW Hits Visits Size],
-          column_alignment: %i[left left right right right],
-          rows: data[:daily_distribution],
-          vega_spec: {
-            'layer': [
-                       {
-                         'mark': {
-                                   'type': 'line',
-                                  'point': {
-                                             'filled': false,
-                                            'fill': 'white'
-                                           }
-                                 },
-                        'encoding': {
-                                      'y': {'field': 'Hits', 'type': 'quantitative'}
-                                    }
-                       },
-                       {
-                         'mark': {
-                                  'type': 'text',
-                                  'color': '#3E5772',
-                                  'align': 'middle',
-                                  'baseline': 'top',
-                                  'dx': -10,
-                                  'yOffset': -15
-                                 },
-                        'encoding': {
-                                     'text': {'field': 'Hits', 'type': 'quantitative'},
-                                     'y': {'field': 'Hits', 'type': 'quantitative'}
-                                    }
-                       },
-
-                       {
-                         'mark': {
-                                  'type': 'line',
-                                  'color': '#A52A2A',
-                                  'point': {
-                                             'color': '#A52A2A',
-                                            'filled': false,
-                                            'fill': 'white',
-                                           }
-                                 },
-                        'encoding': {
-                                      'y': {'field': 'Visits', 'type': 'quantitative'}
-                                    }
-                       },
-
-                       {
-                         'mark': {
-                                  'type': 'text',
-                                  'color': '#A52A2A',
-                                  'align': 'middle',
-                                  'baseline': 'top',
-                                  'dx': -10,
-                                  'yOffset': -15
-                                 },
-                        'encoding': {
-                                      'text': {'field': 'Visits', 'type': 'quantitative'},
-                                     'y': {'field': 'Visits', 'type': 'quantitative'}
-                                    }
-                       },
-                       
-                     ],
-                      'encoding': {
-                                    'x': {'field': 'Day', 'type': 'temporal'},
-                                  }
-          }
-        },
-        {
-          title: 'Time Distribution',
-          header: %w[Hour Hits Visits Size],
-          column_alignment: %i[left right right right],
-          rows: data[:time_distribution],
-          vega_spec: {
-            'layer': [
-                       {
-                         'mark': 'bar'
-                       },
-                       {
-                         'mark': {
-                                   'type': 'text',
-                                  'align': 'middle',
-                                  'baseline': 'top',
-                                  'dx': -10,
-                                  'yOffset': -15
-                                 },
-                        'encoding': {
-                                      'text': {'field': 'Hits', 'type': 'quantitative'},
-                                     'y': {'field': 'Hits', 'type': 'quantitative'}
-                                    }
-                       },
-                     ],
-                      'encoding': {
-                                    'x': {'field': 'Hour', 'type': 'nominal'},
-                                   'y': {'field': 'Hits', 'type': 'quantitative'}
-                                  }
-          }
-        },
-        {
-          title: '20_ and 30_ on HTML pages',
-          header: %w[Path Hits Visits Size Status],
-          column_alignment: %i[left right right right right],
-          rows: data[:most_requested_pages],
-          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 }, { width: \'15%\', targets: [1, 2, 3, 4] }], dataRender: true'
-        },
-        {
-          title: '20_ and 30_ on other resources',
-          header: %w[Path Hits Visits Size Status],
-          column_alignment: %i[left right right right right],
-          rows: data[:most_requested_resources],
-          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 }, { width: \'15%\', targets: [1, 2, 3, 4] }], dataRender: true'
-        },
-        {
-          title: '40_ and 50_x on HTML pages',
-          header: %w[Path Hits Visits Status],
-          column_alignment: %i[left right right right],
-          rows: data[:missed_pages],
-          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 }, { width: \'20%\', targets: [1, 2, 3] }], dataRender: true'
-        },
-        {
-          title: '40_ and 50_ on other resources',
-          header: %w[Path Hits Visits Status],
-          column_alignment: %i[left right right right],
-          rows: data[:missed_resources],
-          datatable_options: 'columnDefs: [{ width: \'40%\', targets: 0 }, { width: \'20%\', targets: [1, 2, 3] }], dataRender: true'
-        },
-        {
-          title: '40_ and 50_x on HTML pages by IP',
-          header: %w[IP Hits Paths],
-          column_alignment: %i[left right left],
-          # Value is something along the line of:
-          # [["66.249.79.93", "/adolfo/notes/calendar/2014/11/16.html", "404"],
-          #  ["66.249.79.93", "/adolfo/website-specification/generate-xml-sitemap.org.html", "404"]]
-          rows: data[:missed_pages_by_ip]&.group_by { |x| x[0] }&.map { |k, v|
-            [
-              k,
-              v.size,
-              v.map { |x| x[1] }.join(WORDS_SEPARATOR)
-            ]
-          }&.sort { |x, y| y[1] <=> x[1] }
-        },
-        {
-          title: '40_ and 50_ on other resources by IP',
-          header: %w[IP Hits Paths],
-          column_alignment: %i[left right left],
-          # Value is something along the line of:
-          # [["66.249.79.93", "/adolfo/notes/calendar/2014/11/16.html", "404"],
-          #  ["66.249.79.93", "/adolfo/website-specification/generate-xml-sitemap.org.html", "404"]]
-          rows: data[:missed_resources_by_ip]&.group_by { |x| x[0] }&.map { |k, v|
-            [
-              k,
-              v.size,
-              v.map { |x| x[1] }.join(WORDS_SEPARATOR)
-            ]
-          }&.sort { |x, y| y[1] <=> x[1] }
-        },
-        {
-          title: 'Statuses',
-          header: %w[Status Count],
-          column_alignment: %i[left right],
-          rows: data[:statuses],
-          vega_spec: {
-            'mark': 'bar',
-            'encoding': {
-               'x': {'field': 'Status', 'type': 'nominal'},
-               'y': {'field': 'Count', 'type': 'quantitative'}
-            }
-          }
-        },
-        {
-          title: 'Daily Statuses',
-          header: %w[Date S_2xx S_3xx S_4xx],
-          column_alignment: %i[left right right right],
-          rows: data[:statuses_by_day],
-          vega_spec: {
-            'transform': [ {'fold': ['S_2xx', 'S_3xx', 'S_4xx' ] }],
-            'mark': 'bar',
-            'encoding': {
-              'x': { 
-                'field': 'Date',
-                'type': 'ordinal',
-                'timeUnit': 'day', 
-              },
-              'y': {
-                'aggregate': 'sum',
-                'field': 'value',
-                'type': 'quantitative'
-              },
-              'color': {
-                'field': 'key',
-                'type': 'nominal',
-                'scale': {
-                  'domain': ['S_2xx', 'S_3xx', 'S_4xx'],
-                  'range': ['#228b22', '#ff8c00', '#a52a2a']
-                },
-              }
-            }
-          }
-        },
-        {
-          title: 'Browsers',
-          header: %w[Browser Hits Visits Size],
-          column_alignment: %i[left right right right],
-          rows: data[:browsers],
-          vega_spec: {
-            'layer': [
-                       { 'mark': 'bar' },
-                       {
-                         'mark': {
-                                   'type': 'text',
-                                  'align': 'middle',
-                                  'baseline': 'top',
-                                  'dx': -10,
-                                  'yOffset': -15
-                                 },
-                        'encoding': {
-                                      'text': {'field': 'Hits', 'type': 'quantitative'},
-                                    }
-                       },
-                     ],
-                      'encoding': {
-                                    'x': {'field': 'Browser', 'type': 'nominal'},
-                                   'y': {'field': 'Hits', 'type': 'quantitative'}
-                                  }
-          }
-        },
-        {
-          title: 'Platforms',
-          header: %w[Platform Hits Visits Size],
-          column_alignment: %i[left right right right],
-          rows: data[:platforms],
-          vega_spec: {
-            'layer': [
-                       { 'mark': 'bar' },
-                       {
-                         'mark': {
-                                   'type': 'text',
-                                  'align': 'middle',
-                                  'baseline': 'top',
-                                  'dx': -10,
-                                  'yOffset': -15
-                                 },
-                        'encoding': {
-                                      'text': {'field': 'Hits', 'type': 'quantitative'},
-                                    }
-                       },
-                     ],
-                      'encoding': {
-                                    'x': {'field': 'Platform', 'type': 'nominal'},
-                                   'y': {'field': 'Hits', 'type': 'quantitative'}
-                                  }
-          }
-        },
-        {
-          title: 'IPs',
-          header: %w[IP Hits Visits Size Country],
-          column_alignment: %i[left right right right left],
-          rows: data[:ips]
-        },
-        {
-          title: 'Countries',
-          header: ["Country", "Hits", "Visits", "IPs", "IP List"],
-          column_alignment: %i[left right right right left],
-          rows: data[:countries]&.map { |k, v|
-            [
-              k,
-              v.map { |x| x[1] }.inject(&:+),
-              v.map { |x| x[2] }.inject(&:+),
-              v.map { |x| x[0] }.size,
-              v.map { |x| x[0] }.join(WORDS_SEPARATOR)
-            ]
-          }&.sort { |x, y| y[3] <=> x[3] }
-        },
-        {
-          title: 'Combined Platform Data',
-          header: %w[ Browser OS IP Hits Size],
-          column_alignment: %i[left left left right right],
-          col: 'small-12 cell',
-          rows: data[:combined_platforms],
-        },
-        {
-          title: 'Referers',
-          header: %w[Referers Hits Visits Size],
-          column_alignment: %i[left right right right],
-          datatable_options: 'columnDefs: [{ width: \'50%\', targets: 0 } ], dataRender: true',
-          rows: data[:referers],
-          col: 'small-12 cell'
-        },
-        {
-          title: 'Streaks',
-          report: :html,
-          header: ['IP', 'Date', 'Total HTML', 'Total Other', 'HTML', 'Other'],
-          column_alignment: %i[left left right right left left],
-          datatable_options: 'columnDefs: [{ width: \'30%\', targets: [4, 5] }, { width: \'10%\', targets: [0, 1, 2, 3]} ], dataRender: true',
-          rows: data[:streaks]&.group_by { |x| [x[0], x[1]] }&.map do |k, v|
-            [
-              k[0],
-              k[1],
-              v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.size,
-              v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.size,
-              v.map { |x| x[2] }.compact.select { |x| x.match(/\.html?$/) }.join(WORDS_SEPARATOR),
-              v.map { |x| x[2] }.compact.reject { |x| x.match(/\.html?$/) }.join(WORDS_SEPARATOR)
-            ]
-          end,
-          col: 'small-12 cell'
-        }
-      ]
-    end
-
-    def self.rails_report_specification(data = {})
-      [
-        {
-          title: "Daily Distribution",
-          header: %w[Day DOW Hits],
-          column_alignment: %i[left left right],
-          rows: data[:daily_distribution],
-          vega_spec: {
-            "encoding": {
-                          "x": {"field": "Day", "type": "temporal"},
-                         "y": {"field": "Hits", "type": "quantitative"}
-                        },
-                      "layer": [
-                                 {
-                                   "mark": {
-                                             "type": "line",
-                                            "point": {
-                                                       "filled": false,
-                                                      "fill": "white"
-                                                     }
-                                           }
-                                 },
-                                 {
-                                   "mark": {
-                                             "type": "text",
-                                            "align": "left",
-                                            "baseline": "middle",
-                                            "dx": 5
-                                           },
-                                  "encoding": {
-                                                "text": {"field": "Hits", "type": "quantitative"}
-                                              }
-                                 }
-                               ]
-          }
-        },
-        {
-          title: "Time Distribution",
-          header: %w[Hour Hits],
-          column_alignment: %i[left right],
-          rows: data[:time_distribution],
-          vega_spec: {
-            "layer": [
-                       {
-                         "mark": "bar",
-                       },
-                       {
-                         "mark": {
-                                   "type": "text",
-                                  "align": "middle",
-                                  "baseline": "top",
-                                  "dx": -10,
-                                  "yOffset": -15
-                                 },
-                        "encoding": {
-                                      "text": {"field": "Hits", "type": "quantitative"}
-                                    }
-                       }
-                     ],
-                      "encoding": {
-                                    "x": {"field": "Hour", "type": "nominal"},
-                                   "y": {"field": "Hits", "type": "quantitative"}
-                                  }
-          }
-        },
-        {
-          title: "Statuses",
-          header: %w[Status Count],
-          column_alignment: %i[left right],
-          rows: data[:statuses],
-          vega_spec: {
-            "layer": [
-                       {
-                         "mark": "bar"
-                       },
-                       {
-                         "mark": {
-                                   "type": "text",
-                                  "align": "left",
-                                  "baseline": "top",
-                                  "dx": -10,
-                                  "yOffset": -20
-                                 },
-                        "encoding": {
-                                      "text": {"field": "Count", "type": "quantitative"}
-                                    }
-                       }
-                     ],
-                      "encoding": {
-                                    "x": {"field": "Status", "type": "nominal"},
-                                   "y": {"field": "Count", "type": "quantitative"}
-                                  }
-          }
-        },
-        {
-          title: "Rails Performance",
-          header: %w[Controller Hits Min Avg Max],
-          column_alignment: %i[left right right right right],
-          rows: data[:performance],
-          vega_spec: {
-            "layer": [
-                       {
-                         "mark": {
-                                   "type": "point",
-                                  "name": "data_points"
-                                 }
-                       },
-                       {
-                         "mark": {
-                                   "name": "label",
-                                  "type": "text",
-                                  "align": "left",
-                                  "baseline": "middle",
-                                  "dx": 5,
-                                  "yOffset": 0
-                                 },
-                        "encoding": {
-                                      "text": {"field": "Controller"},
-                                     "fontSize": {"value": 8}
-                                    },
-                       },
-                     ],
-                      "encoding": {
-                                    "x": {"field": "Avg", "type": "quantitative"},
-                                   "y": {"field": "Hits", "type": "quantitative"}
-                                  },
-          }
-        },
-        {
-          title: "Fatal Events",
-          header: %w[Date IP URL Description Log ID],
-          column_alignment: %i[left left left left left],
-          rows: data[:fatal],
-          col: 'small-12 cell'
-        },
-        {
-          title: 'Internal Server Errors',
-          header: %w[Date Status IP URL Description Log ID],
-          column_alignment: %i[left left left left left left],
-          rows: data[:internal_server_error],
-          col: 'small-12 cell'
-        },
-        {
-          title: 'Errors',
-          header: %w[Log ID Context Description Count],
-          column_alignment: %i[left left left left],
-          rows: data[:error],
-          col: 'small-12 cell'
-        },
-        {
-          title: 'IPs',
-          header: %w[IPs Hits Country],
-          column_alignment: %i[left right left],
-          rows: data[:ips]
-        },
-        {
-          title: 'Countries',
-          header: %w[Country Hits IPs],
-          column_alignment: %i[left right left],
-          rows: data[:countries]&.map { |k, v|
-            [
-              k,
-              v.map { |x| x[1] }.inject(&:+),
-              v.map { |x| x[0] }.join(WORDS_SEPARATOR)
-            ]
-          }&.sort { |x, y| x[0] <=> y[0] }
-        },
-        {
-          title: 'Streaks',
-          report: :html,
-          header: %w[IP Date Total Resources],
-          column_alignment: %i[left left right right left left],
-          rows: data[:streaks]&.group_by { |x| [x[0], x[1]] }&.map do |k, v|
-            [
-              k[0],
-              k[1],
-              v.size,
-              v.map { |x| x[2] }.join(WORDS_SEPARATOR)
-            ]
-          end,
-          col: 'small-12 cell'
-        }
-      ]
     end
   end
 end

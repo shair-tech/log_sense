@@ -54,7 +54,7 @@
          data: 'IP',
          className: '<%= Emitter::slugify("IP") %>',
          render: function(data, type, row) {
-           // If display or filter data is requested, format the date
+           // If display or filter data is requested, format the data
            if ( type === 'display' || type === 'filter' ) {
              return "<a target=\"_blank\" href=\"https://db-ip.com/" + data + "\">" + data + "</a>";
            }
@@ -63,7 +63,11 @@
          }
        },
        <% else -%>
-       { data: '<%= header %>', className: '<%= Emitter::slugify(header) %>' },
+       {
+         data: '<%= header %>',
+         className: '<%= Emitter::slugify(header) %>',
+         render: DataTable.render.text()
+       },
        <% end -%>
        <% end -%>
      ]

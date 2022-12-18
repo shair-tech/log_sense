@@ -1,82 +1,153 @@
 #!/usr/bin/env ruby
 
-require 'log_sense.rb'
+require "log_sense"
+require "sqlite3"
 
 #
 # Parse Command Line Arguments
 #
 
 # this better be here... OptionsParser consumes ARGV
-@command_line = ARGV.join(' ')
-@options     = LogSense::OptionsParser.parse ARGV
-@output_file = @options[:output_file]
+@command_line = ARGV.join(" ")
+@options = LogSense::OptionsParser.parse ARGV
+@input_filenames = @options[:input_filenames] + ARGV
+@output_filename = @options[:output_filename]
 
 #
-# Input files can be gotten from an option and from what remains in
-# ARGV
+# Check correctness of input data.
 #
-@input_filenames = @options[:input_filenames] + ARGV
+
+#
+# Check input files
+#
 @non_existing = @input_filenames.reject { |x| File.exist?(x) }
 
-unless @non_existing.empty?
-  $stderr.puts "Error: input file(s) '#{@non_existing.join(', ')}' do not exist"
+if @non_existing.any?
+  warn "Error: some input file(s) \"#{@non_existing.join(", ")}\" do not exist"
   exit 1
 end
-@input_files = @input_filenames.empty? ? [$stdin] : @input_filenames.map { |x| File.open(x, 'r') }
 
 #
-# Parse Log and Track Statistics
+# Special condition: sqlite3 requires a single file as input
+#
+if @input_filenames.size > 0 &&
+   File.extname(@input_filenames.first) == "sqlite3" &&
+   @input_filenames.size > 1
+  warn "Error: you can pass only one sqlite3 file as input"
+  exit 1
+end
+
+#
+# Supported input/output chains
+#
+iformat = @options[:input_format]
+oformat = @options[:output_format]
+
+if !LogSense::OptionsChecker::compatible?(iformat, oformat)
+  warn "Error: don't know how to make #{iformat} into #{oformat}."
+  warn "Possible transformation chains:"
+  warn LogSense::OptionsChecker.chains_to_s
+  exit 1
+end
+
+#
+# Do the work
 #
 
 @started_at = Time.now
 
-case @options[:input_format]
-when 'apache'
-  parser_klass = LogSense::ApacheLogParser
-  cruncher_klass = LogSense::ApacheDataCruncher
-when 'rails'
-  parser_klass = LogSense::RailsLogParser
-  cruncher_klass = LogSense::RailsDataCruncher
+if @input_filenames.size > 0 &&
+   File.extname(@input_filenames.first) == ".sqlite3"
+  warn "Reading SQLite3 DB ..." if @options[:verbose]
+  @db = SQLite3::Database.open @input_filenames.first
 else
-  $stderr.puts "Error: input format #{@options[:input_format]} not understood."
-  exit 1
+  warn "Parsing ..." if @options[:verbose]
+  @input_files = if @input_filenames.empty?
+                   [$stdin]
+                 else
+                   @input_filenames.map { |fname| File.open(fname, "r") }
+                 end
+  class_name = "LogSense::#{@options[:input_format].capitalize}LogParser"
+  parser_class = Object.const_get class_name
+  parser = parser_class.new
+  @db = parser.parse @input_files
 end
 
-$stderr.puts "Parsing input files..." if @options[:verbose]
-@db = parser_klass.parse @input_files
+if @options[:output_format] == "sqlite3"
+  warn "Saving SQLite3 DB ..." if @options[:verbose]
 
-if @options[:output_format] == 'sqlite'
-  $stderr.puts "Saving to SQLite3..." if @options[:verbose]
-  ddb = SQLite3::Database.new(@output_file || 'db.sqlite3')
-  b = SQLite3::Backup.new(ddb, 'main', @db, 'main')
+  ddb = SQLite3::Database.new(@output_filename || "db.sqlite3")
+  b = SQLite3::Backup.new(ddb, "main", @db, "main")
   b.step(-1) #=> DONE
   b.finish
+
+  exit 0
+elsif @options[:output_format] == "ufw"
+  pattern = @options[:pattern] || "php"
+
+  if @options[:input_format] == "rails"
+    query = "select distinct event.ip,event.url
+                    from error join event
+                    where event.log_id = error.log_id and
+                          event.url like '%#{pattern}%'"
+  else
+    query = "select distinct ip,path from logline
+                    where path like '%#{pattern}%'"
+  end
+
+  ips = @db.execute query
+  ips_and_urls = ips.group_by { |x| x[0] }.transform_values { |x|
+    x.map { |y| y[1..-1] }.flatten
+  }
+  ips_and_urls.each do |ip, urls|
+    puts "# #{urls[0..10].uniq.join(' ')}"
+    puts "ufw deny from #{ip}"
+    puts
+  end
+
+  exit 0
 else
-  $stderr.puts "Aggregating data..." if @options[:verbose]
-  @data = cruncher_klass.crunch @db, @options
+  warn "Aggregating data ..." if @options[:verbose]
+  class_name = "LogSense::#{@options[:input_format].capitalize}Aggregator"
+  aggr_class = Object.const_get class_name
+  aggr = aggr_class.new(@db, @options)
+  @data = aggr.aggregate
 
-  $stderr.puts "Geolocating..." if @options[:verbose]
-  @data = LogSense::IpLocator.geolocate @data
+  if @options[:geolocation]
+    warn "Geolocating ..." if @options[:verbose]
+    @data = LogSense::IpLocator.geolocate @data
 
-  $stderr.puts "Grouping by country..." if @options[:verbose]
-  country_col = @data[:ips][0].size - 1
-  @data[:countries] = @data[:ips].group_by { |x| x[country_col] }
+    warn "Grouping IPs by country ..." if @options[:verbose]
+    country_col = @data[:ips][0].size - 1
+    @data[:countries] = @data[:ips].group_by { |x| x[country_col] }
+  else
+    @data[:countries] = {}
+  end
 
   @ended_at = Time.now
   @duration = @ended_at - @started_at
 
   @data = @data.merge({
                         command: @command_line,
-                        filenames: ARGV,
+                        filenames: @input_filenames,
                         log_files: @input_files,
                         started_at: @started_at,
                         ended_at: @ended_at,
                         duration: @duration,
                         width: @options[:width]
                       })
-  #
-  # Emit Output
-  #
-  $stderr.puts "Emitting..." if @options[:verbose]
-  puts LogSense::Emitter.emit @data, @options
+
+  if @options[:verbose]
+    warn "I have the following keys in data: "
+    warn @data.keys.sort.map { |key| "#{key}: #{@data[key].class}" }.join("\n")
+  end
+
+  warn "Shaping data for output ..." if @options[:verbose]
+  class_name = "LogSense::#{@options[:input_format].capitalize}ReportShaper"
+  shaper_class = Object.const_get class_name
+  shaper = shaper_class.new
+  @reports = shaper.shape @data
+
+  warn "Emitting..." if @options[:verbose]
+  puts LogSense::Emitter.emit @reports, @data, @options
 end

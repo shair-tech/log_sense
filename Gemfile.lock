@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    log_sense (1.5.2)
+    log_sense (1.5.3)
       browser
       ipaddr
       iso_country_codes
@@ -16,18 +16,20 @@ GEM
       irb (>= 1.3.6)
       reline (>= 0.3.1)
     io-console (0.5.11)
-    ipaddr (1.2.4)
+    ipaddr (1.2.5)
     irb (1.4.1)
       reline (>= 0.3.0)
     iso_country_codes (0.7.8)
+    mini_portile2 (2.8.0)
     minitest (5.15.0)
     rake (12.3.3)
     reline (0.3.1)
       io-console (~> 0.5)
-    sqlite3 (1.4.4)
+    sqlite3 (1.5.4)
+      mini_portile2 (~> 2.8.0)
     terminal-table (3.0.2)
       unicode-display_width (>= 1.1.1, < 3)
-    unicode-display_width (2.2.0)
+    unicode-display_width (2.3.0)
 
 PLATFORMS
   ruby

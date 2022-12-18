@@ -11,12 +11,14 @@
     <%= data[:total_days_in_analysis] %>
     <span class="stats-list-label">Days</span>
   </li>
-  <li class="stats-list-positive">
-    <%= data[:total_size] %>
-    <span class="stats-list-label">Data Transferred</span>
-  </li>
+  <% if data[:total_size] %>
+    <li class="stats-list-positive">
+      <%= data[:total_size] %>
+      <span class="stats-list-label">Data Transferred</span>
+    </li>
+  <% end %>
   <li class="stats-list-negative">
-    <%= data[:total_hits] %>
+    <%= data[:events] %>
     <span class="stats-list-label">Hits</span>
   </li>
   <li class="stats-list-negative">
@@ -24,12 +26,12 @@
     <span class="stats-list-label">Unique Visits</span>
   </li>
   <li class="stats-list-negative">
-    <% days = data[:last_day_in_analysis] - data[:first_day_in_analysis] %>
+    <% days = data[:total_days_in_analysis] %>
     <%= days > 0 ? "%d" % (data[:total_unique_visits] / days) : "N/A" %>
     <span class="stats-list-label">Unique Visits / Day</span>
   </li>
   <li class="stats-list-negative">
-    <%= data[:total_unique_visits] != 0 ? data[:total_hits] / data[:total_unique_visits] : "N/A" %>
+    <%= data[:total_unique_visits] != 0 ? data[:events] / data[:total_unique_visits] : "N/A" %>
     <span class="stats-list-label">Hits / Unique Visitor</span>
   </li>
 </ul>

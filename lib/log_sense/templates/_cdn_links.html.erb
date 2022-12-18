@@ -1,0 +1,11 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;700&display=swap" rel="stylesheet">
+
+<% LogSense::Emitter::CDN_CSS.each do |link| %>
+  <link rel="stylesheet" type="text/css" href="<%= link %>">
+<% end %>
+
+<% LogSense::Emitter::CDN_JS.each do |link| %>
+  <script type="text/javascript" src="<%= link %>"></script>
+<% end %>

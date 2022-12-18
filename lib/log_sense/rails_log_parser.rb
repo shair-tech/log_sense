@@ -1,68 +1,87 @@
-require 'sqlite3'
+require "sqlite3"
 
 module LogSense
-  module RailsLogParser
-    def self.parse(streams, options = {})
-      db = SQLite3::Database.new ':memory:'
-      db.execute 'CREATE TABLE IF NOT EXISTS Event(
-         id INTEGER PRIMARY KEY AUTOINCREMENT,
-         exit_status TEXT,
-         started_at TEXT,
-         ended_at TEXT,
-         log_id TEXT,
-         ip TEXT,
-         unique_visitor TEXT,
-         url TEXT,
-         controller TEXT,
-         html_verb TEXT,
-         status INTEGER,
-         duration_total_ms FLOAT,
-         duration_views_ms FLOAT,
-         duration_ar_ms FLOAT,
-         allocations INTEGER,
-         comment TEXT,
-         source_file TEXT,
-         line_number INTEGER
-      )'
+  #
+  # parse a Rails log file and return a SQLite3 DB
+  #
+  class RailsLogParser
+    #
+    # Tell users which format I can parse
+    #
+    def provide
+      [:rails]
+    end
 
-      ins = db.prepare("insert into Event(
-         exit_status,
-         started_at,
-         ended_at,
-         log_id,
-         ip,
-         unique_visitor,
-         url,
-         controller,
-         html_verb,
-         status,
-         duration_total_ms,
-         duration_views_ms,
-         duration_ar_ms,
-         allocations,
-         comment,
-         source_file,
-         line_number
-      )
-      values (#{Array.new(17, '?').join(', ')})")
+    def parse(streams, options = {})
+      db = SQLite3::Database.new ":memory:"
+      
+      db.execute <<-EOS
+        CREATE TABLE IF NOT EXISTS Event(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          exit_status TEXT,
+          started_at TEXT,
+          ended_at TEXT,
+          log_id TEXT,
+          ip TEXT,
+          unique_visitor TEXT,
+          url TEXT,
+          controller TEXT,
+          html_verb TEXT,
+          status INTEGER,
+          duration_total_ms FLOAT,
+          duration_views_ms FLOAT,
+          duration_ar_ms FLOAT,
+          allocations INTEGER,
+          comment TEXT,
+          source_file TEXT,
+          line_number INTEGER
+         )
+      EOS
 
-      db.execute 'CREATE TABLE IF NOT EXISTS Error(
+      ins = db.prepare <<-EOS
+        insert into Event(
+          exit_status,
+          started_at,
+          ended_at,
+          log_id,
+          ip,
+          unique_visitor,
+          url,
+          controller,
+          html_verb,
+          status,
+          duration_total_ms,
+          duration_views_ms,
+          duration_ar_ms,
+          allocations,
+          comment,
+          source_file,
+          line_number
+         )
+         values (#{Array.new(17, "?").join(", ")})
+      EOS
+
+      db.execute <<-EOS
+        CREATE TABLE IF NOT EXISTS Error(
          id INTEGER PRIMARY KEY AUTOINCREMENT,
          log_id TEXT,
          context TEXT,
          description TEXT,
          filename TEXT,
          line_number INTEGER
-      )'
+        )
+      EOS
 
-      ins_error = db.prepare("insert into Error(
+      ins_error = db.prepare <<-EOS
+       insert into Error(
          log_id,
          context,
          description,
          filename,
          line_number
-      )
-      values (?, ?, ?, ?, ?)")
+       )
+       values (?, ?, ?, ?, ?)
+      EOS
 
       # requests in the log might be interleaved.
       #
@@ -93,7 +112,11 @@ module LogSense
 
           data = match_and_process_error line
           if data
-            ins_error.execute(data[:log_id], data[:context], data[:description], filename, line_number)
+            ins_error.execute(data[:log_id],
+                              data[:context],
+                              data[:description],
+                              filename,
+                              line_number)
             next
           end
           
@@ -199,7 +222,7 @@ module LogSense
     EXCEPTION = /[A-Za-z_0-9:]+(Error)?/
     ERROR_REGEXP = /^\[#{ID}\] (?<context>#{EXCEPTION}) \((?<description>(#{EXCEPTION})?.*)\):/
 
-    def self.match_and_process_error line
+    def match_and_process_error line
       matchdata = ERROR_REGEXP.match line
       if matchdata
         {
@@ -207,16 +230,13 @@ module LogSense
           context: matchdata[:context],
           description: matchdata[:description]
         }
-      else
-        nil
       end
     end
-
 
     # I, [2021-10-19T08:16:34.343858 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Started GET "/grow/people/471" for 217.77.80.35 at 2021-10-19 08:16:34 +0000
     STARTED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Started #{VERB} "#{URL}" for #{IP} at/
 
-    def self.match_and_process_start line
+    def match_and_process_start line
       matchdata = STARTED_REGEXP.match line
       if matchdata
         {
@@ -226,8 +246,6 @@ module LogSense
           url: matchdata[:url],
           ip: matchdata[:ip]
         }
-      else
-        nil
       end
     end
 
@@ -237,7 +255,7 @@ module LogSense
     # I, [2021-12-06T14:28:19.736545 #2804090]  INFO -- : [34091cb5-3e7b-4042-aaf8-6c6510d3f14c] Completed 500 Internal Server Error in 66ms (ActiveRecord: 8.0ms | Allocations: 24885)
     COMPLETED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Completed #{STATUS} #{STATUS_IN_WORDS} in (?<total>#{MSECS})ms \((Views: (?<views>#{MSECS})ms \| )?ActiveRecord: (?<arec>#{MSECS})ms( \| Allocations: (?<alloc>[0-9]+))?\)/
 
-    def self.match_and_process_completed(line)
+    def match_and_process_completed(line)
       matchdata = (COMPLETED_REGEXP.match line)
       # exit_status = matchdata[:status].to_i == 500 ? "E" : "I"
       if matchdata
@@ -252,23 +270,19 @@ module LogSense
           allocations: matchdata[:alloc],
           comment: ""
         }
-      else
-        nil
       end
     end
 
     # I, [2021-10-19T08:16:34.345162 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Processing by PeopleController#show as HTML
     PROCESSING_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Processing by (?<controller>[^ ]+) as/
 
-    def self.match_and_process_processing_by line
+    def match_and_process_processing_by line
       matchdata = PROCESSING_REGEXP.match line
       if matchdata
         {
           log_id: matchdata[:id],
           controller: matchdata[:controller]
         }
-      else
-        nil
       end
     end
 
@@ -278,7 +292,7 @@ module LogSense
     # F, [2021-12-04T00:34:05.839269 #2735058] FATAL -- : [3a16162e-a6a5-435e-a9d8-c4df5dc0f728] actionpack (5.2.4.4) lib/action_dispatch/middleware/debug_exceptions.rb:65:in `call'
     FATAL_REGEXP = /F, \[#{TIMESTAMP} #[0-9]+\] FATAL -- : \[#{ID}\] (?<comment>.*)$/
 
-    def self.match_and_process_fatal(line)
+    def match_and_process_fatal(line)
       matchdata = FATAL_REGEXP.match line
       if matchdata
         {
@@ -286,14 +300,14 @@ module LogSense
           log_id: matchdata[:id],
           comment: matchdata[:comment]
         }
-      else
-        nil
       end
     end
 
     # generate a unique visitor id from an event
-    def self.unique_visitor_id(event)
-      "#{DateTime.parse(event[:started_at] || event[:ended_at] || "1970-01-01").strftime("%Y-%m-%d")} #{event[:ip]}"
+    def unique_visitor_id(event)
+      date = event[:started_at] || event[:ended_at] || "1970-01-01"
+      "#{DateTime.parse(date).strftime("%Y-%m-%d")} #{event[:ip]}"
     end
   end
 end
+

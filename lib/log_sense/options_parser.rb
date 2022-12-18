@@ -1,6 +1,7 @@
-require 'optparse'
-require 'optparse/date'
-require 'log_sense/version'
+require "optparse"
+require "optparse/date"
+require "log_sense/version"
+require "log_sense/options_checker"
 
 module LogSense
   module OptionsParser
@@ -9,94 +10,121 @@ module LogSense
     #
     def self.parse(options)
       limit = 100
-      args = {} 
+      args = {}
 
       opt_parser = OptionParser.new do |opts|
-        opts.banner = 'Usage: log_sense [options] [logfile ...]'
+        opts.banner = "Usage: log_sense [options] [logfile ...]"
 
-        opts.on('-tTITLE', '--title=TITLE', String, 'Title to use in the report') do |n|
-          args[:title] = n
+        opts.on("-tTITLE", "--title=TITLE",
+                String,
+                "Title to use in the report") do |optval|
+          args[:title] = optval
         end
 
-        opts.on('-fFORMAT', '--input-format=FORMAT', String, 'Input format (either rails or apache)') do |n|
-          args[:input_format] = n
+        opts.on("-fFORMAT", "--input-format=FORMAT",
+                String,
+                "Input format (either rails or apache)") do |optval|
+          args[:input_format] = optval
         end
 
-        opts.on('-iFORMAT', '--input-files=file,file,', Array, 'Input files (can also be passed directly)') do |n|
-          args[:input_filenames] = n
+        opts.on("-iFORMAT", "--input-files=file,file,",
+                Array,
+                "Input files (can also be passed directly)") do |optval|
+          args[:input_filenames] = optval
         end
 
-        opts.on('-tFORMAT', '--output-format=FORMAT', String, 'Output format: html, org, txt, sqlite. See below for available formats') do |n|
-          args[:output_format] = n
+        opts.on("-tFORMAT", "--output-format=FORMAT",
+                String,
+                "Output format: html, org, txt, sqlite.") do |optval|
+          args[:output_format] = optval
         end
 
-        opts.on('-oOUTPUT_FILE', '--output-file=OUTPUT_FILE', String, 'Output file') do |n|
-          args[:output_file] = n
+        opts.on("-oOUTPUT_FILE", "--output-file=OUTPUT_FILE",
+                String,
+                "Output file") do |n|
+          args[:output_filename] = n
         end
 
-        opts.on('-bDATE', '--begin=DATE', Date, 'Consider entries after or on DATE') do |n|
-          args[:from_date] = n
+        opts.on("-bDATE", "--begin=DATE",
+                Date,
+                "Consider entries after or on DATE") do |optval|
+          args[:from_date] = optval
         end
 
-        opts.on('-eDATE', '--end=DATE', Date, 'Consider entries before or on DATE') do |n|
-          args[:to_date] = n
+        opts.on("-eDATE", "--end=DATE",
+                Date,
+                "Consider entries before or on DATE") do |optval|
+          args[:to_date] = optval
         end
 
-        opts.on('-lN', '--limit=N', Integer, "Limit to the N most requested resources (defaults to #{limit})") do |n|
-          args[:limit] = n
+        opts.on("-lN", "--limit=N",
+                Integer,
+                "Limit to the N most requested resources (defaults to #{limit})") do |optval|
+          args[:limit] = optval
         end
 
-        opts.on('-wWIDTH', '--width=WIDTH', Integer, 'Maximum width of long columns in textual reports') do |n|
-          args[:width] = n
+        opts.on("-wWIDTH", "--width=WIDTH",
+                Integer,
+                "Maximum width of long columns in textual reports") do |optval|
+          args[:width] = optval
         end
 
-        opts.on('-rROWS', '--rows=ROWS', Integer, 'Maximum number of rows for columns with multiple entries in textual reports') do |n|
-          args[:inner_rows] = n
+        opts.on("-rROWS", "--rows=ROWS",
+                Integer,
+                "Maximum number of rows for columns with multiple entries in textual reports") do |optval|
+          args[:inner_rows] = optval
         end
 
-        opts.on('-cPOLICY', '--crawlers=POLICY', String, 'Decide what to do with crawlers (applies to Apache Logs)') do |n|
-          case n
-          when 'only'
+        opts.on("-pPATTERN", "--pattern=PATTERN",
+                String,
+                "Pattern to use with ufw report to decide IP to blacklist") do |optval|
+          args[:pattern] = optval
+        end
+
+        opts.on("-cPOLICY", "--crawlers=POLICY",
+                String,
+                "Decide what to do with crawlers (applies to Apache Logs)") do |optval|
+          case optval
+          when "only"
             args[:only_crawlers] = true
-          when 'ignore'
+          when "ignore"
             args[:ignore_crawlers] = true
           end
         end
 
-        opts.on('-ns', '--no-selfpoll', 'Ignore self poll entries (requests from ::1; applies to Apache Logs)') do
+        opts.on("-ns", "--no-selfpoll",
+                "Ignore self poll entries (requests from ::1; applies to Apache Logs)") do
           args[:no_selfpoll] = true
         end
 
-        opts.on('--verbose', 'Inform about progress (prints to STDERR)') do
+        opts.on("-ng", "--no-geo",
+                "Do not geolocate entries") do
+          args[:geolocation] = false
+        end
+
+        opts.on("--verbose", "Inform about progress (output to STDERR)") do
           args[:verbose] = true
         end
 
-        opts.on('-v', '--version', 'Prints version information') do
+        opts.on("-v", "--version", "Prints version information") do
           puts "log_sense version #{LogSense::VERSION}"
-          puts 'Copyright (C) 2021 Shair.Tech'
-          puts 'Distributed under the terms of the MIT license'
+          puts "Copyright (C) 2021 Shair.Tech"
+          puts "Distributed under the terms of the MIT license"
           exit
         end
 
-        opts.on('-h', '--help', 'Prints this help') do
+        opts.on("-h", "--help", "Prints this help") do
           puts opts
-          puts ''
+          puts
           puts "This is version #{LogSense::VERSION}"
 
-          puts ''
-          puts 'Output formats'
-          pathname = File.join(File.dirname(__FILE__), 'templates', '*')
-          templates = Dir.glob(pathname).select { |x| !File.basename(x).start_with?(/_|#/) && !File.basename(x).end_with?('~') }
-          components = templates.map { |x| File.basename(x).split '.' }.group_by { |x| x[0] }
-          components.each do |k, vs|
-            puts "#{k} parsing can produce the following outputs:"
-            puts '  - sqlite'
-            vs.each do |v|
-              puts "  - #{v[1]}"
-            end
-          end
+          puts
+          puts "Output formats:"
+          puts
 
-          exit
+          puts OptionsChecker.chains_to_s
+
+          exit 0
         end
       end
 
@@ -104,12 +132,14 @@ module LogSense
 
       args[:limit] ||= limit
       args[:input_filenames] ||= []
-      args[:input_format] ||= 'apache'
-      args[:output_format] ||= 'html'
+      args[:input_format] ||= "apache"
+      args[:output_format] ||= "html"
       args[:ignore_crawlers] ||= false
       args[:only_crawlers] ||= false
       args[:no_selfpoll] ||= false
       args[:verbose] ||= false
+      # if set to false leave, otherwise set to true
+      args[:geolocation] = true unless args[:geolocation] == false
 
       args
     end
