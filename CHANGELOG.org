@@ -2,6 +2,10 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.6.1
+
+- Country DB now stores country name.
+
 * 1.6.0
 
 - [User] New output format =ufw= generates directives to blacklist IPs
