@@ -172,7 +172,7 @@ module LogSense
     def countries_table(data)
       data&.map { |k, v|
         [
-          k,
+          k || "-",
           v.map { |x| x[1] }.inject(&:+),
           v.map { |x| x[0] }.uniq.size,
           v.map { |x| x[0] }.join(WORDS_SEPARATOR)
