@@ -1,10 +1,10 @@
 <ul class="stats-list">
   <li>
-    <%= data[:first_day_in_analysis].strftime("%b %d, %Y") %>
+    <%= data[:first_day_in_analysis]&.strftime("%b %d, %Y") %>
     <span class="stats-list-label">From</span>
   </li>
   <li>
-    <%= data[:last_day_in_analysis].strftime("%b %d, %Y") %>
+    <%= data[:last_day_in_analysis]&.strftime("%b %d, %Y") %>
     <span class="stats-list-label">To</span>
   </li>
   <li class="stats-list-positive">

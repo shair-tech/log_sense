@@ -2,6 +2,17 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.7.0
+
+- [User] Fixes a bug causing a crash when no country was found by the geolocator
+- [User] Fixes bugs related to corner cases (empty logs, wrong parser for log,
+  empty geolocation data)
+- [Code] Move options in their own dir
+
+* 1.6.1
+
+- Country DB now stores country name.
+
 * 1.6.0
 
 - [User] New output format =ufw= generates directives to blacklist IPs

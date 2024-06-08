@@ -1,7 +1,7 @@
 <script>
  /* this is used both by Vega and DataTable for <%= report[:title] %>*/
  data_<%= index %> = [
-   <% report[:rows].each do |row| -%>
+   <% (report[:rows] || []).each do |row| -%>
    {
      <% report[:header].each_with_index do |h, i| -%>
      "<%= h %>": "<%= Emitter::process row[i] %>",

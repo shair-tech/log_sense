@@ -1,7 +1,7 @@
 require "log_sense/version"
 
-require "log_sense/options_parser"
-require "log_sense/options_checker"
+require "log_sense/options/parser"
+require "log_sense/options/checker"
 
 require "log_sense/apache_log_parser"
 require "log_sense/rails_log_parser"

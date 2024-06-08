@@ -16,18 +16,26 @@ module LogSense
         from_ip_n INTEGER,
         from_ip TEXT,
         to_ip TEXT,
-        country_code TEXT
+        country TEXT
       )"
 
       ins = db.prepare "INSERT INTO ip_location(
-                               from_ip_n, from_ip, to_ip, country_code)
+                               from_ip_n, from_ip, to_ip, country)
                                values (?, ?, ?, ?)"
       CSV.foreach(db_location) do |row|
         # skip ip v6 addresses
         next if row[0].include?(":")
 
         ip = IPAddr.new row[0]
-        ins.execute(ip.to_i, row[0], row[1], row[2])
+        country_code = row[2]
+
+        begin
+          country = IsoCountryCodes.find(country_code).name
+        rescue IsoCountryCodes::UnknownCodeError
+          country = country_code
+        end
+        
+        ins.execute(ip.to_i, row[0], row[1], country)
       end
 
       # persist to file
@@ -55,12 +63,9 @@ module LogSense
       begin
         ip_n = IPAddr.new(ip).to_i
         result_set = query.execute ip_n
-        country_code = result_set.map { |x| x[3] }[0]
-        IsoCountryCodes.find(country_code).name
+        result_set.map { |x| x[3] }[0]
       rescue IPAddr::InvalidAddressError
         "INVALID IP"
-      rescue IsoCountryCodes::UnknownCodeError
-        country_code
       end
     end
 

@@ -9,7 +9,7 @@ require "sqlite3"
 
 # this better be here... OptionsParser consumes ARGV
 @command_line = ARGV.join(" ")
-@options = LogSense::OptionsParser.parse ARGV
+@options = LogSense::Options::Parser.parse ARGV
 @input_filenames = @options[:input_filenames] + ARGV
 @output_filename = @options[:output_filename]
 
@@ -43,7 +43,7 @@ end
 iformat = @options[:input_format]
 oformat = @options[:output_format]
 
-if !LogSense::OptionsChecker::compatible?(iformat, oformat)
+if !LogSense::Options::Checker.compatible?(iformat, oformat)
   warn "Error: don't know how to make #{iformat} into #{oformat}."
   warn "Possible transformation chains:"
   warn LogSense::OptionsChecker.chains_to_s
@@ -83,7 +83,7 @@ if @options[:output_format] == "sqlite3"
 
   exit 0
 elsif @options[:output_format] == "ufw"
-  pattern = @options[:pattern] || "php"
+  pattern = @options[:pattern]
 
   if @options[:input_format] == "rails"
     query = "select distinct event.ip,event.url
@@ -113,7 +113,9 @@ else
   aggr = aggr_class.new(@db, @options)
   @data = aggr.aggregate
 
-  if @options[:geolocation]
+  if @options[:geolocation] && @data[:ips].size == 0
+    warn "Skipping geolocation: no IP found"
+  elsif @options[:geolocation]
     warn "Geolocating ..." if @options[:verbose]
     @data = LogSense::IpLocator.geolocate @data
 
