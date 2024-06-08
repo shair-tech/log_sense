@@ -10,18 +10,18 @@ module LogSense
   #
   class Emitter
     CDN_CSS = [
-      "https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css",
-      "https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css",
-      "https://cdn.datatables.net/v/zf/dt-1.11.3/datatables.min.css"
+      # "https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.min.css",
+      "https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/css/foundation.min.css",
+      "https://cdn.datatables.net/v/zf/dt-2.0.8/datatables.min.css"
     ].freeze
 
     CDN_JS = [
-      "https://code.jquery.com/jquery-3.6.2.min.js",
-      "https://cdn.datatables.net/v/zf/dt-1.13.1/datatables.min.js",
-      "https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js",
-      "https://cdn.jsdelivr.net/npm/vega@5.22.1",
-      "https://cdn.jsdelivr.net/npm/vega-lite@5.6.0",
-      "https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"
+      "https://code.jquery.com/jquery-3.7.1.min.js",
+      "https://cdn.datatables.net/v/zf/dt-2.0.8/datatables.min.js",
+      "https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js",
+      "https://cdn.jsdelivr.net/npm/vega@5.28.0",
+      "https://cdn.jsdelivr.net/npm/vega-lite@5.18.1",
+      "https://cdn.jsdelivr.net/npm/vega-embed@6.25.0"
     ].freeze
 
     def self.emit(reports = {}, data = {}, options = {})

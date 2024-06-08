@@ -1,6 +1,12 @@
+:root {
+  --font-family: Inter, Helvetica, Arial, sans-serif;
+
+}
+
 body {
-    font-family: 'Fira Sans', sans-serif;
-    font-size: 12px;
+    font-family: var(--font-family);
+    /* font-size: 12px; */
+    font-size: 0.86rem;
 }
 
 #offCanvas {
@@ -34,29 +40,22 @@ nav h2 {
 }
 
 h1 {
-    font-family: 'Fira Sans', sans-serif;
+    font-family: var(--font-family);
     font-size: 2rem;
     font-weight: bold;
+    color: #1C1C1C;
 }
 
 h2 {
-    font-family: 'Fira Sans', sans-serif;
-    font-size: 1.2rem;
+    font-family: var(--font-family);
+    font-size: 1.6rem;
     font-weight: bold;
-
-    color: white;
-    background: #1C1C1C;
-
-    padding: 0.2rem 0.8rem 0.2rem 0.8rem;
-    border-radius: 5px 5px 0px 0px;
+    color: #1C1C1C;
 }
 
-th {
-    padding: 0.2rem 1.2rem 0.2rem 0.2rem !important
-}
-
-td {
-    padding: 0.2rem 1rem 0.2rem 0.2rem !important;
+th, td {
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
 }
 
 .dataTables_wrapper {
@@ -64,9 +63,12 @@ td {
     padding: 0.5rem;
 }
 
+table.dataTable > tbody > tr:nth-child(2n) {
+    border-shadow: none !important;
+}
+
 article {
-    margin-top: 1rem;
-    border-radius: 5px;
+    margin-top: 2rem;
 }
                 
 

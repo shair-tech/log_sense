@@ -65,6 +65,7 @@
                      <%= report[:vega_spec].to_json %>,
                      { "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
                        width: "container",
+                       height: 400,
                        description: "<%= report[:title] %>",
                        data: {
                          values: data_<%= index %>

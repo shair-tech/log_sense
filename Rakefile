@@ -12,7 +12,7 @@ desc "Convert Geolocation DB to sqlite"
 task :dbip, [:filename] do |tasks, args|
   filename = args[:filename]
 
-  if !File.exist? filename
+  if filename.nil? || !File.exist?(filename)
     puts "Error. Could not find: #{filename}"
     puts
     puts 'I see the following files:'
