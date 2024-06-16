@@ -83,6 +83,28 @@ module LogSense
        values (?, ?, ?, ?, ?)
       EOS
 
+      db.execute <<-EOS
+        CREATE TABLE IF NOT EXISTS Render(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          partial TEXT,
+          duration_ms FLOAT,
+          allocations INTEGER,
+          filename TEXT,
+          line_number INTEGER
+        )
+      EOS
+
+      ins_rendered = db.prepare <<-EOS
+       insert into Render(
+         partial,
+         duration_ms,
+         allocations,
+         filename,
+         line_number
+       )
+       values (?, ?, ?, ?, ?)
+      EOS
+
       # requests in the log might be interleaved.
       #
       # We use the 'pending' variable to progressively store data
@@ -106,6 +128,14 @@ module LogSense
       streams.each do |stream|
         stream.readlines.each_with_index do |line, line_number|
           filename = stream == $stdin ? "stdin" : stream.path
+
+          data = match_and_process_rendered line
+          if data
+            ins_rendered.execute(
+              data[:partial], data[:duration], data[:allocations],
+              filename, line_number
+            )
+          end
 
           # I and F for completed requests, [ is for error messages
           next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
@@ -299,6 +329,27 @@ module LogSense
           exit_status: "F",
           log_id: matchdata[:id],
           comment: matchdata[:comment]
+        }
+      end
+    end
+
+    # Rendered devise/sessions/_project_partial.html.erb (Duration: 78.4ms | Allocations: 88373)
+    # Rendered devise/sessions/new.html.haml within layouts/application (Duration: 100.0ms | Allocations: 104118)
+    # Rendered application/_favicon.html.erb (Duration: 2.6ms | Allocations: 4454)
+    # Rendered layouts/_manage_notice.html.erb (Duration: 0.3ms | Allocations: 193)
+    # Rendered layout layouts/application.html.erb (Duration: 263.4ms | Allocations: 367467)
+    # Rendered donations/_switcher.html.haml (Duration: 41.1ms | Allocations: 9550)
+    # Rendered donations/_status_header.html.haml (Duration: 1.4ms | Allocations: 3192)
+    # Rendered donations/_status_header.html.haml (Duration: 0.0ms | Allocations: 7)
+    RENDERED_REGEXP = /^ *Rendered (?<partial>[^ ]+) .*\(Duration: (?<duration>[0-9.]+)ms \| Allocations: (?<allocations>[0-9]+)\)$/
+
+    def match_and_process_rendered(line)
+      matchdata = RENDERED_REGEXP.match line
+      if matchdata
+        {
+          partial: matchdata[:partial],
+          duration: matchdata[:duration],
+          allocations: matchdata[:allocations]
         }
       end
     end
