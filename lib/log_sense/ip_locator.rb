@@ -75,12 +75,14 @@ module LogSense
     def self.geolocate(data)
       @location_db = IpLocator.load_db
 
-      data[:ips].each do |line|
-        country_code = IpLocator.locate_ip line[0], @location_db
-        line << country_code
+      data[:ips].map do |line|
+        begin
+          country_code = IpLocator.locate_ip line[0], @location_db
+          line + [country_code]
+        rescue
+          line + ["INVALID IP"]
+        end
       end
-      
-      data
     end
   end
 end
