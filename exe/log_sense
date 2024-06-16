@@ -27,7 +27,7 @@ if @non_existing.any?
   exit 1
 end
 
-@sqlite3_files = @input_filenames.select { |x| File.extname(x) == "sqlite3" }
+@sqlite3_files = @input_filenames.select { |x| File.extname(x).include?("sqlite") }
 if @sqlite3_files.any? && @input_filenames.size != 1
   warn "Error: when passing an SQLite3 DB, this has to be the only input file"
   exit 1
@@ -38,7 +38,7 @@ end
 #
 
 # Nothing to be done, here, since we output to STDOUT if no output filename is
-# passed as an option
+# specified
 
 #
 # Supported input/output chains
@@ -59,6 +59,10 @@ end
 
 @started_at = Time.now
 
+#
+# Input
+#
+
 if @input_filenames.size > 0 && File.extname(@input_filenames.first) == ".sqlite3"
   warn "Reading SQLite3 DB ..." if @options[:verbose]
   @db = SQLite3::Database.open @input_filenames.first
@@ -69,11 +73,18 @@ else
                  else
                    @input_filenames.map { |fname| File.open(fname, "r") }
                  end
+
   class_name = "LogSense::#{@options[:input_format].capitalize}::LogParser"
   parser_class = Object.const_get class_name
   parser = parser_class.new
   @db = parser.parse @input_files
 end
+
+#
+# Output
+# 
+
+# TODO this code could benefit from some classes abstracting the work a bit
 
 if @options[:output_format] == "sqlite3"
   warn "Saving SQLite3 DB ..." if @options[:verbose]
@@ -123,10 +134,10 @@ else
     country_col = geolocated_data[0].size - 1
     @data[:countries] = geolocated_data.group_by { |x| x[country_col] }
   elsif @options[:geolocation] && @data[:ips].size == 0
-    warn "Skipping geolocation: no IP found"
+    warn "Skipping geolocation: no IP found" if @options[:verbose]
     @data[:countries] = {}
   else
-    warn "Skipping geolocation."
+    warn "Skipping geolocation." if @options[:verbose]
     @data[:countries] = {}
   end
 
