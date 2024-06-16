@@ -20,22 +20,25 @@ require "sqlite3"
 #
 # Check input files
 #
-@non_existing = @input_filenames.reject { |x| File.exist?(x) }
 
+@non_existing = @input_filenames.reject { |x| File.exist?(x) }
 if @non_existing.any?
   warn "Error: some input file(s) \"#{@non_existing.join(", ")}\" do not exist"
   exit 1
 end
 
-#
-# Special condition: sqlite3 requires a single file as input
-#
-if @input_filenames.size > 0 &&
-   File.extname(@input_filenames.first) == "sqlite3" &&
-   @input_filenames.size > 1
-  warn "Error: you can pass only one sqlite3 file as input"
+@sqlite3_files = @input_filenames.select { |x| File.extname(x) == "sqlite3" }
+if @sqlite3_files.any? && @input_filenames.size != 1
+  warn "Error: when passing an SQLite3 DB, this has to be the only input file"
   exit 1
 end
+
+#
+# Check output files
+#
+
+# Nothing to be done, here, since we output to STDOUT if no output filename is
+# passed as an option
 
 #
 # Supported input/output chains
@@ -46,7 +49,7 @@ oformat = @options[:output_format]
 if !LogSense::Options::Checker.compatible?(iformat, oformat)
   warn "Error: don't know how to make #{iformat} into #{oformat}."
   warn "Possible transformation chains:"
-  warn LogSense::OptionsChecker.chains_to_s
+  warn LogSense::Options::Checker.chains_to_s
   exit 1
 end
 
@@ -56,8 +59,7 @@ end
 
 @started_at = Time.now
 
-if @input_filenames.size > 0 &&
-   File.extname(@input_filenames.first) == ".sqlite3"
+if @input_filenames.size > 0 && File.extname(@input_filenames.first) == ".sqlite3"
   warn "Reading SQLite3 DB ..." if @options[:verbose]
   @db = SQLite3::Database.open @input_filenames.first
 else
@@ -113,16 +115,18 @@ else
   aggr = aggr_class.new(@db, @options)
   @data = aggr.aggregate
 
-  if @options[:geolocation] && @data[:ips].size == 0
-    warn "Skipping geolocation: no IP found"
-  elsif @options[:geolocation]
+  if @options[:geolocation] && @data[:ips].size != 0
     warn "Geolocating ..." if @options[:verbose]
-    @data = LogSense::IpLocator.geolocate @data
+    geolocated_data = LogSense::IpLocator.geolocate @data
 
     warn "Grouping IPs by country ..." if @options[:verbose]
-    country_col = @data[:ips][0].size - 1
-    @data[:countries] = @data[:ips].group_by { |x| x[country_col] }
+    country_col = geolocated_data[0].size - 1
+    @data[:countries] = geolocated_data.group_by { |x| x[country_col] }
+  elsif @options[:geolocation] && @data[:ips].size == 0
+    warn "Skipping geolocation: no IP found"
+    @data[:countries] = {}
   else
+    warn "Skipping geolocation."
     @data[:countries] = {}
   end
 
