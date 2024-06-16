@@ -66,21 +66,27 @@ module LogSense
       end
     end
 
-    def self.escape_javascript(string)
-      js_escape_map = {
-        #"&" => "&amp;",
-        #"%" => "&#37;",
-        "<" => "&lt;",
-        "\\" => "&bsol;",
-        '"' => ' \\"',
-        "'" => " \\'",
-        "`" => " \\`",
-        "$" => " \\$"
-      }
-      js_escape_map.each do |match, replace|
-        string = string.gsub(match, replace)
+    # taken from Ruby on Rails
+    JS_ESCAPE_MAP = {
+      "\\" => "\\\\",
+      "</" => '<\/',
+      "\r\n" => '\n',
+      "\n" => '\n',
+      "\r" => '\n',
+      '"' => '\\"',
+      "'" => "\\'",
+      "`" => "\\`",
+      "$" => "\\$"
+    }
+
+    # taken from Ruby on Rails
+    def self.escape_javascript(javascript)
+      javascript = javascript.to_s
+      if javascript.empty?
+        ""
+      else
+        javascript.gsub(/(\\|<\/|\r\n|\342\200\250|\342\200\251|[\n\r"']|[`]|[$])/u, JS_ESCAPE_MAP)
       end
-      string
     end
 
     def self.slugify(string)
