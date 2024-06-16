@@ -130,6 +130,10 @@ module LogSense
           stream.readlines.each_with_index do |line, line_number|
             filename = stream == $stdin ? "stdin" : stream.path
 
+            #
+            # These are for development logs
+            #
+
             data = match_and_process_rendered line
             if data
               ins_rendered.execute(
@@ -137,6 +141,10 @@ module LogSense
                 filename, line_number
               )
             end
+
+            #
+            # 
+            #
 
             # I and F for completed requests, [ is for error messages
             next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
@@ -333,6 +341,42 @@ module LogSense
           }
         end
       end
+
+      # Started GET "/projects?locale=it" for 127.0.0.1 at 2024-06-06 23:23:31 +0200
+      # Processing by EmployeesController#index as HTML
+      #   Parameters: {"locale"=>"it"}
+      # [...]
+      # Completed 200 OK in 135ms (Views: 128.0ms | ActiveRecord: 2.5ms | Allocations: 453450)
+      #
+      # Started GET "/serviceworker.js" for 127.0.0.1 at 2024-06-06 23:23:29 +0200
+      # ActionController::RoutingError (No route matches [GET] "/serviceworker.js"):
+      #
+      #
+      # Started POST "/projects?locale=it" for 127.0.0.1 at 2024-06-06 23:34:33 +0200
+      # Processing by ProjectsController#create as TURBO_STREAM
+      # Parameters: {"authenticity_token"=>"[FILTERED]", "project"=>{"name"=>"AA", "funding_agency"=>"", "total_cost"=>"0,00", "personnel_cost"=>"0,00", "percentage_funded"=>"0", "from_date"=>"2024-01-01", "to_date"=>"2025-12-31", "notes"=>""}, "commit"=>"Crea Progetto", "locale"=>"it"}
+      #
+      # Completed   in 48801ms (ActiveRecord: 17.8ms | Allocations: 2274498)
+      # Completed 422 Unprocessable Entity in 16ms (Views: 5.1ms | ActiveRecord: 2.0ms | Allocations: 10093)
+      #
+      # Completed 500 Internal Server Error in 24ms (ActiveRecord: 1.4ms | Allocations: 4660)
+      # ActionView::Template::Error (Error: Undefined variable: "$white".
+      #         on line 6:28 of app/assets/stylesheets/_animations.scss
+      #         from line 16:9 of app/assets/stylesheets/application.scss
+      # >>   from { background-color: $white; }
+      
+      #    ---------------------------^
+      # ):
+      #      9:     = csrf_meta_tags
+      #     10:     = csp_meta_tag
+      #     11: 
+      #     12:     = stylesheet_link_tag "application", "data-turbo-track": "reload"
+      #     13:     = javascript_importmap_tags
+      #     14: 
+      #     15:   %body
+      #
+      # app/views/layouts/application.html.haml:12
+      # app/controllers/application_controller.rb:26:in `switch_locale'
 
       # Rendered devise/sessions/_project_partial.html.erb (Duration: 78.4ms | Allocations: 88373)
       # Rendered devise/sessions/new.html.haml within layouts/application (Duration: 100.0ms | Allocations: 104118)
