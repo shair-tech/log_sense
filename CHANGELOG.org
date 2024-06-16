@@ -4,13 +4,15 @@
 
 * 1.7.0
 
+- [User] Fixes a bug with the geolocator
 - [User] Fixes a bug causing a crash when no country was found by the geolocator
 - [User] Fixes bugs related to corner cases (empty logs, wrong parser for log,
   empty geolocation data)
 - [User] Updated DB-IP country file to Jun 2024 version.
 - [User] Refreshed the style a bit, removed Fira Sans and updated versions of
   CSS and JS frameworks
-- [Code] Move options in their own dir
+- [Code] Move options and some code in their own dir
+- [Code] Add rendering view parsing (useful in development; no views yet)
 
 * 1.6.1
 
