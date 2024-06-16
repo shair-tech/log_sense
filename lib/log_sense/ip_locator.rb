@@ -46,7 +46,7 @@ module LogSense
     end
 
     def merge(parser_db)
-      ipdb = Sqlite3::Database.open DB_FILE
+      Sqlite3::Database.open DB_FILE
       parser_db
     end
 
@@ -79,6 +79,7 @@ module LogSense
         country_code = IpLocator.locate_ip line[0], @location_db
         line << country_code
       end
+      
       data
     end
   end

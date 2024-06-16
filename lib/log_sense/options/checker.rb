@@ -1,7 +1,7 @@
 module LogSense
   #
   # Check options and return appropriate error if
-  # command arguments are wrong
+  # combinations of command arguments are wrong
   #
   module Options
     module Checker
