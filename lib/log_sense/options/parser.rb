@@ -42,21 +42,21 @@ module LogSense
           opts.on(
             "-fFORMAT", "--input-format=FORMAT",
             String,
-            "Input format: rails or apache #{dft(args[:input_format])}") do |optval|
+            "Log format (stored in log or sqlite3): rails or apache #{dft(args[:input_format])}") do |optval|
             args[:input_format] = optval
           end
 
           opts.on(
             "-iFORMAT", "--input-files=file,file,",
             Array,
-            "Input files (can also be passed as arguments)") do |optval|
+            "Input file(s), log file or sqlite3 (can also be passed as arguments)") do |optval|
             args[:input_filenames] = optval
           end
 
           opts.on(
             "-tFORMAT", "--output-format=FORMAT",
             String,
-            "Output format: html, org, txt, sqlite #{dft(args[:output_format])}") do |optval|
+            "Output format: html, txt, sqlite, ufw #{dft(args[:output_format])}") do |optval|
             args[:output_format] = optval
           end
 
