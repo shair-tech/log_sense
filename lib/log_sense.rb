@@ -3,8 +3,8 @@ require "log_sense/version"
 require "log_sense/options/parser"
 require "log_sense/options/checker"
 
-require "log_sense/apache_log_parser"
-require "log_sense/rails_log_parser"
+require "log_sense/apache/log_parser"
+require "log_sense/rails/log_parser"
 
 require "log_sense/aggregator"
 require "log_sense/apache_aggregator"

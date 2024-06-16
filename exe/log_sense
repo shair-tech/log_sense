@@ -67,7 +67,7 @@ else
                  else
                    @input_filenames.map { |fname| File.open(fname, "r") }
                  end
-  class_name = "LogSense::#{@options[:input_format].capitalize}LogParser"
+  class_name = "LogSense::#{@options[:input_format].capitalize}::LogParser"
   parser_class = Object.const_get class_name
   parser = parser_class.new
   @db = parser.parse @input_files
