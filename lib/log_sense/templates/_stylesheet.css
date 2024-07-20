@@ -118,7 +118,7 @@ ul.pagination, li.paginate_button {
     padding-right: 10px;
     border-right: 1px solid #cacaca;
     text-align: center;
-    font-size: 1.1em;
+    font-size: 1.2em;
     font-weight: bold;
 }
 
@@ -131,7 +131,7 @@ ul.pagination, li.paginate_button {
 .stats-list > li .stats-list-label {
     display: block;
     margin-top: 2px;
-    font-size: 0.9em;
+    font-size: 0.8em;
     font-weight: normal;
 }
 
