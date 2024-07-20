@@ -74,6 +74,17 @@
                    vegaEmbed('#<%= "plot-#{index}"%>', plot_spec_<%= index %>);
                   </script>
                 <% end %>
+                <% if report[:echarts_spec] %>
+                  <div id="<%= "echart-#{index}" %>" style="width: 100%;height:400px;"></div>
+                  <script>
+                   // Initialize the echarts instance based on the prepared dom
+                   var plot_index = "<%= "echart-#{index}" %>"
+                   var myChart = echarts.init(document.getElementById(plot_index));
+                   var options = <%= report[:echarts_spec].gsub("SERIES_DATA", "data_#{index}") %>
+                   myChart.setOption(options)
+
+                  </script>
+                <% end %>
 
                 <%= render "output_table.html.erb", report: report, index: index %>
               </article>
