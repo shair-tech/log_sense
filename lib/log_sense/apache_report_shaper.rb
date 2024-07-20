@@ -127,15 +127,15 @@ module LogSense
         },
         {
           title: "40_ and 50_x on HTML pages",
-          header: %w[Path Hits Visits Status],
-          column_alignment: %i[left right right right],
+          header: %w[Path Hits Visits Size Status],
+          column_alignment: %i[left right right right right],
           rows: data[:missed_pages],
           datatable_options: "columnDefs: [{ width: \"40%\", targets: 0 }, { width: \"20%\", targets: [1, 2, 3] }], dataRender: true"
         },
         {
           title: "40_ and 50_ on other resources",
-          header: %w[Path Hits Visits Status],
-          column_alignment: %i[left right right right],
+          header: %w[Path Hits Visits Size Status],
+          column_alignment: %i[left right right right right],
           rows: data[:missed_resources],
           datatable_options: "columnDefs: [{ width: \"40%\", targets: 0 }, { width: \"20%\", targets: [1, 2, 3] }], dataRender: true"
         },
