@@ -40,6 +40,24 @@ module LogSense
                  where #{filter}
                  group by controller order by controller).gsub("\n", "")
 
+      # ["CompletedSurveysController#new", 14, "22.00", "51.57", "116.00"]
+      controller_and_methods = @performance.group_by { |element|
+        (element[0] || "#").split("#")[0]
+      }
+
+      @controller_and_methods_treemap = controller_and_methods.map do |key, values|
+        {
+          name: key,
+          value: values.map { |value| value[1] || 0.0 }.inject(&:+),
+          children: values.map { |value|
+            {
+              name: (value[0] || "#").split("#")[1],
+              value: value[1]
+            }
+          }
+        }
+      end
+
       @fatal = @db.execute %Q(
           SELECT strftime("%Y-%m-%d %H:%M", started_at),
                  ip,

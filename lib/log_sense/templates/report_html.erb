@@ -56,7 +56,9 @@
                   <%= report[:title] %>
                 </h2>
 
-                <%= render "report_data.html.erb", report: report, index: index %>
+                <% if report[:rows] %>
+                  <%= render "report_data.html.erb", report: report, index: index %>
+                <% end %>
                 <% if report[:vega_spec] %>
                   <div id="<%= "plot-#{index}" %>" class="plot-canvas">
                   </div>
@@ -86,8 +88,9 @@
 
                   </script>
                 <% end %>
-
-                <%= render "output_table.html.erb", report: report, index: index %>
+                <% if report[:rows] %>
+                  <%= render "output_table.html.erb", report: report, index: index %>
+                <% end %>
               </article>
             <% end %>
 

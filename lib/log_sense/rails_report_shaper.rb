@@ -76,6 +76,7 @@ module LogSense
           header: %w[Status Count],
           column_alignment: %i[left right],
           rows: data[:statuses],
+          col: "small-12 cell",
           echarts_spec: "{
             xAxis: {
               type: 'category',
@@ -110,6 +111,7 @@ module LogSense
           header: %w[Controller Hits Min Avg Max],
           column_alignment: %i[left right right right right],
           rows: data[:performance],
+          echarts_height: "600px",
           echarts_spec: "{
             xAxis: {
             },
@@ -157,6 +159,25 @@ module LogSense
           }",
         },
         {
+          title: "Controller and Methods",
+          echarts_height: "800px",
+          echarts_spec: "{
+            series: {
+              type: 'treemap',
+              label: {
+                show: true,
+                formatter: function (params) {
+                  var parentName = params.treePathInfo.length > 1 ? params.treePathInfo[params.treePathInfo.length - 2].name : '';
+                  var nodeName = params.name;
+                  var value = params.value;
+                  return parentName + '\\n' + nodeName + ':\\n' + value;
+                }
+              },
+              data: #{data[:controller_and_methods_treemap].to_json}
+            }
+          }"
+        },
+        {
           title: "Fatal Events",
           header: %w[Date IP URL Description Log ID],
           column_alignment: %i[left left left left left],
@@ -188,6 +209,7 @@ module LogSense
           header: ["Country", "Hits", "IPs", "IP List"],
           column_alignment: %i[left right left],
           rows: countries_table(data[:countries]),
+          echarts_height: "600px",
           echarts_spec: "{
             tooltip: {
                 trigger: 'axis',
