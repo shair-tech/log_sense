@@ -19,9 +19,6 @@ module LogSense
       "https://code.jquery.com/jquery-3.7.1.min.js",
       "https://cdn.datatables.net/v/zf/dt-2.0.8/datatables.min.js",
       "https://cdn.jsdelivr.net/npm/foundation-sites@6.8.1/dist/js/foundation.min.js",
-      "https://cdn.jsdelivr.net/npm/vega@5.28.0",
-      "https://cdn.jsdelivr.net/npm/vega-lite@5.18.1",
-      "https://cdn.jsdelivr.net/npm/vega-embed@6.25.0",
       "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"
     ].freeze
 

@@ -7,6 +7,7 @@ module LogSense
     #   header: header of tabular data
     #   rows: data to show
     #   column_alignment: specification of column alignments (works for txt reports)
+    #   echarts_spec: specifications for eCharts output
     #   vega_spec: specifications for Vega output
     #   datatable_options: specific options for datatable
     def shape(data)
@@ -16,100 +17,84 @@ module LogSense
           header: %w[Day DOW Hits Visits Size],
           column_alignment: %i[left left right right right],
           rows: data[:daily_distribution],
-          vega_spec: {
-            "layer": [
-                       {
-                         "mark": {
-                                   "type": "line",
-                                  "point": {
-                                             "filled": false,
-                                            "fill": "white"
-                                           }
-                                 },
-                        "encoding": {
-                                      "y": {"field": "Hits", "type": "quantitative"}
-                                    }
-                       },
-                       {
-                         "mark": {
-                                   "type": "text",
-                                  "color": "#3E5772",
-                                  "align": "middle",
-                                  "baseline": "top",
-                                  "dx": -10,
-                                  "yOffset": -15
-                                 },
-                        "encoding": {
-                                      "text": {"field": "Hits", "type": "quantitative"},
-                                     "y": {"field": "Hits", "type": "quantitative"}
-                                    }
-                       },
-
-                       {
-                         "mark": {
-                                   "type": "line",
-                                  "color": "#A52A2A",
-                                  "point": {
-                                             "color": "#A52A2A",
-                                            "filled": false,
-                                            "fill": "white",
-                                           }
-                                 },
-                        "encoding": {
-                                      "y": {"field": "Visits", "type": "quantitative"}
-                                    }
-                       },
-
-                       {
-                         "mark": {
-                                   "type": "text",
-                                  "color": "#A52A2A",
-                                  "align": "middle",
-                                  "baseline": "top",
-                                  "dx": -10,
-                                  "yOffset": -15
-                                 },
-                        "encoding": {
-                                      "text": {"field": "Visits", "type": "quantitative"},
-                                     "y": {"field": "Visits", "type": "quantitative"}
-                                    }
-                       },
-                       
-                     ],
-                      "encoding": {
-                                    "x": {"field": "Day", "type": "temporal"},
-                                  }
+          echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            legend: {
+                data: ['Hits', 'Visits']
+            },
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.filter(row => row['Day'] != '').map(row => row['Day']),
+              showGrid: true,
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Hits & Visits',
+              showGrid: true,
+            },
+            series: [
+              {
+                name: 'Hits',
+                data: SERIES_DATA.filter(row => row['Day'] != '').map(row => row['Hits']),
+                type: 'line',
+                color: '#4C78A8',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+              {
+                name: 'Visits',
+                data: SERIES_DATA.filter(row => row['Day'] != '').map(row => row['Visits']),
+                type: 'line',
+                color: '#D30001',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
           }
+        ",
         },
         {
           title: "Time Distribution",
           header: %w[Hour Hits Visits Size],
           column_alignment: %i[left right right right],
           rows: data[:time_distribution],
-          vega_spec: {
-            "layer": [
-                       {
-                         "mark": "bar"
-                       },
-                       {
-                         "mark": {
-                                   "type": "text",
-                                  "align": "middle",
-                                  "baseline": "top",
-                                  "dx": -10,
-                                  "yOffset": -15
-                                 },
-                        "encoding": {
-                                      "text": {"field": "Hits", "type": "quantitative"},
-                                     "y": {"field": "Hits", "type": "quantitative"}
-                                    }
-                       },
-                     ],
-                      "encoding": {
-                                    "x": {"field": "Hour", "type": "nominal"},
-                                   "y": {"field": "Hits", "type": "quantitative"}
-                                  }
-          }
+          echarts_spec: "{
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.map(row => row['Hour'])
+              /* data: ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+                     '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
+                     '20', '21', '22', '23', '24'] */
+            },
+            yAxis: {
+              type: 'value'
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            series: [
+              {
+                data: SERIES_DATA.map(row => row['Hits']),
+                type: 'bar',
+                color: '#4C78A8',
+                label: {
+                   show: true,
+                   position: 'top'
+                },
+              }
+            ]
+          }",
         },
         {
           title: "20_ and 30_ on HTML pages",
@@ -174,97 +159,183 @@ module LogSense
           header: %w[Status Count],
           column_alignment: %i[left right],
           rows: data[:statuses],
-          vega_spec: {
-            "mark": "bar",
-                      "encoding": {
-                                    "x": {"field": "Status", "type": "nominal"},
-                                   "y": {"field": "Count", "type": "quantitative"}
-                                  }
-          }
+          echarts_spec: "{
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.map(row => row['Status'])
+              /* data: ['100', '101', '102', '103',
+                     '200', '201', '202', '203', '204', '205', '206', '207', '208', '226',
+                     '300', '301', '302', '303', '304', '305', '306', '307', '308',
+                     '400', '401', '402', '403', '404', '405', '406', '407', '408', '409', '410', '411', '412', '413', '414', '415', '416', '417', '418', '421', '422', '423', '424', '425', '426', '428', '429', '431', '451',
+                     '500', '501', '502', '503', '504', '505', '506', '507', '508', '510', '511'] */
+            },
+            yAxis: {
+              type: 'value'
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            series: [
+              {
+                data: SERIES_DATA.map(row => row['Count']),
+                type: 'bar',
+                color: '#4C78A8',
+                label: {
+                   show: true,
+                   position: 'top'
+                },
+              }
+            ]
+          }",
         },
         {
           title: "Daily Statuses",
           header: %w[Date S_2xx S_3xx S_4xx S_5xx],
           column_alignment: %i[left right right right right],
           rows: data[:statuses_by_day],
-          vega_spec: {
-            "transform": [ {"fold": ["S_2xx", "S_3xx", "S_4xx", "S_5xx" ] }],
-                      "mark": "bar",
-                      "encoding": {
-                                    "x": { 
-                                           "field": "Date",
-                                           "type": "ordinal",
-                                           "timeUnit": "day", 
-                                         },
-                                   "y": {
-                                          "aggregate": "sum",
-                                         "field": "value",
-                                         "type": "quantitative"
-                                        },
-                                   "color": {
-                                              "field": "key",
-                                             "type": "nominal",
-                                             "scale": {
-                                                        "domain": ["S_2xx", "S_3xx", "S_4xx"],
-                                                       "range": ["#228b22", "#ff8c00", "#a52a2a"]
-                                                      },
-                                            }
-                                  }
-          }
+          echarts_spec: "{
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.map(row => row['Date'])
+            },
+            yAxis: {
+              type: 'value'
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            series: [
+              {
+                data: SERIES_DATA.map(row => row['S_2xx']),
+                type: 'bar',
+                color: '#218521',
+                stack: 'total',
+                label: {
+                   show: true,
+                   position: 'right'
+                },
+              },
+              {
+                data: SERIES_DATA.map(row => row['S_3xx']),
+                type: 'bar',
+                color: '#FF8C00',
+                stack: 'total',
+                label: {
+                   show: true,
+                   position: 'right'
+                },
+              },
+              {
+                data: SERIES_DATA.map(row => row['S_4xx']),
+                type: 'bar',
+                color: '#A52A2A',
+                stack: 'total',
+                label: {
+                   show: true,
+                   position: 'right'
+                },
+              },
+              {
+                data: SERIES_DATA.map(row => row['S_5xx']),
+                type: 'bar',
+                color: '#000000',
+                stack: 'total',
+                label: {
+                   show: true,
+                   position: 'right'
+                },
+              },
+            ]
+          }",
         },
         {
           title: "Browsers",
           header: %w[Browser Hits Visits Size],
           column_alignment: %i[left right right right],
           rows: data[:browsers],
-          vega_spec: {
-            "layer": [
-                       { "mark": "bar" },
-                       {
-                         "mark": {
-                                   "type": "text",
-                                  "align": "middle",
-                                  "baseline": "top",
-                                  "dx": -10,
-                                  "yOffset": -15
-                                 },
-                        "encoding": {
-                                      "text": {"field": "Hits", "type": "quantitative"},
-                                    }
-                       },
-                     ],
-                      "encoding": {
-                                    "x": {"field": "Browser", "type": "nominal"},
-                                   "y": {"field": "Hits", "type": "quantitative"}
-                                  }
+          echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.sort(order_by_name).map(row => row['Browser']),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels by 90 degrees
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Browser Hits',
+              showGrid: true,
+            },
+            series: [
+              {
+                name: 'Hits',
+                data: SERIES_DATA.sort(order_by_name).map(row => row['Hits']),
+                type: 'bar',
+                color: '#4C78A8',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
           }
+          function order_by_name(a, b) {
+            return a['Browser'] < b['Browser'] ? -1 : 1
+          }
+          ",
         },
         {
           title: "Platforms",
           header: %w[Platform Hits Visits Size],
           column_alignment: %i[left right right right],
           rows: data[:platforms],
-          vega_spec: {
-            "layer": [
-                       { "mark": "bar" },
-                       {
-                         "mark": {
-                                   "type": "text",
-                                  "align": "middle",
-                                  "baseline": "top",
-                                  "dx": -10,
-                                  "yOffset": -15
-                                 },
-                        "encoding": {
-                                      "text": {"field": "Hits", "type": "quantitative"},
-                                    }
-                       },
-                     ],
-                      "encoding": {
-                                    "x": {"field": "Platform", "type": "nominal"},
-                                   "y": {"field": "Hits", "type": "quantitative"}
-                                  }
+          echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.sort(order_by_platform).map(row => row['Platform']),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels by 90 degrees
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Platform Hits',
+              showGrid: true,
+            },
+            series: [
+              {
+                name: 'Hits',
+                data: SERIES_DATA.sort(order_by_platform).map(row => row['Hits']),
+                type: 'bar',
+                color: '#4C78A8',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
           }
+          function order_by_platform(a, b) {
+            return a['Platform'] < b['Platform'] ? -1 : 1
+          }",
         },
         {
           title: "IPs",
@@ -284,7 +355,40 @@ module LogSense
               v.map { |x| x[0] }.uniq.size,
               v.map { |x| x[0] }.join(WORDS_SEPARATOR)
             ]
-          }&.sort { |x, y| y[3] <=> x[3] }
+          }&.sort { |x, y| y[3] <=> x[3] },
+          echarts_height: "600px",
+          echarts_spec: "{
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                  type: 'shadow'
+                }
+            },
+            xAxis: {
+              type: 'value',
+              boundaryGap: [0, 0.01]
+            },
+            yAxis: {
+              type: 'category',
+              data: SERIES_DATA.sort(order_by_hits).map(row => row['Country'] ),
+            },
+            series: [
+              {
+                 type: 'bar',
+                 data: SERIES_DATA.sort(order_by_hits).map(row => row['Hits'] ),
+                 color: '#4C78A8',
+                 label: {
+                    show: true,
+                    position: 'right'
+                 },
+              },
+            ]
+          };
+
+          function order_by_hits(a, b) {
+            return Number(a['Hits']) < Number(b['Hits']) ? -1 : 1
+          }
+          "
         },
         ip_per_hour_report_spec(ips_per_hour(data[:ips_per_hour])),
         {
