@@ -1,21 +1,22 @@
 <ul class="stats-list">
   <li>
-    <%= data[:started_at].strftime("%b %d, %Y @ %H:%M:%S") %>
     <span class="stats-list-label">Analysis Started</span>
+    <%= data[:started_at].strftime("%b %d, %Y @ %H:%M:%S") %>
   </li>
   <li>
-    <%= data[:ended_at].strftime("%b %d, %Y @ %H:%M:%S") %>
     <span class="stats-list-label">Analysis Ended</span>
+    <%= data[:ended_at].strftime("%b %d, %Y @ %H:%M:%S") %>
   </li>
   <li class="stats-list-negative">
-    <%= "%02d:%02d" % [data[:duration] / 60, data[:duration] % 60] %>
     <span class="stats-list-label">Duration</span>
+    <%= "%02d:%02d" % [data[:duration] / 60, data[:duration] % 60] %>
   </li>
   <li class="stats-list-negative">
-    <%= data[:log_size] %> <span class="stats-list-label">Events</span>
+    <span class="stats-list-label">Events</span>
+    <%= data[:log_size] %>
   </li>
   <li class="stats-list-positive">
-    <%= "%.2f" % (data[:log_size] / data[:duration]) %>
     <span class="stats-list-label">Parsed Events/sec</span>
+    <%= "%.2f" % (data[:log_size] / data[:duration]) %>
   </li>
 </ul>
