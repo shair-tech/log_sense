@@ -37,7 +37,7 @@ module LogSense
           source_file TEXT,
           line_number INTEGER
          )
-      EOS
+        EOS
 
         ins = db.prepare <<-EOS
         insert into Event(
@@ -60,7 +60,7 @@ module LogSense
           line_number
          )
          values (#{Array.new(17, "?").join(", ")})
-      EOS
+        EOS
 
         db.execute <<-EOS
         CREATE TABLE IF NOT EXISTS Error(
@@ -71,18 +71,18 @@ module LogSense
          filename TEXT,
          line_number INTEGER
         )
-      EOS
+        EOS
 
         ins_error = db.prepare <<-EOS
-       insert into Error(
+        insert into Error(
          log_id,
          context,
          description,
          filename,
          line_number
-       )
-       values (?, ?, ?, ?, ?)
-      EOS
+        )
+        values (?, ?, ?, ?, ?)
+        EOS
 
         db.execute <<-EOS
         CREATE TABLE IF NOT EXISTS Render(
@@ -93,18 +93,15 @@ module LogSense
           filename TEXT,
           line_number INTEGER
         )
-      EOS
+        EOS
 
         ins_rendered = db.prepare <<-EOS
-       insert into Render(
+        insert into Render(
          partial,
          duration_ms,
          allocations,
          filename,
          line_number
-       )
-       values (?, ?, ?, ?, ?)
-      EOS
 
         # requests in the log might be interleaved.
         #
@@ -261,7 +258,7 @@ module LogSense
       EXCEPTION = /[A-Za-z_0-9:]+(Error)?/
       ERROR_REGEXP = /^\[#{ID}\] (?<context>#{EXCEPTION}) \((?<description>(#{EXCEPTION})?.*)\):/
 
-      def match_and_process_error line
+      def match_and_process_error(line)
         matchdata = ERROR_REGEXP.match line
         if matchdata
           {
@@ -275,7 +272,7 @@ module LogSense
       # I, [2021-10-19T08:16:34.343858 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Started GET "/grow/people/471" for 217.77.80.35 at 2021-10-19 08:16:34 +0000
       STARTED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Started #{VERB} "#{URL}" for #{IP} at/
 
-      def match_and_process_start line
+      def match_and_process_start(line)
         matchdata = STARTED_REGEXP.match line
         if matchdata
           {
