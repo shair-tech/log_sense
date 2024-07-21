@@ -111,6 +111,7 @@ module LogSense
           header: %w[Controller Hits Min Avg Max],
           column_alignment: %i[left right right right right],
           rows: data[:performance],
+          col: "small-12 cell",
           echarts_height: "600px",
           echarts_spec: "{
             xAxis: {
@@ -159,11 +160,20 @@ module LogSense
           }",
         },
         {
-          title: "Controller and Methods",
-          echarts_height: "800px",
+          title: "Controller and Methods by Device",
+          header: %w[Controller Method Format iOS Android Mac Windows Linux Other Total],
+          column_alignment: %i[left left left right right right right right right right],
+          rows: data[:controller_and_methods_by_device],
+          col: "small-12 cell",
+          echarts_height: "600px",
           echarts_spec: "{
+            dataZoom: [{
+               type: 'slider', // Use slider type for horizontal zoom
+               // ... other dataZoom options
+            }],
             series: {
               type: 'treemap',
+              roam: 'move',
               label: {
                 show: true,
                 formatter: function (params) {
@@ -182,7 +192,42 @@ module LogSense
           header: %w[Date IP URL Description Log ID],
           column_alignment: %i[left left left left left],
           rows: data[:fatal],
-          col: "small-12 cell"
+          col: "small-12 cell",
+          echarts_extra: "var fatal_plot=#{data[:fatal_plot].to_json}",
+          echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: fatal_plot.filter(row => row[0] != '').map(row => row[0]),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels by 90 degrees
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Errors',
+              showGrid: true,
+            },
+            series: [
+              {
+                data: fatal_plot.filter(row => row[0] != '').map(row => row[1]),
+                type: 'bar',
+                color: '#D30001',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
+          };"
         },
         {
           title: "Internal Server Errors",
@@ -193,10 +238,106 @@ module LogSense
         },
         {
           title: "Errors",
-          header: %w[Log ID Context Description Count],
-          column_alignment: %i[left left left left],
+          header: %w[Log ID Description Count],
+          column_alignment: %i[left left left],
           rows: data[:error],
-          col: "small-12 cell"
+          col: "large-6 cell"
+        },
+        {
+          title: "Possible Attacks",
+          header: %w[Log ID Description Count],
+          column_alignment: %i[left left left],
+          rows: data[:possible_attacks],
+          col: "large-6 cell"
+        },
+        {
+          title: "Browsers",
+          header: %w[Browser Visits],
+          column_alignment: %i[left right],
+          rows: data[:browsers],
+          echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.sort(order_by_name).map(row => row['Browser']),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels by 90 degrees
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Browser Visits',
+              showGrid: true,
+            },
+            series: [
+              {
+                name: 'Hits',
+                data: SERIES_DATA.sort(order_by_name).map(row => row['Visits']),
+                type: 'bar',
+                color: '#D30001',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
+          }
+          function order_by_name(a, b) {
+            return a['Browser'] < b['Browser'] ? -1 : 1
+          }
+          ",
+        },
+        {
+          title: "Platforms",
+          header: %w[Platform Visits],
+          column_alignment: %i[left right],
+          rows: data[:platforms],
+          echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.sort(order_by_platform).map(row => row['Platform']),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels by 90 degrees
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Platform Visits',
+              showGrid: true,
+            },
+            series: [
+              {
+                name: 'Visits',
+                data: SERIES_DATA.sort(order_by_platform).map(row => row['Visits']),
+                type: 'bar',
+                color: '#D30001',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
+          }
+          function order_by_platform(a, b) {
+            return a['Platform'] < b['Platform'] ? -1 : 1
+          }",
         },
         {
           title: "IPs",

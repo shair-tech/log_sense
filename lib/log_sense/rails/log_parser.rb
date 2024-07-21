@@ -102,6 +102,37 @@ module LogSense
          allocations,
          filename,
          line_number
+        )
+        values (?, ?, ?, ?, ?)
+        EOS
+        
+        db.execute <<-EOS
+        CREATE TABLE IF NOT EXISTS BrowserInfo(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          browser TEXT,
+          platform TEXT,
+          device_name TEXT,
+          controller TEXT,
+          method TEXT,
+          request_format TEXT,
+          anon_ip TEXT,
+          timestamp TEXT
+        )
+        EOS
+
+        ins_browser_info = db.prepare <<-EOS
+        insert into BrowserInfo(
+         browser,
+         platform,
+         device_name,
+         controller,
+         method,
+         request_format,
+         anon_ip,
+         timestamp
+        )
+        values (?, ?, ?, ?, ?, ?, ?, ?)
+        EOS
 
         # requests in the log might be interleaved.
         #
@@ -145,6 +176,19 @@ module LogSense
 
             # I and F for completed requests, [ is for error messages
             next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
+
+            data = match_and_process_browser_info line
+            if data
+              ins_browser_info.execute(data[:browser],
+                                       data[:platform],
+                                       data[:device_name],
+                                       data[:controller],
+                                       data[:method],
+                                       data[:request_format],
+                                       data[:anon_ip],
+                                       data[:datetime])
+              next
+            end
 
             data = match_and_process_error line
             if data
@@ -242,6 +286,7 @@ module LogSense
         db
       end
 
+      
       TIMESTAMP = /(?<timestamp>[^ ]+)/
       ID = /(?<id>[a-z0-9-]+)/
       VERB = /(?<verb>GET|POST|PATCH|PUT|DELETE)/
@@ -250,6 +295,24 @@ module LogSense
       STATUS = /(?<status>[0-9]+)/
       STATUS_IN_WORDS = /(OK|Unauthorized|Found|Internal Server Error|Bad Request|Method Not Allowed|Request Timeout|Not Implemented|Bad Gateway|Service Unavailable)/
       MSECS = /[0-9.]+/
+
+      # I, [2024-07-01T02:21:34.339058 #1392909]  INFO -- : [815b3e28-8d6e-4741-8605-87654a9ff58c] BrowserInfo: "Unknown Browser","unknown_platform","Unknown","Devise::SessionsController","new","html","4db749654a0fcacbf3868f87723926e7405262f8d596e8514f4997dc80a3cd7e","2024-07-01T02:21:34+02:00"
+      BROWSER_INFO_REGEXP = /BrowserInfo: "(?<browser>.+)","(?<platform>.+)","(?<device_name>.+)","(?<controller>.+)","(?<method>.+)","(?<request_format>.+)","(?<anon_ip>.+)","(?<timestamp>.+)"/
+      def match_and_process_browser_info(line)
+        matchdata = BROWSER_INFO_REGEXP.match line
+        if matchdata
+          {
+            browser: matchdata[:browser],
+            platform: matchdata[:platform],
+            device_name: matchdata[:device_name],
+            controller: matchdata[:controller],
+            method: matchdata[:method],
+            request_format: matchdata[:request_format],
+            anon_ip: matchdata[:anon_ip],
+            timestamp: matchdata[:timestamp],
+          }
+        end
+      end
 
       # Error Messages
       # [584cffcc-f1fd-4b5c-bb8b-b89621bd4921] ActionController::RoutingError (No route matches [GET] "/assets/foundation-icons.svg"):
