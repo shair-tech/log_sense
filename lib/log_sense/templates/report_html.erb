@@ -81,6 +81,7 @@
                   <div id="<%= "echart-#{index}" %>" style="width: 100%;height: <%= height %>;"></div>
                   <script>
                    // Initialize the echarts instance based on the prepared dom
+                   <%= report[:echarts_extra] %>;
                    var plot_index = "<%= "echart-#{index}" %>"
                    var myChart = echarts.init(document.getElementById(plot_index));
                    var options = <%= report[:echarts_spec].gsub("SERIES_DATA", "data_#{index}") %>
