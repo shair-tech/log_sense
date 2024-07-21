@@ -1,4 +1,20 @@
 :root {
+    --color: #222222;
+    --background: white;
+    --main-accent: #1C1C1C;
+}
+
+/*
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color: white;
+        --background: #222222;
+        --main-accent: #E3E3E3
+    }
+}
+*/
+
+:root {
   --font-family: Inter, Helvetica, Arial, sans-serif;
 
 }
@@ -7,11 +23,13 @@ body {
     font-family: var(--font-family);
     /* font-size: 12px; */
     font-size: 0.86rem;
+    color: var(--color);
+    background: var(--background);
 }
 
 #offCanvas {
-    color: #DEDEDE;
-    background: #1C1C1C;
+    color: var(--background);
+    background: var(--color);
     border-right: none;
     box-shadow: none;
     padding: 0.5rem;
@@ -20,7 +38,7 @@ body {
 }
 
 #offCanvas a {
-    color: #FFFFFF;
+    color: var(--main-accent);
 }
 
 nav {
@@ -43,14 +61,14 @@ h1 {
     font-family: var(--font-family);
     font-size: 2rem;
     font-weight: bold;
-    color: #1C1C1C;
+    color: var(--main-accent);
 }
 
 h2 {
     font-family: var(--font-family);
     font-size: 1.6rem;
     font-weight: bold;
-    color: #1C1C1C;
+    color: var(--main-accent);
 }
 
 th, td {
@@ -116,7 +134,7 @@ ul.pagination, li.paginate_button {
     display: inline-block;
     margin-right: 10px;
     padding-right: 10px;
-    border-right: 1px solid #cacaca;
+    border-right: 1px solid #CACACA;
     text-align: center;
     font-size: 1.2em;
     font-weight: bold;
