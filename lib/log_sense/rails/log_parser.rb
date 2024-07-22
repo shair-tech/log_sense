@@ -186,7 +186,7 @@ module LogSense
                                        data[:method],
                                        data[:request_format],
                                        data[:anon_ip],
-                                       data[:datetime])
+                                       data[:timestamp])
               next
             end
 

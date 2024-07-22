@@ -2,6 +2,11 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.8.0
+
+- Various improvements to the Rails reports
+- Support for BrowserInfo data
+
 * 1.7.0
 
 - [User] Fixes a bug with the geolocator
