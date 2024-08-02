@@ -31,25 +31,26 @@ module LogSense
       ts = @db.execute "SELECT #{human_readable_size} from LogLine where #{filter}"
       @total_size = ts[0][0]
 
+      html = "(extension like '.htm%')"
+      non_html = "(extension not like '.htm%')"
+      gs = "(status like '2%' or status like '3%')"
+      bs = "(status like '4%' or status like '5%')"
+
       @daily_distribution = @db.execute "SELECT date(datetime),
                                           #{human_readable_day},
                                           count(datetime),
                                           count(distinct(unique_visitor)),
-                                          #{human_readable_size} from LogLine
-                                          where #{filter}
+                                          #{human_readable_size}
+                                          from LogLine
+                                          where (#{filter} and #{html})
                                           group by date(datetime)"
 
       @time_distribution = @db.execute "SELECT strftime('%H', datetime),
                                                count(datetime),
                                                count(distinct(unique_visitor)),
                                                #{human_readable_size} from LogLine
-                                               where #{filter}
+                                               where (#{filter} and #{html})
                                                group by strftime('%H', datetime)"
-
-      html = "(extension like '.htm%')"
-      non_html = "(extension not like '.htm%')"
-      gs = "(status like '2%' or status like '3%')"
-      bs = "(status like '4%' or status like '5%')"
 
       @most_requested_pages = @db.execute resource_query(html, gs)
       @most_requested_resources = @db.execute resource_query(non_html, gs)
@@ -57,21 +58,19 @@ module LogSense
       @missed_resources = @db.execute resource_query(non_html, bs)
 
       @missed_pages_by_ip = @db.execute "SELECT ip, path, status from LogLine
-                                           where #{bs} and
-                                           #{html} and
-                                           #{filter}
+                                           where #{filter} and #{html} and #{bs}
                                            limit #{@options[:limit]}"
 
       @missed_resources_by_ip = @db.execute "SELECT ip, path, status
                                              from LogLine
-                                             where #{bs} and #{filter}
+                                             where #{filter} and #{bs}
                                              limit #{@options[:limit]}"
 
       @browsers = @db.execute "SELECT browser,
                                       count(browser),
                                       count(distinct(unique_visitor)),
                                       #{human_readable_size} from LogLine
-                                      where #{filter}
+                                      where #{filter} and #{html}
                                       group by browser
                                       order by count(browser) desc"
 
@@ -79,7 +78,7 @@ module LogSense
                                        count(platform),
                                        count(distinct(unique_visitor)),
                                        #{human_readable_size} from LogLine
-                                       where #{filter}
+                                       where #{filter} and #{html}
                                        group by platform
                                        order by count(platform) desc"
 
@@ -89,7 +88,7 @@ module LogSense
                                                 count(datetime),
                                                 #{human_readable_size}
                                                 from LogLine
-                                                where #{filter}
+                                                where #{filter} and #{html}
                                                 group by browser, platform, ip
                                                 order by count(datetime) desc
                                                 limit #{@options[:limit]}"
@@ -98,7 +97,7 @@ module LogSense
                                       count(referer),
                                       count(distinct(unique_visitor)),
                                       #{human_readable_size} from LogLine
-                                      where #{filter}
+                                      where #{filter} and #{html}
                                       group by referer
                                       order by count(referer)
                                       desc limit #{@options[:limit]}"

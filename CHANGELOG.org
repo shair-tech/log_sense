@@ -2,6 +2,10 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 1.9.0
+
+- Perform calculation on HTML pages only
+
 * 1.8.0
 
 - Various improvements to the Rails reports
