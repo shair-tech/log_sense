@@ -101,5 +101,122 @@ module LogSense
         col: "small-12 cell"
       }
     end
+
+    def total_statuses(data)
+      {
+        title: "Statuses",
+        header: %w[Status Count],
+        column_alignment: %i[left right],
+        rows: data[:statuses],
+        echarts_spec: "{
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.map(row => row['Status'])
+            },
+            yAxis: {
+              type: 'value'
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            series: [
+              {
+                data: SERIES_DATA.map(row => {
+                  var color;
+                  var first_char = row['Status'].slice(0, 1)
+                  switch (first_char) {
+                    case '2':
+                      color = '#218521';
+                      break;
+                    case '3':
+                      color = '#FF8C00';
+                      break;
+                    case '4':
+                      color = '#A52A2A';
+                      break
+                    case '5':
+                      color = '#000000';
+                      break;
+                    default:
+                      color = '#4C78A8';
+                  }
+                  return {
+                    value: row['Count'],
+                    itemStyle: { color: color }
+                  }
+                }),
+                type: 'bar',
+                label: {
+                   show: true,
+                   position: 'top'
+                },
+              }
+            ]
+          }",
+      }
+    end
+
+    def daily_statuses(data)
+      {
+        title: "Daily Statuses",
+        header: %w[Date S_2xx S_3xx S_4xx S_5xx],
+        column_alignment: %i[left right right right right],
+        rows: data[:statuses_by_day],
+        echarts_spec: "{
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.map(row => row['Date'])
+            },
+            yAxis: {
+              type: 'value'
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            series: [
+              {
+                data: SERIES_DATA.map(row => row['S_2xx']),
+                type: 'bar',
+                color: '#218521',
+                stack: 'total',
+                label: {
+                   show: true,
+                   position: 'right'
+                },
+              },
+              {
+                data: SERIES_DATA.map(row => row['S_3xx']),
+                type: 'bar',
+                color: '#FF8C00',
+                stack: 'total',
+                label: {
+                   show: true,
+                   position: 'right'
+                },
+              },
+              {
+                data: SERIES_DATA.map(row => row['S_4xx']),
+                type: 'bar',
+                color: '#A52A2A',
+                stack: 'total',
+                label: {
+                   show: true,
+                   position: 'right'
+                },
+              },
+              {
+                data: SERIES_DATA.map(row => row['S_5xx']),
+                type: 'bar',
+                color: '#000000',
+                stack: 'total',
+                label: {
+                   show: true,
+                   position: 'right'
+                },
+              },
+            ]
+          }",
+      }
+    end
   end
 end

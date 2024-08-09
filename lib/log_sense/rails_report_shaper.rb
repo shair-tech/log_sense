@@ -71,41 +71,8 @@ module LogSense
             ]
           }",
         },
-        {
-          title: "Statuses",
-          header: %w[Status Count],
-          column_alignment: %i[left right],
-          rows: data[:statuses],
-          col: "small-12 cell",
-          echarts_spec: "{
-            xAxis: {
-              type: 'category',
-              data: SERIES_DATA.map(row => row['Status'])
-              /* data: ['100', '101', '102', '103',
-                     '200', '201', '202', '203', '204', '205', '206', '207', '208', '226',
-                     '300', '301', '302', '303', '304', '305', '306', '307', '308',
-                     '400', '401', '402', '403', '404', '405', '406', '407', '408', '409', '410', '411', '412', '413', '414', '415', '416', '417', '418', '421', '422', '423', '424', '425', '426', '428', '429', '431', '451',
-                     '500', '501', '502', '503', '504', '505', '506', '507', '508', '510', '511'] */
-            },
-            yAxis: {
-              type: 'value'
-            },
-            tooltip: {
-               trigger: 'axis'
-            },
-            series: [
-              {
-                data: SERIES_DATA.map(row => row['Count']),
-                type: 'bar',
-                color: '#D30001',
-                label: {
-                   show: true,
-                   position: 'top'
-                },
-              }
-            ]
-          }",
-        },
+        total_statuses(data),
+        daily_statuses(data),
         {
           title: "Rails Performance",
           header: %w[Controller Hits Min Avg Max],
