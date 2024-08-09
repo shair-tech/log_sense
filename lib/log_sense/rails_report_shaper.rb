@@ -206,16 +206,16 @@ module LogSense
         {
           title: "Errors",
           header: %w[Log ID Description Count],
-          column_alignment: %i[left left left],
+          column_alignment: %i[left left left right],
           rows: data[:error],
-          col: "large-6 cell"
+          col: "small-12 cell"
         },
         {
           title: "Possible Attacks",
           header: %w[Log ID Description Count],
-          column_alignment: %i[left left left],
+          column_alignment: %i[left left left right],
           rows: data[:possible_attacks],
-          col: "large-6 cell"
+          col: "small-12 cell"
         },
         {
           title: "Browsers",
