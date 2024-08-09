@@ -2,21 +2,24 @@
     --color: #222222;
     --background: white;
     --main-accent: #1C1C1C;
+
+    --link-color: white;
+    --link-color-inverted: #1C1C1C;
 }
 
-/*
 @media (prefers-color-scheme: dark) {
     :root {
         --color: white;
         --background: #222222;
-        --main-accent: #E3E3E3
+        --main-accent: #E3E3E3;
+
+        --link-color: #1C1C1C;
+        --link-color-inverted: white;
     }
 }
-*/
 
 :root {
   --font-family: Inter, Helvetica, Arial, sans-serif;
-
 }
 
 body {
@@ -38,7 +41,7 @@ body {
 }
 
 #offCanvas a {
-    color: var(--main-accent);
+    color: var(--link-color);
 }
 
 nav {

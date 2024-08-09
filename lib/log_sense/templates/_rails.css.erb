@@ -1,20 +1,31 @@
 :root {
-    --main-accent: #D30001;
+  --color: #222222;
+  --background: white;
+  --main-accent: #D30001;
+
+  --link-color: #D30001;
+  --link-color-inverted: white;
 }
 
-/*
 @media (prefers-color-scheme: dark) {
-    :root {
-        --main-accent: #DA2627;
-    }
+  :root {
+    --background: #222222;
+    --main-accent: #F0A8A9;
+
+    --link-color: white;
+    --link-color-inverted: #F0A8A9;
+  }
 }
-*/
 
 #offCanvas {
     background: var(--main-accent) !important;
 }
 
+#offCanvas a {
+    color: var(--link-color);
+}
+
 h1, h2 {
-  color: var(--main-accent) !important;
+    color: var(--main-accent) !important;
 }
     
