@@ -123,14 +123,16 @@ module LogSense
                 WHERE #{filter} and substr(status, 1, 1) == '5').gsub("\n", "") || [[]]
 
       @error = @db.execute %Q(
-         SELECT filename, log_id, description, count(log_id)
+         SELECT filename,
+                log_id, description, count(log_id)
                 FROM Error
                 WHERE (description NOT LIKE '%No route matches%' and
                        description NOT LIKE '%Couldn''t find%')
                 GROUP BY description).gsub("\n", "") || [[]]
       
       @possible_attacks = @db.execute %Q(
-         SELECT filename, log_id, description, count(log_id)
+         SELECT filename,
+                log_id, description, count(log_id)
                 FROM Error
                 WHERE (description LIKE '%No route matches%' or
                        description LIKE '%Couldn''t find%')
