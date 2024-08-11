@@ -114,7 +114,7 @@ elsif @options[:output_format] == "ufw"
   }
   ips_and_urls.each do |ip, urls|
     puts "# #{urls[0..10].uniq.join(' ')}"
-    puts "ufw deny from #{ip}"
+    puts "ufw insert 1 deny from #{ip}"
     puts
   end
 
