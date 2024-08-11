@@ -91,6 +91,12 @@
 
                   </script>
                 <% end %>
+                <% if report[:raw_html] %>
+                  <% height = report[:raw_html_height] || "400px"%>
+                  <div id="raw-html-#{index}" style="width: 100%;height: <%= height %>">
+                    <%= report[:raw_html] %>
+                  </div>
+                <% end %>
                 <% if report[:rows] %>
                   <%= render "output_table.html.erb", report: report, index: index %>
                 <% end %>

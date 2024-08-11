@@ -249,6 +249,13 @@ module LogSense
           title: "IPs",
           header: %w[IP Hits Visits Size Country],
           column_alignment: %i[left right right right left],
+          raw_html_height: "400px",
+          raw_html: "
+            <style>
+            #{countries_css_styles(data[:countries])}
+            </style>
+            #{File.read(File.join("lib", "log_sense", "templates", "world.svg"))}
+          ",
           rows: data[:ips]
         },
         {

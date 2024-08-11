@@ -81,6 +81,10 @@ module LogSense
       }
     end
 
+    #
+    # Reports shared between rails and apache/nginx
+    #
+
     def session_report_spec(data)
       {
         title: "Sessions",
@@ -217,6 +221,44 @@ module LogSense
             ]
           }",
       }
+    end
+
+    def countries_css_styles(country_data)
+      country_and_hits = country_data&.map { |k, v|
+        [ k, v.map { |x| x[1] }.inject(&:+) ]
+      }
+      max = country_and_hits.map { |x| x[1] }.max
+
+      country_and_hits.map do |element|
+        underscored = element[0].gsub(" ", "_")
+        bin = bin(element[1], max:)
+        <<-EOS
+         /* bin: #{bin} */
+         .#{underscored}, ##{underscored}, path[name="#{underscored}"] { fill: #{fill_color(bin)} }
+        EOS
+      end.join("\n")
+    end
+
+    private
+
+    # return the fill colors for the map
+    # https://www.learnui.design/tools/data-color-picker.html#single
+    def fill_color(bin, style: :rails)
+      colors = if style == :rails
+                 ["#fff2e2", "#f9ddbe", "#f4c79b", "#efb07b", "#ea985e",
+                  "#e57f43", "#e0632a", "#da4314", "#d30001"]
+               else
+                 ["#e3ffff", "#cbedf1", "#b3dce4", "#9dcad7", "#87b8cc",
+                  "#74a6c0", "#6394b5", "#5482a9", "#48709c"]
+               end
+
+      colors[bin] || colors.last
+    end
+
+    # make number_of_bins bins between 0 and max and return in which bin
+    # number belongs to
+    def bin(number, number_of_bins: 9, max: 100)
+      ((number / max.to_f) * number_of_bins).to_i
     end
   end
 end
