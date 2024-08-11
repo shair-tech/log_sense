@@ -132,6 +132,7 @@ else
 
     warn "Grouping IPs by country ..." if @options[:verbose]
     country_col = geolocated_data[0].size - 1
+    @data[:ips] = geolocated_data
     @data[:countries] = geolocated_data.group_by { |x| x[country_col] }
   elsif @options[:geolocation] && @data[:ips].size == 0
     warn "Skipping geolocation: no IP found" if @options[:verbose]
