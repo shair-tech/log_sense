@@ -22,7 +22,7 @@
 
   <body>
     <div class="off-canvas-wrapper">
-      <div class="off-canvas position-left" id="offCanvas" data-off-canvas>
+      <div class="off-canvas position-left reveal-for-large" id="offCanvas" data-off-canvas>
         <%= render "navigation.html.erb",
                    menus: @reports.map { |x| x[:title] } %>
       </div>
