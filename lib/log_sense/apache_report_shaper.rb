@@ -271,7 +271,7 @@ module LogSense
               v.map { |x| x[0] }.join(WORDS_SEPARATOR)
             ]
           }&.sort { |x, y| y[3] <=> x[3] },
-          echarts_height: "600px",
+          echarts_height: "400px",
           echarts_spec: "{
             tooltip: {
                 trigger: 'axis',
