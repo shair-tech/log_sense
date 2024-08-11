@@ -211,7 +211,7 @@ module LogSense
           col: "small-12 cell"
         },
         {
-          title: "Possible Attacks",
+          title: "Potential Attacks",
           header: %w[Log ID Description Count],
           column_alignment: %i[left left left right],
           rows: data[:possible_attacks],

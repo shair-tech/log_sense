@@ -162,7 +162,7 @@ module LogSense
 
     def daily_statuses(data)
       {
-        title: "Daily Statuses",
+        title: "Statuses by Day",
         header: %w[Date S_2xx S_3xx S_4xx S_5xx],
         column_alignment: %i[left right right right right],
         rows: data[:statuses_by_day],
