@@ -78,7 +78,8 @@ module LogSense
         extra_cols = ""
       end
 
-      @ips = @db.execute %(SELECT ip, count(ip) #{extra_cols} from #{@table}
+      @ips = @db.execute %(SELECT ip, count(ip) #{extra_cols}
+                                  from #{@table}
                                   where #{filter}
                                   group by ip                 
                                   order by count(ip) desc     
