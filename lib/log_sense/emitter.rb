@@ -28,6 +28,8 @@ module LogSense
       @data = data
       @options = options
       @report_title = options[:input_format].capitalize
+
+      @format_specific_theme = "#{@options[:input_format]}_theme.css"
       @format_specific_css = "#{@options[:input_format]}.css.erb"
 
       # Chooses template and destination

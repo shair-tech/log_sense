@@ -1,0 +1,35 @@
+:root {
+    --color: #222222;
+    --link-color: #4878C7;
+    --link-hover: #20365A;
+    --background: white;
+
+    --sidebar-background: #222222;
+    --sidebar-color: white;
+    --sidebar-link-color: white;
+    --sidebar-link-hover: #FFF5C3;
+
+    --accent-1: #222222;
+    --row-background: white;
+    --row-stripe: #FAFAFA;
+    --row-border: #D0D0D0;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color: white;
+        --link-color: #7FA1D8;
+        --link-hover: #B6C9E9;
+        --background: #222222;
+
+        --sidebar-background: #444444;
+        --sidebar-color: white;
+        --sidebar-link-color: white;
+        --sidebar-link-hover: #FFF5C3;
+
+        --accent-1: white;
+        --row-background: #222222;
+        --row-stripe: #2F2F2F;
+        --row-border: #444444;
+    }
+}
