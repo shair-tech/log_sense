@@ -39,38 +39,7 @@ module LogSense
             ]
           };",
         },
-        {
-          title: "Time Distribution",
-          header: %w[Hour Hits],
-          column_alignment: %i[left right],
-          rows: data[:time_distribution],
-          echarts_spec: "{
-            xAxis: {
-              type: 'category',
-              data: SERIES_DATA.map(row => row['Hour'])
-              /* data: ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
-                     '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
-                     '20', '21', '22', '23', '24'] */
-            },
-            yAxis: {
-              type: 'value'
-            },
-            tooltip: {
-               trigger: 'axis'
-            },
-            series: [
-              {
-                data: SERIES_DATA.map(row => row['Hits']),
-                type: 'bar',
-                color: '#D30001',
-                label: {
-                   show: true,
-                   position: 'top'
-                },
-              }
-            ]
-          }",
-        },
+        time_distribution(data),
         total_statuses(data),
         daily_statuses(data),
         {
@@ -217,157 +186,13 @@ module LogSense
           rows: data[:possible_attacks],
           col: "small-12 cell"
         },
-        {
-          title: "Browsers",
-          header: %w[Browser Visits],
-          column_alignment: %i[left right],
-          rows: data[:browsers],
-          echarts_spec: "{
-            toolbox: {
-               feature: {
-                 saveAsImage: {},
-               }
-            },
-            tooltip: {
-               trigger: 'axis'
-            },
-            xAxis: {
-              type: 'category',
-              data: SERIES_DATA.sort(order_by_name).map(row => row['Browser']),
-              showGrid: true,
-              axisLabel: {
-                rotate: 45 // Rotate the labels by 90 degrees
-              }
-            },
-            yAxis: {
-              type: 'value',
-              name: 'Browser Visits',
-              showGrid: true,
-            },
-            series: [
-              {
-                name: 'Hits',
-                data: SERIES_DATA.sort(order_by_name).map(row => row['Visits']),
-                type: 'bar',
-                color: '#D30001',
-                label: {
-                  show: true,
-                  position: 'top'
-                },
-              },
-            ]
-          }
-          function order_by_name(a, b) {
-            return a['Browser'] < b['Browser'] ? -1 : 1
-          }
-          ",
-        },
-        {
-          title: "Platforms",
-          header: %w[Platform Visits],
-          column_alignment: %i[left right],
-          rows: data[:platforms],
-          echarts_spec: "{
-            toolbox: {
-               feature: {
-                 saveAsImage: {},
-               }
-            },
-            tooltip: {
-               trigger: 'axis'
-            },
-            xAxis: {
-              type: 'category',
-              data: SERIES_DATA.sort(order_by_platform).map(row => row['Platform']),
-              showGrid: true,
-              axisLabel: {
-                rotate: 45 // Rotate the labels by 90 degrees
-              }
-            },
-            yAxis: {
-              type: 'value',
-              name: 'Platform Visits',
-              showGrid: true,
-            },
-            series: [
-              {
-                name: 'Visits',
-                data: SERIES_DATA.sort(order_by_platform).map(row => row['Visits']),
-                type: 'bar',
-                color: '#D30001',
-                label: {
-                  show: true,
-                  position: 'top'
-                },
-              },
-            ]
-          }
-          function order_by_platform(a, b) {
-            return a['Platform'] < b['Platform'] ? -1 : 1
-          }",
-        },
-        {
-          title: "IPs",
-          header: %w[IPs Hits Country],
-          column_alignment: %i[left right left],
-          rows: data[:ips]
-        },
-        {
-          title: "Countries",
-          header: ["Country", "Hits", "IPs", "IP List"],
-          column_alignment: %i[left right left],
-          rows: countries_table(data[:countries]),
-          echarts_height: "600px",
-          echarts_spec: "{
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                  type: 'shadow'
-                }
-            },
-            xAxis: {
-              type: 'value',
-              boundaryGap: [0, 0.01]
-            },
-            yAxis: {
-              type: 'category',
-              data: SERIES_DATA.sort(order_by_hits).map(row => row['Country'] ),
-            },
-            series: [
-              {
-                 type: 'bar',
-                 data: SERIES_DATA.sort(order_by_hits).map(row => row['Hits'] ),
-                 color: '#D30001',
-                 label: {
-                    show: true,
-                    position: 'right'
-                 },
-              },
-            ]
-          };
-
-          function order_by_hits(a, b) {
-            return Number(a['Hits']) < Number(b['Hits']) ? -1 : 1
-          }
-          "
-        },
+        browsers(data),
+        platforms(data),
+        ips(data),
+        countries(data),
         ip_per_hour_report_spec(ips_per_hour(data[:ips_per_hour])),
         session_report_spec(ips_detailed(data[:ips_per_day_detailed]))
       ]
-    end
-
-    private
-
-    # { country => [[ip, visit, country], ...]
-    def countries_table(data)
-      data&.map { |k, v|
-        [
-          k || "-",
-          v.map { |x| x[1] }.inject(&:+),
-          v.map { |x| x[0] }.uniq.size,
-          v.map { |x| x[0] }.join(WORDS_SEPARATOR)
-        ]
-      }&.sort { |x, y| x[0] <=> y[0] }
     end
   end
 end

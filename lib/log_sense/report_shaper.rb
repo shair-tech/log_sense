@@ -85,6 +85,193 @@ module LogSense
     # Reports shared between rails and apache/nginx
     #
 
+    def time_distribution(data, header: %w[Hour Hits], column_alignment: %i[left right], color: "#d30001")
+      {
+        title: "Time Distribution",
+        header:,
+        column_alignment:,
+        rows: data[:time_distribution],
+        echarts_spec: "{
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.map(row => row['Hour'])
+            },
+            yAxis: {
+              type: 'value'
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            series: [
+              {
+                data: SERIES_DATA.map(row => row['Hits']),
+                type: 'bar',
+                color: '#{color}',
+                label: {
+                   show: true,
+                   position: 'top'
+                },
+              }
+            ]
+          }",
+      }
+    end
+
+    def browsers(data, header: %w[Browser Visits], column_alignment: %i[left right], color: "#D30001")
+      {
+        title: "Browsers",
+        header:,
+        column_alignment:,
+        rows: data[:browsers],
+        echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.sort(order_by_name).map(row => row['Browser']),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels (degrees)
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Browser Visits',
+              showGrid: true,
+            },
+            series: [
+              {
+                name: 'Hits',
+                data: SERIES_DATA.sort(order_by_name).map(row => row['Visits']),
+                type: 'bar',
+                color: '#{color}',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
+          }
+          function order_by_name(a, b) {
+            return a['Browser'] < b['Browser'] ? -1 : 1
+          }
+          ",
+      }
+    end
+
+    def platforms(data, header: %w[Platform Visits], column_alignment: %i[left right], color: "#d30001")
+      {
+        title: "Platforms",
+        header:,
+        column_alignment:,
+        rows: data[:platforms],
+        echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.sort(order_by_platform).map(row => row['Platform']),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels by 90 degrees
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Platform Visits',
+              showGrid: true,
+            },
+            series: [
+              {
+                name: 'Visits',
+                data: SERIES_DATA.sort(order_by_platform).map(row => row['Visits']),
+                type: 'bar',
+                color: '#{color}',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
+          }
+          function order_by_platform(a, b) {
+            return a['Platform'] < b['Platform'] ? -1 : 1
+          }",
+      }
+    end
+
+    def ips(data, header: %w[IPs Hits Country], column_alignment: %i[left right left], palette: :rails)
+      {
+        title: "IPs",
+        header:,
+        column_alignment:,
+        # must be like raw_html_height below
+        raw_html_height: "500px",
+        raw_html: "
+            <style>
+            #{countries_css_styles(data[:countries], palette:)}
+            </style>
+            #{File.read(File.join("lib", "log_sense", "templates", "world.svg"))}
+          ",
+        rows: data[:ips]
+      }
+    end
+
+    def countries(data, header: ["Country", "Hits", "IPs", "IP List"], column_alignment: %i[left right left left], color: "#D30001")
+      {
+        title: "Countries",
+        header:,
+        column_alignment: ,
+        rows: countries_table(data[:countries]),
+        # must be like raw_html_height above
+        echarts_height: "500px",
+        echarts_spec: "{
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                  type: 'shadow'
+                }
+            },
+            xAxis: {
+              type: 'value',
+              boundaryGap: [0, 0.01]
+            },
+            yAxis: {
+              type: 'category',
+              data: SERIES_DATA.sort(order_by_hits).map(row => row['Country'] ),
+            },
+            series: [
+              {
+                 type: 'bar',
+                 data: SERIES_DATA.sort(order_by_hits).map(row => row['Hits'] ),
+                 color: '#{color}',
+                 label: {
+                    show: true,
+                    position: 'right'
+                 },
+              },
+            ]
+          };
+
+          function order_by_hits(a, b) {
+            return Number(a['Hits']) < Number(b['Hits']) ? -1 : 1
+          }
+          "
+      }
+    end
+
     def session_report_spec(data)
       {
         title: "Sessions",
@@ -100,7 +287,7 @@ module LogSense
       {
         title: "IP per hour",
         header: ["IP"] + (0..23).map { |hour| hour.to_s },
-        column_alignment: [:left] + [:right] * 24,
+        column_alignment: %i[left] + (%i[right] * 24),
         rows: data,
         col: "small-12 cell"
       }
@@ -223,28 +410,30 @@ module LogSense
       }
     end
 
-    def countries_css_styles(country_data)
+    private
+
+    def countries_css_styles(country_data, palette: :rails)
       country_and_hits = country_data&.map { |k, v|
-        [ k, v.map { |x| x[1] }.inject(&:+) ]
+        [k, v.map { |x| x[1] }.inject(&:+)]
       }
       max = country_and_hits.map { |x| x[1] }.max
 
       country_and_hits.map do |element|
-        underscored = element[0].gsub(" ", "_")
+        underscored = (element[0] || "").gsub(" ", "_")
         bin = bin(element[1], max:)
         <<-EOS
          /* bin: #{bin} */
-         .#{underscored}, ##{underscored}, path[name="#{underscored}"] { fill: #{fill_color(bin)} }
+         .#{underscored}, ##{underscored}, path[name="#{underscored}"] {
+           fill: #{fill_color(bin, palette:)}
+         }
         EOS
       end.join("\n")
     end
 
-    private
-
     # return the fill colors for the map
     # https://www.learnui.design/tools/data-color-picker.html#single
-    def fill_color(bin, style: :rails)
-      colors = if style == :rails
+    def fill_color(bin, palette: :rails)
+      colors = if palette == :rails
                  ["#fff2e2", "#f9ddbe", "#f4c79b", "#efb07b", "#ea985e",
                   "#e57f43", "#e0632a", "#da4314", "#d30001"]
                else
@@ -259,6 +448,21 @@ module LogSense
     # number belongs to
     def bin(number, number_of_bins: 9, max: 100)
       ((number / max.to_f) * number_of_bins).to_i
+    end
+
+    # { country => [[ip, visit, country], ...]
+    def countries_table(data, limit: 15)
+      by_country = data&.map { |k, v|
+        [
+          k || "-",
+          v.map { |x| x[1] }.inject(&:+),
+          v.map { |x| x[0] }.uniq.size,
+          v.map { |x| x[0] }.join(WORDS_SEPARATOR)
+        ]
+      }&.sort { |x, y| x[0] <=> y[0] }
+
+      # return the first limit countries
+      (by_country || [])[0..limit - 1]
     end
   end
 end

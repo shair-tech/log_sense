@@ -64,38 +64,12 @@ module LogSense
           }
         ",
         },
-        {
-          title: "Time Distribution",
+        time_distribution(
+          data,
           header: %w[Hour Hits Visits Size],
           column_alignment: %i[left right right right],
-          rows: data[:time_distribution],
-          echarts_spec: "{
-            xAxis: {
-              type: 'category',
-              data: SERIES_DATA.map(row => row['Hour'])
-              /* data: ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
-                     '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
-                     '20', '21', '22', '23', '24'] */
-            },
-            yAxis: {
-              type: 'value'
-            },
-            tooltip: {
-               trigger: 'axis'
-            },
-            series: [
-              {
-                data: SERIES_DATA.map(row => row['Hits']),
-                type: 'bar',
-                color: '#4C78A8',
-                label: {
-                   show: true,
-                   position: 'top'
-                },
-              }
-            ]
-          }",
-        },
+          color: "#4C78A8"
+        ),
         {
           title: "20_ and 30_ on HTML pages",
           header: %w[Path Hits Visits Size Status],
@@ -156,155 +130,25 @@ module LogSense
         },
         total_statuses(data),
         daily_statuses(data),
-        {
-          title: "Browsers",
+        browsers(
+          data,
           header: %w[Browser Hits Visits Size],
           column_alignment: %i[left right right right],
-          rows: data[:browsers],
-          echarts_spec: "{
-            toolbox: {
-               feature: {
-                 saveAsImage: {},
-               }
-            },
-            tooltip: {
-               trigger: 'axis'
-            },
-            xAxis: {
-              type: 'category',
-              data: SERIES_DATA.sort(order_by_name).map(row => row['Browser']),
-              showGrid: true,
-              axisLabel: {
-                rotate: 45 // Rotate the labels by 90 degrees
-              }
-            },
-            yAxis: {
-              type: 'value',
-              name: 'Browser Hits',
-              showGrid: true,
-            },
-            series: [
-              {
-                name: 'Hits',
-                data: SERIES_DATA.sort(order_by_name).map(row => row['Hits']),
-                type: 'bar',
-                color: '#4C78A8',
-                label: {
-                  show: true,
-                  position: 'top'
-                },
-              },
-            ]
-          }
-          function order_by_name(a, b) {
-            return a['Browser'] < b['Browser'] ? -1 : 1
-          }
-          ",
-        },
-        {
-          title: "Platforms",
+          color: '#4C78A8'
+        ),
+        platforms(
+          data,
           header: %w[Platform Hits Visits Size],
           column_alignment: %i[left right right right],
-          rows: data[:platforms],
-          echarts_spec: "{
-            toolbox: {
-               feature: {
-                 saveAsImage: {},
-               }
-            },
-            tooltip: {
-               trigger: 'axis'
-            },
-            xAxis: {
-              type: 'category',
-              data: SERIES_DATA.sort(order_by_platform).map(row => row['Platform']),
-              showGrid: true,
-              axisLabel: {
-                rotate: 45 // Rotate the labels by 90 degrees
-              }
-            },
-            yAxis: {
-              type: 'value',
-              name: 'Platform Hits',
-              showGrid: true,
-            },
-            series: [
-              {
-                name: 'Hits',
-                data: SERIES_DATA.sort(order_by_platform).map(row => row['Hits']),
-                type: 'bar',
-                color: '#4C78A8',
-                label: {
-                  show: true,
-                  position: 'top'
-                },
-              },
-            ]
-          }
-          function order_by_platform(a, b) {
-            return a['Platform'] < b['Platform'] ? -1 : 1
-          }",
-        },
-        {
-          title: "IPs",
+          color: '#4C78A8'
+        ),
+        ips(
+          data,
           header: %w[IP Hits Visits Size Country],
           column_alignment: %i[left right right right left],
-          raw_html_height: "400px",
-          raw_html: "
-            <style>
-            #{countries_css_styles(data[:countries])}
-            </style>
-            #{File.read(File.join("lib", "log_sense", "templates", "world.svg"))}
-          ",
-          rows: data[:ips]
-        },
-        {
-          title: "Countries",
-          header: ["Country", "Hits", "Visits", "IPs", "IP List"],
-          column_alignment: %i[left right right right left],
-          rows: data[:countries]&.map { |k, v|
-            [
-              k,
-              v.map { |x| x[1] }.inject(&:+),
-              v.map { |x| x[2] }.inject(&:+),
-              v.map { |x| x[0] }.uniq.size,
-              v.map { |x| x[0] }.join(WORDS_SEPARATOR)
-            ]
-          }&.sort { |x, y| y[3] <=> x[3] },
-          echarts_height: "400px",
-          echarts_spec: "{
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {
-                  type: 'shadow'
-                }
-            },
-            xAxis: {
-              type: 'value',
-              boundaryGap: [0, 0.01]
-            },
-            yAxis: {
-              type: 'category',
-              data: SERIES_DATA.sort(order_by_hits).map(row => row['Country'] ),
-            },
-            series: [
-              {
-                 type: 'bar',
-                 data: SERIES_DATA.sort(order_by_hits).map(row => row['Hits'] ),
-                 color: '#4C78A8',
-                 label: {
-                    show: true,
-                    position: 'right'
-                 },
-              },
-            ]
-          };
-
-          function order_by_hits(a, b) {
-            return Number(a['Hits']) < Number(b['Hits']) ? -1 : 1
-          }
-          "
-        },
+          palette: :apache
+        ),
+        countries(data, color: '#4C78A8'),
         ip_per_hour_report_spec(ips_per_hour(data[:ips_per_hour])),
         {
           title: "Combined Platform Data",
