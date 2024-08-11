@@ -169,7 +169,7 @@ module LogSense
     # name is used to give the name to the column with formatted time
     def ip_by_time_query(name, format_string)
       %(SELECT ip,
-               strftime("%H", #{@date_field}) as #{name},
+               strftime(#{format_string}, #{@date_field}) as #{name},
                count(#{@url_field}) from #{@table}
                where #{filter} and ip != "" and
                #{@url_field} != "" and
