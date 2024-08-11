@@ -27,12 +27,14 @@
                    menus: @reports.map { |x| x[:title] } %>
       </div>
       <div class="off-canvas-content" data-off-canvas-content>
-        <button id="toggle-button" type="button" data-toggle="offCanvas">
-          &#9776;
-        </button>
 
         <section class="main-section grid-container fluid">
-          <h1><%= options[:title] || "Log Sense #{@report_title} Log Report" %></h1>
+          <h1>
+            <button id="toggle-button" type="button" data-toggle="offCanvas" class="hide-for-large">
+              &#9776;
+            </button>
+            <%= options[:title] || "Log Sense #{@report_title} Log Report" %>
+          </h1>
 
           <p>
             <b>Input File(s):</b>
