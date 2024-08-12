@@ -144,7 +144,7 @@ module LogSense
               data: fatal_plot.filter(row => row[0] != '').map(row => row[0]),
               showGrid: true,
               axisLabel: {
-                rotate: 45 // Rotate the labels by 90 degrees
+                rotate: 45 // Rotate the labels
               }
             },
             yAxis: {
@@ -170,7 +170,42 @@ module LogSense
           header: %w[Date Status IP URL Description Log ID],
           column_alignment: %i[left left left left left left],
           rows: data[:internal_server_error],
-          col: "small-12 cell"
+          col: "small-12 cell",
+          echarts_extra: "var internal_server_error_plot=#{data[:internal_server_error_plot].to_json}",
+          echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: internal_server_error_plot.filter(row => row[0] != '').map(row => row[0]),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Errors',
+              showGrid: true,
+            },
+            series: [
+              {
+                data: internal_server_error_plot.filter(row => row[0] != '').map(row => row[1]),
+                type: 'bar',
+                color: '#D30001',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+            ]
+          };"
         },
         {
           title: "Errors",

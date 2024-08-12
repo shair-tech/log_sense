@@ -223,7 +223,7 @@ module LogSense
             <style>
             #{countries_css_styles(data[:countries], palette:)}
             </style>
-            #{File.read(File.join("lib", "log_sense", "templates", "world.svg"))}
+            #{File.read(File.join(File.dirname(__FILE__), "templates", "world.svg"))}
           ",
         rows: data[:ips]
       }

@@ -2,6 +2,16 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.0.0
+
+- World Map
+- Dark mode
+- Fix link colors in sidebar
+- Bars in the statuses bar plot are now colored according to status
+- Add "statuses by day" in Rails report
+- Enlarge "errors" and "potential attacks" reports
+- Various smaller fixes
+
 * 1.9.0
 
 - Perform calculation on HTML pages only
