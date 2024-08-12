@@ -122,6 +122,14 @@ module LogSense
                 ON event.log_id == error.log_id
                 WHERE #{filter} and substr(status, 1, 1) == '5').gsub("\n", "") || [[]]
 
+      @internal_server_error_plot = @db.execute %Q(
+         SELECT strftime('%Y-%m-%d', started_at) as Day,
+                count(distinct(event.id)) as Errors
+                FROM Event JOIN Error
+                ON event.log_id == error.log_id
+                WHERE #{filter} and substr(status, 1, 1) == '5'
+                GROUP BY strftime('%Y-%m-%d', started_at)).gsub("\n", "") || [[]]
+
       @error = @db.execute %Q(
          SELECT filename,
                 log_id, description, count(log_id)
