@@ -1,0 +1,309 @@
+#+TITLE: Todo
+
+* Todo (2024-08-01)
+
+** T Move geolocation to aggregator, so that we can perform queries more efficiently  :refactoring:
+** T Filter on dates                                                :feature:
+** T Visits/Hits                                                    :feature: 
+   - Visits and hits now includes also requests for other resources and 404.
+     We should probably limit to the visits to actual pages, to remove noise
+     and errors.
+** T error on data
+   - The data reported by echarts on the number of hits of a controller
+     differs from the data shown in the table?
+** T Sidebar foreground color in new apache report
+** T Dark style
+** T Remove dependency from Zurb Foundation (native css grid instead)
+** T refactor report specifications in their own class          :refactoring:
+** T Add lines not parsed to the report                             :feature:
+** T Using an empty log as input raises an error                    :feature:
+   kriosprime:sample_logs $ log_sense -f apache -i empty_log.log -t html
+   (erb):3:in `block in render': undefined method `strftime' for nil:NilClass (NoMethodError)
+   from /opt/rubies/ruby-2.6.9/lib/ruby/2.6.0/erb.rb:901:in `eval'
+   from /opt/rubies/ruby-2.6.9/lib/ruby/2.6.0/erb.rb:901:in `result'
+   from /home/adolfo/.gem/ruby/2.6.9/gems/log_sense-1.3.4/lib/log_sense/emitter.rb:40:in `render'
+   from (erb):210:in `emit'
+   from /opt/rubies/ruby-2.6.9/lib/ruby/2.6.0/erb.rb:901:in `eval'
+   from /opt/rubies/ruby-2.6.9/lib/ruby/2.6.0/erb.rb:901:in `result'
+   from /home/adolfo/.gem/ruby/2.6.9/gems/log_sense-1.3.4/lib/log_sense/emitter.rb:24:in `emit'
+   from /home/adolfo/.gem/ruby/2.6.9/gems/log_sense-1.3.4/exe/log_sense:66:in `<top (required)>'
+   from /home/adolfo/.gem/ruby/2.6.9/bin/log_sense:23:in `load'
+   from /home/adolfo/.gem/ruby/2.6.9/bin/log_sense:23:in `<main>'
+** T Choosing the wrong output format raises an error               :feature:
+   kriosprime:sample_logs $ log_sense -t apache -i empty_log.log -o html
+   /home/adolfo/.gem/ruby/2.6.9/gems/log_sense-1.3.4/lib/log_sense/emitter.rb:22:in `read': No such file or directory @ rb_sysopen - /home/adolfo/.gem/ruby/2.6.9/gems/log_sense-1.3.4/lib/log_sense/templates/apache.apache.erb (Errno::ENOENT)
+   from /home/adolfo/.gem/ruby/2.6.9/gems/log_sense-1.3.4/lib/log_sense/emitter.rb:22:in `emit'
+   from /home/adolfo/.gem/ruby/2.6.9/gems/log_sense-1.3.4/exe/log_sense:66:in `<top (required)>'
+   from /home/adolfo/.gem/ruby/2.6.9/bin/log_sense:23:in `load'
+   from /home/adolfo/.gem/ruby/2.6.9/bin/log_sense:23:in `<main>'
+
+** T Architecture                                               :refactoring: 
+   The architecture and the structure of the code is far from being nice,
+   for historical reason and for a bunch of small differences existing
+   between the input and the outputs to be generated.  This usually ends
+   up with modifications to the code that have to be replicated in
+   different parts of the code and in interferences.
+
+   Among the points I would like to address:
+
+   - [ ] The execution pipeline in the main script has a few exceptions to
+     manage SQLite reading/dumping and ufw report.  A linear structure
+     would be a lot nicer.
+
+   - [ ] Two different classes are defined for steps 1, 2, and 4, to manage,
+     respectively, Apache and Rails logs.  These classes inherit from a common
+     ancestor (e.g. ApacheParser and RailsParser both inherit from Parser), but
+     there is still too little code shared.  A nicer approach would be that of
+     identifying a common DB structure and unify the pipeline up to (or
+     including) the generation of reports. There are a bunch of small different
+     things to highlight in reports, which still make this difficult.  For
+     instance, the country report for Apache reports size of TX data, which is
+     not available for Rail reports.
+
+   - [ ] Geolocation could become a lot more efficient if performed in
+     SQLite, rather than in Ruby
+
+   - [ ] The distinction between Aggregation, Shaping, and Emission is a too
+     fine-grained and it would be nice to be able to cleanly remove one
+     of the steps.
+
+
+* Archive                                                           :archive:
+
+** D Revisions to command line syntax
+   :PERTIES:
+   :HIVE_TIME: 2024-08-01 Thu 08:18
+   :HIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :HIVE_OLPATH: Check
+   :HIVE_CATEGORY: todo
+   :HIVE_TODO: DONE
+   ::
+   :BOOK:
+   -ate "DONE"       from "TODO"       [2022-03-07 Mon 21:24]
+   ::
+   -low multiple files in input
+   -low input from stdin
+
+** D Invalid IP
+   :PERTIES:
+   :HIVE_TIME: 2024-08-01 Thu 08:18
+   :HIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :HIVE_OLPATH: Check
+   :HIVE_CATEGORY: todo
+   :HIVE_TODO: DONE
+   ::
+   :BOOK:
+   -ate "DONE"       from "TODO"       [2022-03-08 Tue 12:50]
+   ::
+   Iking log_sense on bringfood.org...done!
+   Iking log_sense on ewaste.education...done!
+   Iking log_sense on gasapp.fbk.eu...done!
+   Iking log_sense on replay-eit...done!
+   Iking log_sense on shair.tech...done!
+   Iking log_sense on w3c.it...done!
+   Iking log_sense on bringfood.org...Traceback (most recent call last):
+     12: from /home/octopus/.gem/ruby/2.7.5/bin/log_sense:23:in `<main>'
+     11: from /home/octopus/.gem/ruby/2.7.5/bin/log_sense:23:in `load'
+     10: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/exe/log_sense:50:in `<top (required)>'
+      9: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:53:in `geolocate'
+      8: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:53:in `each'
+      7: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:54:in `block in geolocate'
+      6: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:39:in `locate_ip'
+      5: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:39:in `new'
+      4: from /opt/rubies/ruby-2.7.5/lib/ruby/2.7.0/ipaddr.rb:580:in `initialize'
+      3: from /opt/rubies/ruby-2.7.5/lib/ruby/2.7.0/ipaddr.rb:620:in `in_addr'
+      2: from /opt/rubies/ruby-2.7.5/lib/ruby/2.7.0/ipaddr.rb:620:in `inject'
+      1: from /opt/rubies/ruby-2.7.5/lib/ruby/2.7.0/ipaddr.rb:620:in `each'
+/optbies/ruby-2.7.5/lib/ruby/2.7.0/ipaddr.rb:621:in `block in in_addr': invalid address (IPAddr::InvalidAddressError)
+     9: from /home/octopus/.gem/ruby/2.7.5/bin/log_sense:23:in `<main>'
+     8: from /home/octopus/.gem/ruby/2.7.5/bin/log_sense:23:in `load'
+     7: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/exe/log_sense:50:in `<top (required)>'
+     6: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:53:in `geolocate'
+     5: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:53:in `each'
+     4: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:54:in `block in geolocate'
+     3: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:39:in `locate_ip'
+     2: from /home/octopus/.gem/ruby/2.7.5/gems/log_sense-1.4.0/lib/log_sense/ip_locator.rb:39:in `new'
+     1: from /opt/rubies/ruby-2.7.5/lib/ruby/2.7.0/ipaddr.rb:557:in `initialize'
+/optbies/ruby-2.7.5/lib/ruby/2.7.0/ipaddr.rb:598:in `rescue in initialize': invalid address: 437.176.99.144 (IPAddr::InvalidAddressError)
+
+** D HTML menu should be built from @reports
+   :PERTIES:
+   :HIVE_TIME: 2024-08-01 Thu 08:18
+   :HIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :HIVE_OLPATH: Check
+   :HIVE_CATEGORY: todo
+   :HIVE_TODO: DONE
+   ::
+   :BOOK:
+   -ate "DONE"       from "TODO"       [2022-03-08 Tue 12:50]
+   ::
+
+** D Summary Table: Unique visits per day should be an integer (it is presented as a float, instead)
+   :PERTIES:
+   :HIVE_TIME: 2024-08-01 Thu 08:18
+   :HIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :HIVE_OLPATH: Check
+   :HIVE_CATEGORY: todo
+   :HIVE_TODO: DONE
+   ::
+   :BOOK:
+   -ate "DONE"       from "TODO"       [2022-03-08 Tue 12:51]
+   ::
+
+** D Streaks, add total entries, total HTML, total other resources
+   :PERTIES:
+   :HIVE_TIME: 2024-08-01 Thu 08:18
+   :HIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :HIVE_OLPATH: Check
+   :HIVE_CATEGORY: todo
+   :HIVE_TODO: DONE
+   ::
+   :BOOK:
+   -ate "DONE"       from "TODO"       [2022-03-08 Tue 18:02]
+   ::
+
+** D GeoIP: Add a task to automatically update IP Geolocation Database
+   :PERTIES:
+   :HIVE_TIME: 2024-08-01 Thu 08:18
+   :HIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :HIVE_OLPATH: Check
+   :HIVE_CATEGORY: todo
+   :HIVE_TODO: DONE
+   ::
+   :BOOK:
+   -ate "DONE"       from "TODO"       [2022-03-08 Tue 18:02]
+   ::
+
+** D Remove dependency from Zurb Icons (used only for the hamburger)
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:18
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: DONE
+   :END:
+   :LOGBOOK:
+   - State "DONE"       from "TODO"       [2022-03-08 Tue 23:03]
+   :END:
+
+** REJECTED add remaining reports (summary, performance, log structure) to the list defined in emitter
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:18
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: REJECTED
+   :END:
+   :LOGBOOK:
+   - State "REJECTED"   from "TODO"       [2022-03-09 Wed 08:59] \\
+     - these reports use different formats (stats-list) and are not easily standardized
+   :END:
+
+** D Check Apache Report working
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:19
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: D
+   :END:
+
+** D Restore Streaks in both reports
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:19
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: D
+   :END:
+
+** D Restore Country table
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:19
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: D
+   :END:
+
+** D Add UFW Report
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:19
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: D
+   :END:
+
+** D Add IP by Time in Apache Report
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:21
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: D
+   :END:
+
+** D Performance and Command Line invocation appear twice in the navigation menu
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:21
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: D
+   :END:
+
+** DUPLICATE night and light themes
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:21
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: DUPLICATE
+   :END:
+
+** REJECTED off-canvas does work as expected (older version was a lot better)
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:21
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: REJECTED
+   :END:
+   (it re-centers when showing right cells)
+
+** REJECTED put together apache and rails txt reports (same partial, they are basically the same)
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:22
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: REJECTED
+   :END:
+
+** REJECTED put together apache and rails html reports (same partial, they are basically the same)
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:22
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: REJECTED
+   :END:
+
+** REJECTED remove column specifications for DataTable in report specification 
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:22
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: REJECTED
+   :END:
+
+** REJECTED Factor common methods in  report_shaper
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-01 Thu 08:22
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Check
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: REJECTED
+   :END:
