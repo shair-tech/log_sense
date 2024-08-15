@@ -25,11 +25,18 @@ Main features:
 
 LogSense is Written in Ruby, it runs from the command line, it is fast, and it
 can be installed on any system with a relatively recent version of Ruby.  We
-used it with Ruby 3.1.4 and 3.3.0.
+use it with Ruby 3.1.4 and 3.3.0.
 
 It is fast. On a ThinkPad P16, a 277M log file is parsed in 15 seconds,
 processing, that is, about 7740 events per second; a 569M log file is parsed in
 50 seconds, that is, about 4700 events per second.
+=======
+tested it on Ruby 2.6.9, 3.0.x, 3.3.x, and later.
+
+It is fast. On a ThinkPad P16, a 277M log file is parsed in 15 seconds,
+processing about 7740 events per second.  Performance may vary: a 569M log file
+is parsed in 50 seconds, about 4700 events per second.
+>>>>>>> origin/main
 
 
 ** Rails Production Report
