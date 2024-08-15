@@ -1,5 +1,9 @@
 # .github/workflows/push_gem.yml
 jobs:
+  on:
+    push:
+      branches:
+        - main
   push:
     name: Push gem to RubyGems.org
     runs-on: ubuntu-latest

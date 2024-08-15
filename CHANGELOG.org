@@ -2,7 +2,12 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
-* 2.0.0
+* 2.0.1
+
+- Add GitHub action for publishing to RubyGems after repeated failures
+  with authentication from the command line
+  
+* 2.0.0 (Not released)
 
 - World Map
 - Dark mode
