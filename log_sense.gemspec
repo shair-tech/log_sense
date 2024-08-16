@@ -6,8 +6,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Adolfo Villafiorita"]
   spec.email         = ["adolfo@shair.tech"]
 
-  spec.summary       = %q{Generate analytics for Apache and Rails log file.}
-  spec.description   = %q{Generate analytics in HTML, txt, and SQLite format for Apache and Rails log files.}
+  spec.summary       = %q{Generate analytics for Rails and Apache/Nginx log file.}
+  spec.description   = %q{Generate analytics in HTML, txt, and SQLite format for Rails and Apache/Nginx log files.}
   spec.homepage      = "https://github.com/shair-tech/log_sense/"
   spec.license       = "MIT"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.6.9")
