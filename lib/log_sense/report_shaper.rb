@@ -419,7 +419,7 @@ module LogSense
       max = country_and_hits.map { |x| x[1] }.max
 
       country_and_hits.map do |element|
-        underscored = (element[0] || "").gsub(" ", "_")
+        underscored = (element[0] || "").gsub(" ", "_").gsub(/[()]/, "")
         bin = bin(element[1], max:)
         <<-EOS
          /* bin: #{bin} */
