@@ -79,6 +79,15 @@ module LogSense
       "$" => "\\$"
     }
 
+    # output text-left, center, right, according to column_alignment 
+    def self.alignment_class(report, index)
+      if report[:column_alignment]
+        "text-#{report[:column_alignment][index]}"
+      else
+        ""
+      end
+    end
+
     # taken from Ruby on Rails
     def self.escape_javascript(javascript)
       javascript = javascript.to_s

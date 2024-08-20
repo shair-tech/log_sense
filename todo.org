@@ -2,6 +2,13 @@
 
 * Todo (2024-08-01)
 
+** T Distinguish between exceptions, errors with no timestamps and errors with timestamps  :feature:
+   - In rails reports some errors don't have a timestamp, whereas other have.
+
+   1. Check whether we can always get an ID of an event
+   2. 
+
+
 ** T Move geolocation to aggregator, so that we can perform queries more efficiently  :refactoring:
 ** T Filter on dates                                                :feature:
 ** T Visits/Hits                                                    :feature: 

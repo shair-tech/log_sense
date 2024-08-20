@@ -149,8 +149,9 @@ module LogSense
         },
         {
           title: "Fatal Events",
-          header: %w[Date IP URL Description Log ID],
-          column_alignment: %i[left left left left left],
+          header: %w[Date IP URL Context Description ID],
+          column_alignment: %i[left left left left left left],
+          column_width: ["10%", "10%", "20%", "10%", "30%", "20%"],
           rows: data[:fatal],
           col: "small-12 cell",
           echarts_extra: "var fatal_plot=#{data[:fatal_plot].to_json}",
@@ -178,49 +179,18 @@ module LogSense
             },
             series: [
               {
-                data: fatal_plot.filter(row => row[0] != '').map(row => row[1]),
+                name: 'Routing Errors',
+                data: fatal_plot.filter(row => row[0] != '').map(row => row[2]),
                 type: 'bar',
-                color: '#D30001',
+                color: '#DEDEDE',
                 label: {
                   show: true,
                   position: 'top'
                 },
               },
-            ]
-          };"
-        },
-        {
-          title: "Internal Server Errors (over time)",
-          header: %w[Date Status IP URL Description Log ID],
-          column_alignment: %i[left left left left left left],
-          rows: data[:internal_server_error],
-          col: "small-12 cell",
-          echarts_extra: "var internal_server_error_plot=#{data[:internal_server_error_plot].to_json}",
-          echarts_spec: "{
-            toolbox: {
-               feature: {
-                 saveAsImage: {},
-               }
-            },
-            tooltip: {
-               trigger: 'axis'
-            },
-            xAxis: {
-              type: 'category',
-              data: internal_server_error_plot.filter(row => row[0] != '').map(row => row[0]),
-              showGrid: true,
-              axisLabel: {
-                rotate: 45 // Rotate the labels
-              }
-            },
-            yAxis: {
-              type: 'value',
-              name: 'Errors',
-              showGrid: true,
-            },
-            series: [
               {
-                data: internal_server_error_plot.filter(row => row[0] != '').map(row => row[1]),
+                name: 'Other Errors',
+                data: fatal_plot.filter(row => row[0] != '').map(row => row[3]),
                 type: 'bar',
                 color: '#D30001',
                 label: {
@@ -232,17 +202,11 @@ module LogSense
           };"
         },
         {
-          title: "Internal Server Errors (Grouped)",
-          header: %w[Log ID Description Count],
-          column_alignment: %i[left left left right],
-          rows: data[:error],
-          col: "small-12 cell"
-        },
-        {
-          title: "Potential Attacks",
-          header: %w[Log ID Description Count],
-          column_alignment: %i[left left left right],
-          rows: data[:possible_attacks],
+          title: "Fatal Events (grouped by type)",
+          header: %w[Log ID Context Description Count],
+          column_alignment: %i[left left left left right],
+          column_width: ["10%", "20%", "10%", "60%", "5%"],
+          rows: data[:fatal_grouped],
           col: "small-12 cell"
         },
         browsers(data),

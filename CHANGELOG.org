@@ -2,20 +2,25 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
-* 2.0.1
+* 2.1.0
 
-- Add GitHub action for publishing to RubyGems after repeated failures
-  with authentication from the command line
-  
-* 2.0.0 (Not released)
+- [User] Improve scatter plot about performances (Use labels, invert x and y axes,
+  better tooltip)
+- [User] Updated DB-IP country file to Aug 2024 version (19/08).
+- [User] Fixes CHANGELOG (which had some contradictory information)
+- [User] Revises "Fatal Errors" removing a bit of redundancy and collecting
+  all message
+- [Bug/User] Added filtering on date on reports which still did not use it
 
-- World Map
-- Dark mode
-- Fix link colors in sidebar
-- Bars in the statuses bar plot are now colored according to status
-- Add "statuses by day" in Rails report
-- Enlarge "errors" and "potential attacks" reports
-- Various smaller fixes
+* 2.0.0
+
+- [User] World Map
+- [User] Dark mode
+- [User] Bars in the statuses bar plot are now colored according to status
+- [User] Add "statuses by day" in Rails report
+- [User] Enlarge "errors" and "potential attacks" reports
+- [Bug] Fix link colors in sidebar
+- [Code] Various smaller fixes
 
 * 1.9.0
 

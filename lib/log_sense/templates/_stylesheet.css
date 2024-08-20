@@ -85,6 +85,12 @@ h2 {
     background: var(--background-color);
 }
 
+table {
+    width: 100% !important;
+    /* table-layout: fixed !important;*/
+    word-wrap: break-word;
+}
+
 table thead, table tbody, table tfoot {
     border-color: var(--row-border) !important;
 }
@@ -174,7 +180,16 @@ ul.pagination, li.paginate_button {
     font-weight: normal;
 }
 
-.hits, .visits, .size, .count, .s2xx, .s3xx, .so4xx, .total-hits, .total-visits {
+/* datatable resists aligment directives. We make them important */
+.text-left {
+    text-align: left !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.text-right {
     text-align: right !important;
 }
 
@@ -182,3 +197,7 @@ td  {
     vertical-align: top;
 }
 
+.url {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

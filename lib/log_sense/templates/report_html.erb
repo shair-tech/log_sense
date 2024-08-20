@@ -61,6 +61,7 @@
                 <% if report[:rows] %>
                   <%= render "report_data.html.erb", report: report, index: index %>
                 <% end %>
+
                 <% if report[:vega_spec] %>
                   <div id="<%= "plot-#{index}" %>" class="plot-canvas">
                   </div>
@@ -78,6 +79,7 @@
                    vegaEmbed('#<%= "plot-#{index}"%>', plot_spec_<%= index %>);
                   </script>
                 <% end %>
+
                 <% if report[:echarts_spec] %>
                   <% height = report[:echarts_height] || "400px"%>
                   <div id="<%= "echart-#{index}" %>" style="width: 100%;height: <%= height %>;"></div>
@@ -91,12 +93,14 @@
 
                   </script>
                 <% end %>
+
                 <% if report[:raw_html] %>
                   <% height = report[:raw_html_height] || "400px"%>
                   <div id="raw-html-#{index}" style="width: 100%;height: <%= height %>">
                     <%= report[:raw_html] %>
                   </div>
                 <% end %>
+
                 <% if report[:rows] %>
                   <%= render "output_table.html.erb", report: report, index: index %>
                 <% end %>

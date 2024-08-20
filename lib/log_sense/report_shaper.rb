@@ -259,7 +259,7 @@ module LogSense
                  color: '#{color}',
                  label: {
                     show: true,
-                    position: 'right'
+                    position: 'top'
                  },
               },
             ]
@@ -277,7 +277,7 @@ module LogSense
         title: "Sessions",
         report: :html,
         header: ["IP", "Days", "Date", "Visits", "Distinct URL", "URL List"],
-        column_alignment: %i[left left right right right right],
+        column_alignment: %i[left left right right right left],
         rows: data,
         col: "small-12 cell"
       }
@@ -288,6 +288,7 @@ module LogSense
         title: "IP per hour",
         header: ["IP"] + (0..23).map { |hour| hour.to_s },
         column_alignment: %i[left] + (%i[right] * 24),
+        column_width: ["10%"] + (["3.75%"] * 24),
         rows: data,
         col: "small-12 cell"
       }
@@ -372,7 +373,7 @@ module LogSense
                 stack: 'total',
                 label: {
                    show: true,
-                   position: 'right'
+                   position: 'top'
                 },
               },
               {
@@ -382,7 +383,7 @@ module LogSense
                 stack: 'total',
                 label: {
                    show: true,
-                   position: 'right'
+                   position: 'top'
                 },
               },
               {
@@ -392,7 +393,7 @@ module LogSense
                 stack: 'total',
                 label: {
                    show: true,
-                   position: 'right'
+                   position: 'top'
                 },
               },
               {
@@ -402,7 +403,7 @@ module LogSense
                 stack: 'total',
                 label: {
                    show: true,
-                   position: 'right'
+                   position: 'top'
                 },
               },
             ]

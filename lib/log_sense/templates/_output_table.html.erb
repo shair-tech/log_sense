@@ -16,15 +16,20 @@
      pageLength: 25,
      <%= report[:datatable_options] + "," if report[:datatable_options] %>
      columns: [
-       <% report[:header].each do |header| %>
-       <% if header == "Size" -%>
+       <% report[:header].each_with_index do |header, index| %>
        {
-         data: 'Size',
-         className: '<%= Emitter::slugify("Size") %>',
+         data: '<%= header %>',
+         className: '<%= Emitter::slugify(header) %> <%= Emitter.alignment_class(report, index) %>',
+         <% if report[:column_width] %>
+         width: '<%= report[:column_width][index] %>',
+         <% end %>
+
+         <%# USE A SPECIFIC RENDERER FOR SOME TYPES OF COLUMNS %>
+         <% if header == "Size" -%>
          render: function(data, type, row) {
            // If display or filter data is requested, format the date
            if ( type === 'display' || type === 'filter' ) {
-            return data;
+             return data;
            }
            // Otherwise the data type requested (`type`) is type detection or
            // sorting data, for which we want to use an integer value
@@ -48,11 +53,7 @@
            } 
            return size * multiplier;
          }
-       },
-       <% elsif header == "IP" -%>
-       {
-         data: 'IP',
-         className: '<%= Emitter::slugify("IP") %>',
+         <% elsif header == "IP" -%>
          render: function(data, type, row) {
            // If display or filter data is requested, format the data
            if ( type === 'display' || type === 'filter' ) {
@@ -61,14 +62,10 @@
            // For any other purpose return data
            return data;
          }
-       },
-       <% else -%>
-       {
-         data: '<%= header %>',
-         className: '<%= Emitter::slugify(header) %>',
+         <% else -%>
          render: DataTable.render.text()
+         <% end -%>
        },
-       <% end -%>
        <% end -%>
      ]
    });

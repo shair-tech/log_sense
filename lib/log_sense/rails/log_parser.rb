@@ -84,27 +84,27 @@ module LogSense
         values (?, ?, ?, ?, ?)
         EOS
 
-        db.execute <<-EOS
-        CREATE TABLE IF NOT EXISTS Render(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          partial TEXT,
-          duration_ms FLOAT,
-          allocations INTEGER,
-          filename TEXT,
-          line_number INTEGER
-        )
-        EOS
+        # db.execute <<-EOS
+        # CREATE TABLE IF NOT EXISTS Render(
+        #   id INTEGER PRIMARY KEY AUTOINCREMENT,
+        #   partial TEXT,
+        #   duration_ms FLOAT,
+        #   allocations INTEGER,
+        #   filename TEXT,
+        #   line_number INTEGER
+        # )
+        # EOS
 
-        ins_rendered = db.prepare <<-EOS
-        insert into Render(
-         partial,
-         duration_ms,
-         allocations,
-         filename,
-         line_number
-        )
-        values (?, ?, ?, ?, ?)
-        EOS
+        # ins_rendered = db.prepare <<-EOS
+        # insert into Render(
+        #  partial,
+        #  duration_ms,
+        #  allocations,
+        #  filename,
+        #  line_number
+        # )
+        # values (?, ?, ?, ?, ?)
+        # EOS
         
         db.execute <<-EOS
         CREATE TABLE IF NOT EXISTS BrowserInfo(
@@ -142,6 +142,12 @@ module LogSense
         # hash
         pending = {}
 
+        # Fatal explanation messages span several lines (2, 4, ?)
+        #
+        # We keep a Hash with the FATAL explanation messages and we persist when
+        # the parsing ends
+        fatal_explanation_messages = {}
+
         # Log lines are either one of:
         #
         # LOG_LEVEL, [ZULU_TIMESTAMP #NUMBER] INFO --: [ID] Started VERB "URL" for IP at TIMESTAMP
@@ -158,24 +164,9 @@ module LogSense
           stream.readlines.each_with_index do |line, line_number|
             filename = stream == $stdin ? "stdin" : stream.path
 
-            #
-            # These are for development logs
-            #
-
-            data = match_and_process_rendered line
-            if data
-              ins_rendered.execute(
-                data[:partial], data[:duration], data[:allocations],
-                filename, line_number
-              )
-            end
-
-            #
-            # 
-            #
-
-            # I and F for completed requests, [ is for error messages
-            next if line[0] != 'I' and line[0] != 'F' and line[0] != '['
+            # I, F are for completed and failed requests, [ is for the FATAL
+            # error message explanation
+            next unless ['I', 'F', '['].include? line[0]
 
             data = match_and_process_browser_info line
             if data
@@ -190,16 +181,6 @@ module LogSense
               next
             end
 
-            data = match_and_process_error line
-            if data
-              ins_error.execute(data[:log_id],
-                                data[:context],
-                                data[:description],
-                                filename,
-                                line_number)
-              next
-            end
-            
             data = match_and_process_start line
             if data
               id = data[:log_id]
@@ -214,14 +195,49 @@ module LogSense
               next
             end
 
+            # fatal message is alternative to completed and is used to insert an
+            # Event
             data = match_and_process_fatal line
             if data
               id = data[:log_id]
+              if pending[id]
+                # data last, so that we respect, for instance, the 'F' state
+                event = pending[id].merge(data)
+                ins.execute(
+                  event[:exit_status],
+                  event[:started_at],
+                  event[:ended_at],
+                  event[:log_id],
+                  event[:ip],
+                  unique_visitor_id(event),
+                  event[:url],
+                  event[:controller],
+                  event[:html_verb],
+                  event[:status],
+                  event[:duration_total_ms],
+                  event[:duration_views_ms],
+                  event[:duration_ar_ms],
+                  event[:allocations],
+                  event[:comment],
+                  filename,
+                  line_number
+                )
+
+                pending.delete(id)
+              end
+            end
+
+            data = match_and_process_completed line
+            if data
+              id = data[:log_id]
+
               # it might as well be that the first event started before
               # the log.  With this, we make sure we add only events whose
               # start was logged and parsed
               if pending[id]
-                event = data.merge(pending[id] || {})
+                # data last, so that we respect the most recent data (the last
+                # log line)
+                event = pending[id].merge(data)
 
                 ins.execute(
                   event[:exit_status],
@@ -247,47 +263,39 @@ module LogSense
               end
             end
 
-            data = self.match_and_process_completed line
+            # fatal_explanations are multiple lines with a description of the
+            # fatal error and they all use the ID of the FATAL event (so that
+            # we can later join)
+            data = match_and_process_fatal_explanation line
             if data
-              id = data[:log_id]
-
-              # it might as well be that the first event started before
-              # the log.  With this, we make sure we add only events whose
-              # start was logged and parsed
-              if pending[id]
-                event = data.merge (pending[id] || {})
-
-                ins.execute(
-                  event[:exit_status],
-                  event[:started_at],
-                  event[:ended_at],
-                  event[:log_id],
-                  event[:ip],
-                  unique_visitor_id(event),
-                  event[:url],
-                  event[:controller],
-                  event[:html_verb],
-                  event[:status],
-                  event[:duration_total_ms],
-                  event[:duration_views_ms],
-                  event[:duration_ar_ms],
-                  event[:allocations],
-                  event[:comment],
-                  filename,
-                  line_number
-                )
-
-                pending.delete(id)
-              end
+              previous = fatal_explanation_messages[data[:log_id]]
+              
+              # keep adding to the explanation
+              fatal_explanation_messages[data[:log_id]] = [
+                data[:log_id],
+                [previous ? previous[1] : "", data[:context]].compact.join(" "),
+                [previous ? previous[2] : "", data[:description]].compact.join(" "),
+                filename,
+                line_number
+              ]
+              next
             end
           end
         end
         
+        # persist the fatal error messages
+        # TODO massive update
+        fatal_explanation_messages.values.map do |value|
+          ins_error.execute(value)
+        end
+
         db
       end
 
+      # could be private here, I guess we keep them public to make them simpler
+      # to try from irb
       
-      TIMESTAMP = /(?<timestamp>[^ ]+)/
+      TIMESTAMP = /(?<timestamp>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+)/
       ID = /(?<id>[a-z0-9-]+)/
       VERB = /(?<verb>GET|POST|PATCH|PUT|DELETE)/
       URL = /(?<url>[^"]+)/
@@ -295,42 +303,6 @@ module LogSense
       STATUS = /(?<status>[0-9]+)/
       STATUS_IN_WORDS = /(OK|Unauthorized|Found|Internal Server Error|Bad Request|Method Not Allowed|Request Timeout|Not Implemented|Bad Gateway|Service Unavailable)/
       MSECS = /[0-9.]+/
-
-      # I, [2024-07-01T02:21:34.339058 #1392909]  INFO -- : [815b3e28-8d6e-4741-8605-87654a9ff58c] BrowserInfo: "Unknown Browser","unknown_platform","Unknown","Devise::SessionsController","new","html","4db749654a0fcacbf3868f87723926e7405262f8d596e8514f4997dc80a3cd7e","2024-07-01T02:21:34+02:00"
-      BROWSER_INFO_REGEXP = /BrowserInfo: "(?<browser>.+)","(?<platform>.+)","(?<device_name>.+)","(?<controller>.+)","(?<method>.+)","(?<request_format>.+)","(?<anon_ip>.+)","(?<timestamp>.+)"/
-      def match_and_process_browser_info(line)
-        matchdata = BROWSER_INFO_REGEXP.match line
-        if matchdata
-          {
-            browser: matchdata[:browser],
-            platform: matchdata[:platform],
-            device_name: matchdata[:device_name],
-            controller: matchdata[:controller],
-            method: matchdata[:method],
-            request_format: matchdata[:request_format],
-            anon_ip: matchdata[:anon_ip],
-            timestamp: matchdata[:timestamp],
-          }
-        end
-      end
-
-      # Error Messages
-      # [584cffcc-f1fd-4b5c-bb8b-b89621bd4921] ActionController::RoutingError (No route matches [GET] "/assets/foundation-icons.svg"):
-      # [fd8df8b5-83c9-48b5-a056-e5026e31bd5e] ActionView::Template::Error (undefined method `all_my_ancestor' for nil:NilClass):
-      # [d17ed55c-f5f1-442a-a9d6-3035ab91adf0] ActionView::Template::Error (undefined method `volunteer_for' for #<DonationsController:0x007f4864c564b8>
-      EXCEPTION = /[A-Za-z_0-9:]+(Error)?/
-      ERROR_REGEXP = /^\[#{ID}\] (?<context>#{EXCEPTION}) \((?<description>(#{EXCEPTION})?.*)\):/
-
-      def match_and_process_error(line)
-        matchdata = ERROR_REGEXP.match line
-        if matchdata
-          {
-            log_id: matchdata[:id],
-            context: matchdata[:context],
-            description: matchdata[:description]
-          }
-        end
-      end
 
       # I, [2021-10-19T08:16:34.343858 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Started GET "/grow/people/471" for 217.77.80.35 at 2021-10-19 08:16:34 +0000
       STARTED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Started #{VERB} "#{URL}" for #{IP} at/
@@ -389,7 +361,8 @@ module LogSense
       # F, [2021-12-04T00:34:05.839157 #2735058] FATAL -- : [3a16162e-a6a5-435e-a9d8-c4df5dc0f728] ActionController::RoutingError (No route matches [GET] "/wp/wp-includes/wlwmanifest.xml"):
       # F, [2021-12-04T00:34:05.839209 #2735058] FATAL -- : [3a16162e-a6a5-435e-a9d8-c4df5dc0f728]   
       # F, [2021-12-04T00:34:05.839269 #2735058] FATAL -- : [3a16162e-a6a5-435e-a9d8-c4df5dc0f728] actionpack (5.2.4.4) lib/action_dispatch/middleware/debug_exceptions.rb:65:in `call'
-      FATAL_REGEXP = /F, \[#{TIMESTAMP} #[0-9]+\] FATAL -- : \[#{ID}\] (?<comment>.*)$/
+
+      FATAL_REGEXP = /F, \[#{TIMESTAMP} #[0-9]+\] FATAL -- : \[#{ID}\]/
 
       def match_and_process_fatal(line)
         matchdata = FATAL_REGEXP.match line
@@ -397,64 +370,57 @@ module LogSense
           {
             exit_status: "F",
             log_id: matchdata[:id],
-            comment: matchdata[:comment]
           }
         end
       end
 
-      # Started GET "/projects?locale=it" for 127.0.0.1 at 2024-06-06 23:23:31 +0200
-      # Processing by EmployeesController#index as HTML
-      #   Parameters: {"locale"=>"it"}
-      # [...]
-      # Completed 200 OK in 135ms (Views: 128.0ms | ActiveRecord: 2.5ms | Allocations: 453450)
+      # Explanation of what caused a FATAL event.  List of lines starting with the
+      # ID of the fatal event and providing some sort of explanation.
       #
-      # Started GET "/serviceworker.js" for 127.0.0.1 at 2024-06-06 23:23:29 +0200
-      # ActionController::RoutingError (No route matches [GET] "/serviceworker.js"):
+      # Notice that we have more than one line per FATAL event
       #
+      # [584cffcc-f1fd-4b5c-bb8b-b89621bd4921] ActionController::RoutingError (No route matches [GET] "/assets/foundation-icons.svg"):
       #
-      # Started POST "/projects?locale=it" for 127.0.0.1 at 2024-06-06 23:34:33 +0200
-      # Processing by ProjectsController#create as TURBO_STREAM
-      # Parameters: {"authenticity_token"=>"[FILTERED]", "project"=>{"name"=>"AA", "funding_agency"=>"", "total_cost"=>"0,00", "personnel_cost"=>"0,00", "percentage_funded"=>"0", "from_date"=>"2024-01-01", "to_date"=>"2025-12-31", "notes"=>""}, "commit"=>"Crea Progetto", "locale"=>"it"}
+      # [fd8df8b5-83c9-48b5-a056-e5026e31bd5e] ActionView::Template::Error (undefined method `all_my_ancestor' for nil:NilClass):
       #
-      # Completed   in 48801ms (ActiveRecord: 17.8ms | Allocations: 2274498)
-      # Completed 422 Unprocessable Entity in 16ms (Views: 5.1ms | ActiveRecord: 2.0ms | Allocations: 10093)
+      # [d17ed55c-f5f1-442a-a9d6-3035ab91adf0] ActionView::Template::Error (undefined method `volunteer_for' for #<DonationsController:0x007f4864c564b8>
       #
-      # Completed 500 Internal Server Error in 24ms (ActiveRecord: 1.4ms | Allocations: 4660)
-      # ActionView::Template::Error (Error: Undefined variable: "$white".
-      #         on line 6:28 of app/assets/stylesheets/_animations.scss
-      #         from line 16:9 of app/assets/stylesheets/application.scss
-      # >>   from { background-color: $white; }
-      
-      #    ---------------------------^
-      # ):
-      #      9:     = csrf_meta_tags
-      #     10:     = csp_meta_tag
-      #     11: 
-      #     12:     = stylesheet_link_tag "application", "data-turbo-track": "reload"
-      #     13:     = javascript_importmap_tags
-      #     14: 
-      #     15:   %body
-      #
-      # app/views/layouts/application.html.haml:12
-      # app/controllers/application_controller.rb:26:in `switch_locale'
+      #, [2024-08-20T09:41:35.140725 #4151931] FATAL -- : [f57e3648-568a-48f9-ae3a-a522b1ff3298]   
+      # [f57e3648-568a-48f9-ae3a-a522b1ff3298] NoMethodError (undefined method `available_quantity' for nil:NilClass
+      # [f57e3648-568a-48f9-ae3a-a522b1ff3298]   
+      # [f57e3648-568a-48f9-ae3a-a522b1ff3298] app/models/donations/donation.rb:462:in `block in build_items_for_delivery'
+      # [f57e3648-568a-48f9-ae3a-a522b1ff3298] app/models/donations/donation.rb:440:in `build_items_for_delivery'
+      # [f57e3648-568a-48f9-ae3a-a522b1ff3298] app/controllers/donations_controller.rb:1395:in `create_delivery'
 
-      # Rendered devise/sessions/_project_partial.html.erb (Duration: 78.4ms | Allocations: 88373)
-      # Rendered devise/sessions/new.html.haml within layouts/application (Duration: 100.0ms | Allocations: 104118)
-      # Rendered application/_favicon.html.erb (Duration: 2.6ms | Allocations: 4454)
-      # Rendered layouts/_manage_notice.html.erb (Duration: 0.3ms | Allocations: 193)
-      # Rendered layout layouts/application.html.erb (Duration: 263.4ms | Allocations: 367467)
-      # Rendered donations/_switcher.html.haml (Duration: 41.1ms | Allocations: 9550)
-      # Rendered donations/_status_header.html.haml (Duration: 1.4ms | Allocations: 3192)
-      # Rendered donations/_status_header.html.haml (Duration: 0.0ms | Allocations: 7)
-      RENDERED_REGEXP = /^ *Rendered (?<partial>[^ ]+) .*\(Duration: (?<duration>[0-9.]+)ms \| Allocations: (?<allocations>[0-9]+)\)$/
+      EXCEPTION = /[A-Za-z_0-9:]+(Error|NotFound|Invalid|Unknown|Missing|ENOSPC)/
+      FATAL_EXPLANATION_REGEXP = /^\[#{ID}\] (?<context>#{EXCEPTION})?(?<description>.*)/
 
-      def match_and_process_rendered(line)
-        matchdata = RENDERED_REGEXP.match line
+      def match_and_process_fatal_explanation(line)
+        matchdata = FATAL_EXPLANATION_REGEXP.match line
         if matchdata
           {
-            partial: matchdata[:partial],
-            duration: matchdata[:duration],
-            allocations: matchdata[:allocations]
+            log_id: matchdata[:id],
+            context: matchdata[:context],
+            description: matchdata[:description].gsub(/^ *\(/, "").gsub(/\):$/, "")
+          }
+        end
+      end
+
+      # I, [2024-07-01T02:21:34.339058 #1392909]  INFO -- : [815b3e28-8d6e-4741-8605-87654a9ff58c] BrowserInfo: "Unknown Browser","unknown_platform","Unknown","Devise::SessionsController","new","html","4db749654a0fcacbf3868f87723926e7405262f8d596e8514f4997dc80a3cd7e","2024-07-01T02:21:34+02:00"
+      BROWSER_INFO_REGEXP = /BrowserInfo: "(?<browser>.+)","(?<platform>.+)","(?<device_name>.+)","(?<controller>.+)","(?<method>.+)","(?<request_format>.+)","(?<anon_ip>.+)","(?<timestamp>.+)"/
+
+      def match_and_process_browser_info(line)
+        matchdata = BROWSER_INFO_REGEXP.match line
+        if matchdata
+          {
+            browser: matchdata[:browser],
+            platform: matchdata[:platform],
+            device_name: matchdata[:device_name],
+            controller: matchdata[:controller],
+            method: matchdata[:method],
+            request_format: matchdata[:request_format],
+            anon_ip: matchdata[:anon_ip],
+            timestamp: matchdata[:timestamp],
           }
         end
       end

@@ -1,5 +1,7 @@
 module LogSense
   class RailsAggregator < Aggregator
+    WORDS_SEPARATOR = ' · '
+
     def initialize(db, options = { limit: 900 })
       @table = "Event"
       @date_field = "started_at"
@@ -76,6 +78,7 @@ module LogSense
                  sum(iif(platform != 'ios' and platform != 'android' and platform != 'mac' and platform != 'windows' and platform != 'linux', 1, 0)) as Other,
                  count(distinct(id)) as Total
                  from BrowserInfo
+                 where #{filter}
                  group by controller, method, request_format
       )
 
@@ -86,6 +89,7 @@ module LogSense
           SELECT browser as Browser,
                  count(distinct(id)) as Visits
                  from BrowserInfo
+                 where #{filter}
                  group by browser
       )
 
@@ -93,59 +97,43 @@ module LogSense
           SELECT platform as Platform,
                  count(distinct(id)) as Visits
                  from BrowserInfo
+                 where #{filter}
                  group by platform
       )
 
-      @fatal = @db.execute %Q(
-          SELECT strftime("%Y-%m-%d %H:%M", started_at),
-                 ip,
-                 url,
-                 error.description,
-                 event.log_id
-                 FROM Event JOIN Error
-                 ON event.log_id == error.log_id
-                 WHERE #{filter} and exit_status == 'F').gsub("\n", "") || [[]]
-
-      @fatal_plot = @db.execute %Q(
+      @fatal_plot = @db.execute %(
           SELECT strftime("%Y-%m-%d", started_at) as Day,
-                 count(distinct(event.id)) as Errors
+                 sum(distinct(event.id)) as Errors,
+                 sum(iif(context LIKE '%ActionController::RoutingError%', 1, 0)) as RoutingErrors,
+                 sum(iif(context NOT LIKE '%ActionController::RoutingError%', 1, 0)) as OtherErrors
                  FROM Event JOIN Error
                  ON event.log_id == error.log_id
                  WHERE #{filter} and exit_status == 'F'
-                 GROUP BY strftime("%Y-%m-%d", started_at)).gsub("\n", "") || [[]]
+                 GROUP BY strftime("%Y-%m-%d", started_at)
+      ).gsub("\n", "") || [[]]
 
-      @internal_server_error = @db.execute %Q(
-         SELECT strftime("%Y-%m-%d %H:%M", started_at), status, ip, url,
-                error.description,
-                event.log_id
-                FROM Event JOIN Error
-                ON event.log_id == error.log_id
-                WHERE #{filter} and substr(status, 1, 1) == '5').gsub("\n", "") || [[]]
+      @fatal = @db.execute %(
+          SELECT strftime("%Y-%m-%d %H:%M", started_at),
+                 ip,
+                 url,
+                 context,
+                 description,
+                 event.log_id
+                 FROM Event JOIN Error
+                 ON event.log_id == error.log_id
+                 WHERE #{filter} and exit_status == 'F'
+      ).gsub("\n", "") || [[]]
 
-      @internal_server_error_plot = @db.execute %Q(
-         SELECT strftime('%Y-%m-%d', started_at) as Day,
-                count(distinct(event.id)) as Errors
-                FROM Event JOIN Error
-                ON event.log_id == error.log_id
-                WHERE #{filter} and substr(status, 1, 1) == '5'
-                GROUP BY strftime('%Y-%m-%d', started_at)).gsub("\n", "") || [[]]
-
-      @error = @db.execute %Q(
+      @fatal_grouped = @db.execute %(
          SELECT filename,
-                log_id, description, count(log_id)
+                group_concat(log_id, '#{WORDS_SEPARATOR}'),
+                context,
+                description,
+                count(distinct(error.id))
                 FROM Error
-                WHERE (description NOT LIKE '%No route matches%' and
-                       description NOT LIKE '%Couldn''t find%')
-                GROUP BY description).gsub("\n", "") || [[]]
+                GROUP BY description
+      ).gsub("\n", "") || [[]]
       
-      @possible_attacks = @db.execute %Q(
-         SELECT filename,
-                log_id, description, count(log_id)
-                FROM Error
-                WHERE (description LIKE '%No route matches%' or
-                       description LIKE '%Couldn''t find%')
-                GROUP BY description).gsub("\n", "") || [[]]
-
       instance_vars_to_hash
     end
   end
