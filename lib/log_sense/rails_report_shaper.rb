@@ -48,27 +48,51 @@ module LogSense
           column_alignment: %i[left right right right right],
           rows: data[:performance],
           col: "small-12 cell",
-          echarts_height: "600px",
+          echarts_height: "800px",
           echarts_spec: "{
             xAxis: {
+              name: 'Hits',
+              type: 'value',
+              minInterval: 1,
+              axisLabel: {
+                formatter: function(val) {
+                  return val.toFixed(0);
+                }
+              }
             },
             yAxis: {
+              name: 'Average Time',
+              type: 'value',
+              axisLabel: {
+                formatter: function(val) {
+                  return val.toFixed(0) + ' ms';
+                }
+              }
             },
             tooltip: {
-               trigger: 'axis'
+               trigger: 'item',
+               formatter: function(params) {
+                 var index = params.dataIndex
+                 var row = SERIES_DATA[index]
+                 var controller = row['Controller']
+                 var hits = Number(params.value[0]).toFixed(0).toLocaleString('en')
+                 var average = Number(params.value[1]).toFixed(0).toLocaleString('en') + ' ms'
+                 return `<b>${controller}</b><br/>Hits: ${hits}<br>Average Time: ${average}`;
+               }
             },
             series: [
               {
-                data: SERIES_DATA.map(row => [row['Avg'], row['Hits']]),
+                data: SERIES_DATA.map(row => [row['Hits'], row['Avg']]),
                 type: 'scatter',
                 color: '#D30001',
                 label: {
                    show: true,
                    position: 'right',
-                   formatter: function (params) {
+                   formatter: function(params) {
                      var row = SERIES_DATA[params.dataIndex]
-                     return row['Controller'] +
-                            ': (' + row['Avg'] + ', ' + row['Hits'] + ')';
+                     return row['Controller'];
+                     // + 
+                     // ':\\n(' + row['Hits'] + ', ' + row['Avg'] + ')';
                    }
                 },
               }
@@ -166,7 +190,7 @@ module LogSense
           };"
         },
         {
-          title: "Internal Server Errors",
+          title: "Internal Server Errors (over time)",
           header: %w[Date Status IP URL Description Log ID],
           column_alignment: %i[left left left left left left],
           rows: data[:internal_server_error],
@@ -208,7 +232,7 @@ module LogSense
           };"
         },
         {
-          title: "Errors",
+          title: "Internal Server Errors (Grouped)",
           header: %w[Log ID Description Count],
           column_alignment: %i[left left left right],
           rows: data[:error],
