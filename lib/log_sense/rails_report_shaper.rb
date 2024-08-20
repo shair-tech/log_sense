@@ -209,6 +209,58 @@ module LogSense
           rows: data[:fatal_grouped],
           col: "small-12 cell"
         },
+        {
+          title: "Job Error",
+          header: %w[Date Worker Host PID ID Error Method Arguments Attempt],
+          column_alignment: %i[left left left left left left left left right],
+          column_width: ["10%", "5%", "5%", "5%", "5%", "20%", "20%", "20%", "10%"],
+          rows: data[:job_error],
+          col: "small-12 cell",
+          echarts_extra: "var fatal_plot=#{data[:job_error_plot].to_json}",
+          echarts_spec: "{
+            toolbox: {
+               feature: {
+                 saveAsImage: {},
+               }
+            },
+            tooltip: {
+               trigger: 'axis'
+            },
+            xAxis: {
+              type: 'category',
+              data: fatal_plot.filter(row => row[0] != '').map(row => row[0]),
+              showGrid: true,
+              axisLabel: {
+                rotate: 45 // Rotate the labels
+              }
+            },
+            yAxis: {
+              type: 'value',
+              name: 'Errors',
+              showGrid: true,
+            },
+            series: [
+              {
+                name: 'Errors',
+                data: fatal_plot.filter(row => row[0] != '').map(row => row[1]),
+                type: 'bar',
+                color: '#D30001',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              }
+            ]
+          };"
+        },
+        {
+          title: "Job Errors (grouped)",
+          header: %w[Worker Host PID ID Error Method Arguments Attempt],
+          column_alignment: %i[left left left left left left left right],
+          column_width: ["5%", "5%", "5%", "5%", "20%", "30%", "20%", "10%"],
+          rows: data[:job_error_grouped],
+          col: "small-12 cell"
+        },
         browsers(data),
         platforms(data),
         ips(data),

@@ -47,9 +47,10 @@ reports in TXT and HTML:
 - Rails Performance
 - Controller and Methods by Device
 - Fatal Events
-- Internal Server Errors
-- Errors
-- Potential Attacks
+- Fatal Events
+- Fatal Events (grouped by type)
+- Job Error
+- Job Errors (grouped) 
 - Browsers
 - Platforms
 - IPs

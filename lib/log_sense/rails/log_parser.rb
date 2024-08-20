@@ -84,28 +84,6 @@ module LogSense
         values (?, ?, ?, ?, ?)
         EOS
 
-        # db.execute <<-EOS
-        # CREATE TABLE IF NOT EXISTS Render(
-        #   id INTEGER PRIMARY KEY AUTOINCREMENT,
-        #   partial TEXT,
-        #   duration_ms FLOAT,
-        #   allocations INTEGER,
-        #   filename TEXT,
-        #   line_number INTEGER
-        # )
-        # EOS
-
-        # ins_rendered = db.prepare <<-EOS
-        # insert into Render(
-        #  partial,
-        #  duration_ms,
-        #  allocations,
-        #  filename,
-        #  line_number
-        # )
-        # values (?, ?, ?, ?, ?)
-        # EOS
-        
         db.execute <<-EOS
         CREATE TABLE IF NOT EXISTS BrowserInfo(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -132,6 +110,51 @@ module LogSense
          timestamp
         )
         values (?, ?, ?, ?, ?, ?, ?, ?)
+        EOS
+
+        # jobs
+        db.execute <<-EOS
+        CREATE TABLE IF NOT EXISTS Job(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          started_at TEXT,
+          ended_at TEXT,
+          duration_total_ms FLOAT,
+          worker TEXT,
+          host TEXT,
+          pid TEXT,
+          log_id TEXT,
+          job_id TEXT,
+          object_id TEXT,
+          method TEXT,
+          arguments TEXT,
+          exit_status TEXT,
+          attempt INTEGER,
+          error_msg TEXT,
+          source_file TEXT,
+          line_number INTEGER
+         )
+        EOS
+
+        ins_job = db.prepare <<-EOS
+        insert into Job(
+          started_at,
+          ended_at,
+          duration_total_ms,
+          worker,
+          host,
+          pid,
+          log_id,
+          job_id,
+          object_id,
+          method,
+          arguments,
+          exit_status,
+          attempt,
+          error_msg,
+          source_file,
+          line_number
+         )
+         values (#{Array.new(16, "?").join(", ")})
         EOS
 
         # requests in the log might be interleaved.
@@ -166,7 +189,7 @@ module LogSense
 
             # I, F are for completed and failed requests, [ is for the FATAL
             # error message explanation
-            next unless ['I', 'F', '['].include? line[0]
+            next unless ['I', 'F', 'E', '['].include? line[0]
 
             data = match_and_process_browser_info line
             if data
@@ -280,6 +303,31 @@ module LogSense
               ]
               next
             end
+
+            #
+            # Match job errors
+            #
+            data = match_and_process_job_error line
+            if data
+              ins_job.execute(
+                data[:ended_at], # this is temporary (while we wait to parse BEGIN) + required by filter
+                data[:ended_at],
+                0,
+                data[:worker],
+                data[:host],
+                data[:pid],
+                data[:log_id],
+                "",
+                data[:object_id],
+                data[:method],
+                data[:arguments],
+                data[:exit_status],
+                data[:attempt],
+                data[:error_msg],
+                filename,
+                line_number
+              )
+            end
           end
         end
         
@@ -296,7 +344,7 @@ module LogSense
       # to try from irb
       
       TIMESTAMP = /(?<timestamp>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]+)/
-      ID = /(?<id>[a-z0-9-]+)/
+      LOG_ID = /(?<log_id>[a-z0-9-]+)/
       VERB = /(?<verb>GET|POST|PATCH|PUT|DELETE)/
       URL = /(?<url>[^"]+)/
       IP = /(?<ip>[0-9.]+)/
@@ -305,14 +353,14 @@ module LogSense
       MSECS = /[0-9.]+/
 
       # I, [2021-10-19T08:16:34.343858 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Started GET "/grow/people/471" for 217.77.80.35 at 2021-10-19 08:16:34 +0000
-      STARTED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Started #{VERB} "#{URL}" for #{IP} at/
+      STARTED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{LOG_ID}\] Started #{VERB} "#{URL}" for #{IP} at/
 
       def match_and_process_start(line)
         matchdata = STARTED_REGEXP.match line
         if matchdata
           {
             started_at: matchdata[:timestamp],
-            log_id: matchdata[:id],
+            log_id: matchdata[:log_id],
             html_verb: matchdata[:verb],
             url: matchdata[:url],
             ip: matchdata[:ip]
@@ -324,7 +372,7 @@ module LogSense
       # I, [2021-10-19T08:16:34.712331 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Completed 200 OK in 367ms (Views: 216.7ms | ActiveRecord: 141.3ms | Allocations: 168792)
       # I, [2021-12-09T16:53:52.657727 #2735058]  INFO -- : [0064e403-9eb2-439d-8fe1-a334c86f5532] Completed 200 OK in 13ms (Views: 11.1ms | ActiveRecord: 1.2ms)
       # I, [2021-12-06T14:28:19.736545 #2804090]  INFO -- : [34091cb5-3e7b-4042-aaf8-6c6510d3f14c] Completed 500 Internal Server Error in 66ms (ActiveRecord: 8.0ms | Allocations: 24885)
-      COMPLETED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Completed #{STATUS} #{STATUS_IN_WORDS} in (?<total>#{MSECS})ms \((Views: (?<views>#{MSECS})ms \| )?ActiveRecord: (?<arec>#{MSECS})ms( \| Allocations: (?<alloc>[0-9]+))?\)/
+      COMPLETED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{LOG_ID}\] Completed #{STATUS} #{STATUS_IN_WORDS} in (?<total>#{MSECS})ms \((Views: (?<views>#{MSECS})ms \| )?ActiveRecord: (?<arec>#{MSECS})ms( \| Allocations: (?<alloc>[0-9]+))?\)/
 
       def match_and_process_completed(line)
         matchdata = (COMPLETED_REGEXP.match line)
@@ -333,7 +381,7 @@ module LogSense
           {
             exit_status: "I",
             ended_at: matchdata[:timestamp],
-            log_id: matchdata[:id],
+            log_id: matchdata[:log_id],
             status: matchdata[:status],
             duration_total_ms: matchdata[:total],
             duration_views_ms: matchdata[:views],
@@ -345,13 +393,13 @@ module LogSense
       end
 
       # I, [2021-10-19T08:16:34.345162 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Processing by PeopleController#show as HTML
-      PROCESSING_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{ID}\] Processing by (?<controller>[^ ]+) as/
+      PROCESSING_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{LOG_ID}\] Processing by (?<controller>[^ ]+) as/
 
       def match_and_process_processing_by line
         matchdata = PROCESSING_REGEXP.match line
         if matchdata
           {
-            log_id: matchdata[:id],
+            log_id: matchdata[:log_id],
             controller: matchdata[:controller]
           }
         end
@@ -362,14 +410,14 @@ module LogSense
       # F, [2021-12-04T00:34:05.839209 #2735058] FATAL -- : [3a16162e-a6a5-435e-a9d8-c4df5dc0f728]   
       # F, [2021-12-04T00:34:05.839269 #2735058] FATAL -- : [3a16162e-a6a5-435e-a9d8-c4df5dc0f728] actionpack (5.2.4.4) lib/action_dispatch/middleware/debug_exceptions.rb:65:in `call'
 
-      FATAL_REGEXP = /F, \[#{TIMESTAMP} #[0-9]+\] FATAL -- : \[#{ID}\]/
+      FATAL_REGEXP = /F, \[#{TIMESTAMP} #[0-9]+\] FATAL -- : \[#{LOG_ID}\]/
 
       def match_and_process_fatal(line)
         matchdata = FATAL_REGEXP.match line
         if matchdata
           {
             exit_status: "F",
-            log_id: matchdata[:id],
+            log_id: matchdata[:log_id],
           }
         end
       end
@@ -393,13 +441,12 @@ module LogSense
       # [f57e3648-568a-48f9-ae3a-a522b1ff3298] app/controllers/donations_controller.rb:1395:in `create_delivery'
 
       EXCEPTION = /[A-Za-z_0-9:]+(Error|NotFound|Invalid|Unknown|Missing|ENOSPC)/
-      FATAL_EXPLANATION_REGEXP = /^\[#{ID}\] (?<context>#{EXCEPTION})?(?<description>.*)/
-
+      FATAL_EXPLANATION_REGEXP = /^\[#{LOG_ID}\] (?<context>#{EXCEPTION})?(?<description>.*)/
       def match_and_process_fatal_explanation(line)
         matchdata = FATAL_EXPLANATION_REGEXP.match line
         if matchdata
           {
-            log_id: matchdata[:id],
+            log_id: matchdata[:log_id],
             context: matchdata[:context],
             description: matchdata[:description].gsub(/^ *\(/, "").gsub(/\):$/, "")
           }
@@ -423,6 +470,67 @@ module LogSense
             timestamp: matchdata[:timestamp],
           }
         end
+      end
+
+      # Sequence:
+      #
+      # - enqueued
+      # - running
+      # - performing
+      # - (rendering)
+      # - performed
+      # - completed
+      #
+      # I, [2024-08-01T06:21:16.302152 #3569287]  INFO -- : [96d14192-c7cc-48a9-9df7-3786de20b085] [ActiveJob] Enqueued ActionMailer::Parameterized::DeliveryJob (Job ID: 01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5) to DelayedJob(mailers) with arguments: "MessageMailer", "build_message", "deliver_now", {:project_id=>1, :email_to=>"activpentrutine@gmail.com", :hash=>{:event_name=>"download", :subject=>"Aviz BRAC-MEGA240176", :download=>#<GlobalID:0x00007f02d8e1ad98 @uri=#<URI::GID gid://btf3/Download/10652>>, :group=>#<GlobalID:0x00007f02d8e1a820 @uri=#<URI::GID gid://btf3/Organization/10061>>}, :locale=>:ro}
+      #
+      # I, [2024-08-01T06:21:21.235006 #3563911]  INFO -- : 2024-08-01T06:21:21+0200: [Worker(delayed_job host:shair1 pid:3563911)] Job ActionMailer::Parameterized::DeliveryJob [01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5] from DelayedJob(mailers) with arguments: ["MessageMailer", "build_message", "deliver_now", {"project_id"=>1, "email_to"=>"activpentrutine@gmail.com", "hash"=>{"event_name"=>"download", "subject"=>"Aviz BRAC-MEGA240176", "download"=>{"_aj_globalid"=>"gid://btf3/Download/10652"}, "group"=>{"_aj_globalid"=>"gid://btf3/Organization/10061"}, "_aj_symbol_keys"=>["event_name", "subject", "download", "group"]}, "locale"=>{"_aj_serialized"=>"ActiveJob::Serializers::SymbolSerializer", "value"=>"ro"}, "_aj_symbol_keys"=>["project_id", "email_to", "hash", "locale"]}] (id=212885) (queue=mailers) RUNNING
+      #
+      # I, [2024-08-01T06:21:21.251282 #3563911]  INFO -- : [ActiveJob] [ActionMailer::Parameterized::DeliveryJob] [01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5] Performing ActionMailer::Parameterized::DeliveryJob (Job ID: 01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5) from DelayedJob(mailers) enqueued at 2024-08-01T04:21:16Z with arguments: "MessageMailer", "build_message", "deliver_now", {:project_id=>1, :email_to=>"activpentrutine@gmail.com", :hash=>{:event_name=>"download", :subject=>"Aviz BRAC-MEGA240176", :download=>#<GlobalID:0x00007fbb86760950 @uri=#<URI::GID gid://btf3/Download/10652>>, :group=>#<GlobalID:0x00007fbb86760220 @uri=#<URI::GID gid://btf3/Organization/10061>>}, :locale=>:ro}
+      #
+      # I, [2024-08-01T06:21:22.137863 #3563911]  INFO -- : [ActiveJob] [ActionMailer::Parameterized::DeliveryJob] [01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5] Performed ActionMailer::Parameterized::DeliveryJob (Job ID: 01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5) from DelayedJob(mailers) in 886.42ms
+      #
+      # I, [2024-08-01T06:21:22.141853 #3563911]  INFO -- : 2024-08-01T06:21:22+0200: [Worker(delayed_job host:shair1 pid:3563911)] Job ActionMailer::Parameterized::DeliveryJob [01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5] from DelayedJob(mailers) with arguments: ["MessageMailer", "build_message", "deliver_now", {"project_id"=>1, "email_to"=>"activpentrutine@gmail.com", "hash"=>{"event_name"=>"download", "subject"=>"Aviz BRAC-MEGA240176", "download"=>{"_aj_globalid"=>"gid://btf3/Download/10652"}, "group"=>{"_aj_globalid"=>"gid://btf3/Organization/10061"}, "_aj_symbol_keys"=>["event_name", "subject", "download", "group"]}, "locale"=>{"_aj_serialized"=>"ActiveJob::Serializers::SymbolSerializer", "value"=>"ro"}, "_aj_symbol_keys"=>["project_id", "email_to", "hash", "locale"]}] (id=212885) (queue=mailers) COMPLETED after 0.9067
+
+      # Sequence with errors:
+      # (two log entries per error)
+      #
+      # E, [2024-08-15T05:10:30.613623 #4150573] ERROR -- : [ActiveJob] [ActionMailer::Parameterized::DeliveryJob] [79ea42c0-d280-4cf9-b77e-65917d4bc9fc] Error performing ActionMailer::Parameterized::DeliveryJob (Job ID: 79ea42c0-d280-4cf9-b77e-65917d4bc9fc) from DelayedJob(mailers) in 462.62ms: Net::SMTPFatalError (553 Recipient domain not specified.
+      # E, [2024-08-15T05:10:30.614189 #4150573] ERROR -- : 2024-08-15T05:10:30+0200: [Worker(delayed_job host:shair1 pid:4150573)] Job ActionMailer::Parameterized::DeliveryJob [79ea42c0-d280-4cf9-b77e-65917d4bc9fc] from DelayedJob(mailers) with arguments: ["MessageMailer", "build_message", "deliver_now", {"project_id"=>1, "email_to"=>"-", "hash"=>{"event_name"=>"download", "subject"=>"Aviz BvREWE240258.2", "download"=>{"_aj_globalid"=>"gid://btf3/Download/10877"}, "group"=>{"_aj_globalid"=>"gid://btf3/Organization/10060"}, "_aj_symbol_keys"=>["event_name", "subject", "download", "group"]}, "locale"=>{"_aj_serialized"=>"ActiveJob::Serializers::SymbolSerializer", "value"=>"ro"}, "_aj_symbol_keys"=>["project_id", "email_to", "hash", "locale"]}] (id=213242) (queue=mailers) FAILED (22 prior attempts) with Net::SMTPFatalError: 553 Recipient domain not specified.
+      
+      TIMESTAMP_WITH_TZONE = /(?<timestamp_tzone>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\+[0-9]+)/
+      ID = /(?<id>[0-9]+)/
+      WORKER = /Worker\((?<worker>.*) host:(?<host>.+) pid:(?<pid>[0-9]+)\)/
+      METHOD = /(?<method>[A-Za-z0-9:#]+)/
+      TIMES = /(?<attempt>[0-9]+)/
+      ERROR_MSG = /(?<error_msg>.+)/
+      ARGUMENTS = /(?<arguments>.+)/
+
+      ERROR_MESSAGE = /E, \[#{TIMESTAMP} #[0-9]+\] ERROR -- : #{TIMESTAMP_WITH_TZONE}: \[#{WORKER}\] Job #{METHOD} \[#{LOG_ID}\] from .+ with arguments: \[#{ARGUMENTS}\] \(id=#{ID}\) \(queue=.*\) FAILED \(#{TIMES} prior attempts\) with #{ERROR_MSG}/
+
+      ERROR_MESSAGE_SHORT = /E, \[#{TIMESTAMP} #[0-9]+\] ERROR -- : #{TIMESTAMP_WITH_TZONE}: \[#{WORKER}\] Job #{METHOD} \(id=#{ID}\) FAILED \(#{TIMES} prior attempts\) with #{ERROR_MSG}/
+
+      def match_and_process_job_error(line)
+        [ERROR_MESSAGE, ERROR_MESSAGE_SHORT].map do |regexp|
+          matchdata = regexp.match line
+          if matchdata
+            return {
+              ended_at: matchdata[:timestamp],
+              duration_total_ms: 0,
+              worker: matchdata[:worker],
+              host: matchdata[:host],
+              pid: matchdata[:pid],
+              log_id: matchdata.named_captures["log_id"],
+              object_id: matchdata[:id],
+              method: matchdata[:method],
+              arguments: matchdata.named_captures["arguments"],
+              exit_status: 'E',
+              attempt: matchdata[:attempt],
+              error_msg: matchdata[:error_msg],
+            }
+          end
+        end
+
+        nil
       end
 
       # generate a unique visitor id from an event

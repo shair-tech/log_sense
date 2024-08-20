@@ -4,12 +4,13 @@
 
 * 2.1.0
 
-- [User] Improve scatter plot about performances (Use labels, invert x and y axes,
+- [User] Delayed Job Errors
+- [User] Improve scatter plot about performances (Use labels, swap x and y axes,
   better tooltip)
 - [User] Updated DB-IP country file to Aug 2024 version (19/08).
-- [User] Fixes CHANGELOG (which had some contradictory information)
-- [User] Revises "Fatal Errors" removing a bit of redundancy and collecting
-  all message
+- [User] Fixes CHANGELOG
+- [User] Revises "Fatal Errors" removing a bit of redundancy and collecting all
+  message
 - [Bug/User] Added filtering on date on reports which still did not use it
 
 * 2.0.0

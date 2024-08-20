@@ -134,6 +134,42 @@ module LogSense
                 GROUP BY description
       ).gsub("\n", "") || [[]]
       
+      @job_error_plot = @db.execute %(
+          SELECT strftime("%Y-%m-%d", ended_at) as Day,
+                 count(distinct(id)) as Errors
+                 FROM Job
+                 WHERE #{filter}
+                 GROUP BY strftime("%Y-%m-%d", ended_at)
+      ).gsub("\n", "") || [[]]
+
+      @job_error = @db.execute %(
+          SELECT strftime("%Y-%m-%d %H:%M", ended_at),
+                 worker,
+                 host,
+                 pid,
+                 object_id,
+                 method,
+                 arguments,
+                 error_msg,
+                 attempt
+                 FROM Job
+                 WHERE #{filter}
+      ).gsub("\n", "") || [[]]
+
+      @job_error_grouped = @db.execute %(
+         SELECT worker,
+                host,
+                pid,
+                object_id,
+                method,
+                arguments,
+                error_msg,
+                max(attempt)
+                FROM Job
+                WHERE #{filter}
+                GROUP BY object_id
+      ).gsub("\n", "") || [[]]
+
       instance_vars_to_hash
     end
   end

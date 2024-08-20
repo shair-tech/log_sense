@@ -259,7 +259,7 @@ module LogSense
                  color: '#{color}',
                  label: {
                     show: true,
-                    position: 'top'
+                    position: 'right'
                  },
               },
             ]
@@ -373,7 +373,7 @@ module LogSense
                 stack: 'total',
                 label: {
                    show: true,
-                   position: 'top'
+                   position: 'right'
                 },
               },
               {
@@ -383,7 +383,7 @@ module LogSense
                 stack: 'total',
                 label: {
                    show: true,
-                   position: 'top'
+                   position: 'right'
                 },
               },
               {
@@ -393,7 +393,7 @@ module LogSense
                 stack: 'total',
                 label: {
                    show: true,
-                   position: 'top'
+                   position: 'right'
                 },
               },
               {
@@ -403,7 +403,7 @@ module LogSense
                 stack: 'total',
                 label: {
                    show: true,
-                   position: 'top'
+                   position: 'right'
                 },
               },
             ]
