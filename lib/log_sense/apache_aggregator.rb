@@ -112,7 +112,7 @@ module LogSense
               count(path),
               count(distinct(unique_visitor)),
               #{human_readable_size}, status from LogLine
-       where #{result} and #{type} and #{filter}
+       where #{filter} and #{result} and #{type}
        group by path
        order by count(path) desc
        limit #{@options[:limit]}"
