@@ -134,20 +134,24 @@ module LogSense
                 GROUP BY description
       ).gsub("\n", "") || [[]]
       
-      @job_error_plot = @db.execute %(
+      @job_plot = @db.execute %(
           SELECT strftime("%Y-%m-%d", ended_at) as Day,
-                 count(distinct(id)) as Errors
+                 sum(iif(exit_status == 'C', 1, 0)) as Completed,
+                 sum(iif(exit_status == 'E', 1, 0)) as Errors
                  FROM Job
                  WHERE #{filter}
                  GROUP BY strftime("%Y-%m-%d", ended_at)
       ).gsub("\n", "") || [[]]
 
-      @job_error = @db.execute %(
-          SELECT strftime("%Y-%m-%d %H:%M", ended_at),
-                 worker,
-                 host,
+      # worker,
+      # host,
+      # pid,
+      @jobs = @db.execute %(
+          SELECT strftime("%Y-%m-%d %H:%M", started_at),
+                 duration_total_ms,
                  pid,
                  object_id,
+                 exit_status,
                  method,
                  arguments,
                  error_msg,
@@ -161,12 +165,12 @@ module LogSense
                 host,
                 pid,
                 object_id,
+                error_msg,
                 method,
                 arguments,
-                error_msg,
                 max(attempt)
                 FROM Job
-                WHERE #{filter}
+                WHERE #{filter} and exit_status == 'E'
                 GROUP BY object_id
       ).gsub("\n", "") || [[]]
 

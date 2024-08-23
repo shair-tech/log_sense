@@ -209,14 +209,20 @@ module LogSense
           rows: data[:fatal_grouped],
           col: "small-12 cell"
         },
+        browsers(data),
+        platforms(data),
+        ips(data),
+        countries(data),
+        ip_per_hour_report_spec(ips_per_hour(data[:ips_per_hour])),
+        session_report_spec(ips_detailed(data[:ips_per_day_detailed])),
         {
-          title: "Job Error",
-          header: %w[Date Worker Host PID ID Error Method Arguments Attempt],
-          column_alignment: %i[left left left left left left left left right],
-          column_width: ["10%", "5%", "5%", "5%", "5%", "20%", "20%", "20%", "10%"],
-          rows: data[:job_error],
+          title: "Jobs",
+          header: %w[Date Duration PID ID Exit_Status Method Arguments Error_Msg Attempt],
+          column_alignment: %i[left left right left left left left left right],
+          column_width: ["10%", "5%", "5%", "5%", "5%", "15%", "25%", "25%", "5%"],
+          rows: data[:jobs],
           col: "small-12 cell",
-          echarts_extra: "var fatal_plot=#{data[:job_error_plot].to_json}",
+          echarts_extra: "var fatal_plot=#{data[:job_plot].to_json}",
           echarts_spec: "{
             toolbox: {
                feature: {
@@ -241,8 +247,18 @@ module LogSense
             },
             series: [
               {
-                name: 'Errors',
+                name: 'Completed',
                 data: fatal_plot.filter(row => row[0] != '').map(row => row[1]),
+                type: 'bar',
+                color: '#DEDEDE',
+                label: {
+                  show: true,
+                  position: 'top'
+                },
+              },
+              {
+                name: 'Errors',
+                data: fatal_plot.filter(row => row[0] != '').map(row => row[2]),
                 type: 'bar',
                 color: '#D30001',
                 label: {
@@ -260,13 +276,7 @@ module LogSense
           column_width: ["5%", "5%", "5%", "5%", "20%", "30%", "20%", "10%"],
           rows: data[:job_error_grouped],
           col: "small-12 cell"
-        },
-        browsers(data),
-        platforms(data),
-        ips(data),
-        countries(data),
-        ip_per_hour_report_spec(ips_per_hour(data[:ips_per_hour])),
-        session_report_spec(ips_detailed(data[:ips_per_day_detailed]))
+        }
       ]
     end
   end
