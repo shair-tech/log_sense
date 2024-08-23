@@ -168,4 +168,6 @@ else
 
   warn "Emitting..." if @options[:verbose]
   puts LogSense::Emitter.emit @reports, @data, @options
+
+  exit 0
 end
