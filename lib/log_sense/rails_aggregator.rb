@@ -108,7 +108,7 @@ module LogSense
                  sum(iif(context NOT LIKE '%ActionController::RoutingError%', 1, 0)) as OtherErrors
                  FROM Event JOIN Error
                  ON event.log_id == error.log_id
-                 WHERE #{filter} and exit_status == 'F'
+                 WHERE #{filter} and exit_status == 'S:FAILED'
                  GROUP BY strftime("%Y-%m-%d", started_at)
       ).gsub("\n", "") || [[]]
 
@@ -121,7 +121,7 @@ module LogSense
                  event.log_id
                  FROM Event JOIN Error
                  ON event.log_id == error.log_id
-                 WHERE #{filter} and exit_status == 'F'
+                 WHERE #{filter} and exit_status == 'S:FAILED'
       ).gsub("\n", "") || [[]]
 
       @fatal_grouped = @db.execute %(
@@ -136,8 +136,8 @@ module LogSense
       
       @job_plot = @db.execute %(
           SELECT strftime("%Y-%m-%d", ended_at) as Day,
-                 sum(iif(exit_status == 'C', 1, 0)) as Completed,
-                 sum(iif(exit_status == 'E', 1, 0)) as Errors
+                 sum(iif(exit_status == 'S:COMPLETED', 1, 0)) as Completed,
+                 sum(iif(exit_status == 'S:ERROR' or exit_status == 'S:FAILED', 1, 0)) as Errors
                  FROM Job
                  WHERE #{filter}
                  GROUP BY strftime("%Y-%m-%d", ended_at)
@@ -164,14 +164,14 @@ module LogSense
          SELECT worker,
                 host,
                 pid,
-                exit_status,
                 object_id,
+                exit_status,
                 GROUP_CONCAT(DISTINCT(error_msg)),
                 method,
                 arguments,
                 max(attempt)
                 FROM Job
-                WHERE #{filter} and exit_status == 'E'
+                WHERE #{filter} and (exit_status == 'S:ERROR' or exit_status == 'S:FAILED')
                 GROUP BY object_id
       ).gsub("\n", "") || [[]]
 

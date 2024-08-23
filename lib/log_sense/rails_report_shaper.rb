@@ -225,7 +225,7 @@ module LogSense
             completed with "performed".
           ),
           header: %w[Date Duration PID ID Exit_Status Method Arguments Error_Msg Attempts],
-          column_alignment: %i[left left right left left left left left right],
+          column_alignment: %i[left right left left left left left left right],
           column_width: ["10%", "5%", "5%", "5%", "5%", "15%", "25%", "25%", "5%"],
           rows: data[:jobs],
           col: "small-12 cell",
@@ -278,9 +278,9 @@ module LogSense
         },
         {
           title: "Job Errors (grouped)",
-          header: %w[Worker Host PID ID Error Method Arguments Attempts],
-          column_alignment: %i[left left left left left left left right],
-          column_width: ["5%", "5%", "5%", "5%", "20%", "30%", "20%", "10%"],
+          header: %w[Worker Host PID ID Exit_Status Error Method Arguments Attempts],
+          column_alignment: %i[left left left left left left left left right],
+          column_width: ["5%", "5%", "5%", "5%", "5%", "20%", "25%", "20%", "10%"],
           rows: data[:job_error_grouped],
           col: "small-12 cell"
         }

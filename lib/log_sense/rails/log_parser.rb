@@ -369,6 +369,8 @@ module LogSense
             #
             data = match_and_process_job_error line
             if data
+              id = data[:object_id]
+              # TODO: no need for if (here and everywhere else)
               # it has to be there!
               if pending_jobs[id]
                 data = (pending_jobs[id] || {}).merge(data)
@@ -377,7 +379,7 @@ module LogSense
               ins_job.execute(
                 data[:started_at],
                 data[:ended_at],
-                0,
+                nil,
                 data[:worker],
                 data[:host],
                 data[:pid],
@@ -460,7 +462,7 @@ module LogSense
         # exit_status = matchdata[:status].to_i == 500 ? "E" : "I"
         if matchdata
           {
-            exit_status: "I",
+            exit_status: "S:COMPLETED",
             ended_at: matchdata[:timestamp],
             log_id: matchdata[:log_id],
             status: matchdata[:status],
@@ -497,7 +499,7 @@ module LogSense
         matchdata = FATAL_REGEXP.match line
         if matchdata
           {
-            exit_status: "F",
+            exit_status: "S:FAILED",
             log_id: matchdata[:log_id],
           }
         end
@@ -639,7 +641,7 @@ module LogSense
             log_id: matchdata.named_captures["log_id"],
             object_id: matchdata[:id],
             method: matchdata[:method],
-            exit_status: 'C',
+            exit_status: 'S:COMPLETED',
             arguments: matchdata[:arguments]
           }
         end
@@ -656,7 +658,11 @@ module LogSense
         [ERROR_MESSAGE_PERMANENT, ERROR_MESSAGE, ERROR_MESSAGE_SHORT].map do |regexp|
           matchdata = regexp.match line
           if matchdata
-            exit_status = matchdata[:error_msg].include? "permanently" ? "F" : "E"
+            exit_status = if matchdata[:error_msg].include?("permanently")
+                            "S:FAILED"
+                          else
+                            "S:ERROR"
+                          end
 
             return {
               ended_at: matchdata[:timestamp],
@@ -668,7 +674,7 @@ module LogSense
               object_id: matchdata[:id],
               method: matchdata[:method],
               arguments: matchdata.named_captures["arguments"],
-              exit_status: 'E',
+              exit_status:,
               attempt: matchdata[:attempt],
               error_msg: matchdata[:error_msg],
             }
