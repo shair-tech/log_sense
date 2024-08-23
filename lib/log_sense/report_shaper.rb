@@ -1,5 +1,6 @@
 module LogSense
   class ReportShaper
+    SESSION_URL_LIMIT = 300
     WORDS_SEPARATOR = ' · '
 
     # return { [ip,day] => { [ hits, list of urls ] } }
@@ -14,7 +15,11 @@ module LogSense
             date,
             hash[ip][date].size,
             hash[ip][date].uniq.size,
-            hash[ip][date].uniq.size < 100 ? hash[ip][date].uniq.join(WORDS_SEPARATOR) : "[too many]"
+            if hash[ip][date].uniq.size < SESSION_URL_LIMIT
+              hash[ip][date].uniq.join(WORDS_SEPARATOR)
+            else
+              "[too many]"
+            end
           ]
         end
       end
