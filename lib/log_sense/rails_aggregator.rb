@@ -164,8 +164,9 @@ module LogSense
          SELECT worker,
                 host,
                 pid,
+                exit_status,
                 object_id,
-                error_msg,
+                GROUP_CONCAT(DISTINCT(error_msg)),
                 method,
                 arguments,
                 max(attempt)

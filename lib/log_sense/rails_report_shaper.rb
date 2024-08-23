@@ -182,7 +182,7 @@ module LogSense
                 name: 'Routing Errors',
                 data: fatal_plot.filter(row => row[0] != '').map(row => row[2]),
                 type: 'bar',
-                color: '#DEDEDE',
+                color: '#D0D0D0',
                 label: {
                   show: true,
                   position: 'top'
@@ -216,8 +216,15 @@ module LogSense
         ip_per_hour_report_spec(ips_per_hour(data[:ips_per_hour])),
         session_report_spec(ips_detailed(data[:ips_per_day_detailed])),
         {
-          title: "Jobs",
-          header: %w[Date Duration PID ID Exit_Status Method Arguments Error_Msg Attempt],
+          title: "Jobs (Completed and Failed)",
+          explanation: %(
+            This report includes completed and failed jobs, parsing lines
+            marked as COMPLETED or ERROR/FAILED.
+
+            This excludes from the table entries marked as RUNNING and then
+            completed with "performed".
+          ),
+          header: %w[Date Duration PID ID Exit_Status Method Arguments Error_Msg Attempts],
           column_alignment: %i[left left right left left left left left right],
           column_width: ["10%", "5%", "5%", "5%", "5%", "15%", "25%", "25%", "5%"],
           rows: data[:jobs],
@@ -250,7 +257,7 @@ module LogSense
                 name: 'Completed',
                 data: fatal_plot.filter(row => row[0] != '').map(row => row[1]),
                 type: 'bar',
-                color: '#DEDEDE',
+                color: '#D0D0D0',
                 label: {
                   show: true,
                   position: 'top'
@@ -271,7 +278,7 @@ module LogSense
         },
         {
           title: "Job Errors (grouped)",
-          header: %w[Worker Host PID ID Error Method Arguments Attempt],
+          header: %w[Worker Host PID ID Error Method Arguments Attempts],
           column_alignment: %i[left left left left left left left right],
           column_width: ["5%", "5%", "5%", "5%", "20%", "30%", "20%", "10%"],
           rows: data[:job_error_grouped],

@@ -2,12 +2,12 @@
 
 * Todo (2024-08-01)
 
+** T Break rails log_parser in subclasses (one per log type)
+
 ** T Distinguish between exceptions, errors with no timestamps and errors with timestamps  :feature:
    - In rails reports some errors don't have a timestamp, whereas other have.
 
    1. Check whether we can always get an ID of an event
-   2. 
-
 
 ** T Move geolocation to aggregator, so that we can perform queries more efficiently  :refactoring:
 ** T Filter on dates                                                :feature:
@@ -18,9 +18,7 @@
 ** T error on data
    - The data reported by echarts on the number of hits of a controller
      differs from the data shown in the table?
-** T Sidebar foreground color in new apache report
-** T Dark style
-** T Remove dependency from Zurb Foundation (native css grid instead)
+** T Remove dependency from Zurb Foundation (native css grid instead) :refactoring:
 ** T refactor report specifications in their own class          :refactoring:
 ** T Add lines not parsed to the report                             :feature:
 ** T Using an empty log as input raises an error                    :feature:
@@ -314,3 +312,22 @@
    :ARCHIVE_CATEGORY: todo
    :ARCHIVE_TODO: REJECTED
    :END:
+
+** D Dark style
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-23 Fri 16:25
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Todo (2024-08-01)
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: D
+   :END:
+
+** D Sidebar foreground color in new apache report
+   :PROPERTIES:
+   :ARCHIVE_TIME: 2024-08-23 Fri 16:25
+   :ARCHIVE_FILE: ~/Sources/ruby/log_sense/todo.org
+   :ARCHIVE_OLPATH: Todo (2024-08-01)
+   :ARCHIVE_CATEGORY: todo
+   :ARCHIVE_TODO: D
+   :END:
+

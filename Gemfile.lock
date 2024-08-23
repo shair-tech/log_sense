@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    log_sense (2.0.0)
+    log_sense (2.2.0)
       browser (~> 5.3.0)
       ipaddr (~> 1.2.0)
       iso_country_codes (~> 0.7.0)

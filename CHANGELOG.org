@@ -2,6 +2,11 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.2.0
+
+- [User] Better management of Delayed Job (show also completed)
+- [Refactoring] Regexps are now pre-compiled with /o
+  
 * 2.1.0
 
 - [User] Delayed Job Errors

@@ -165,6 +165,9 @@ module LogSense
         # hash
         pending = {}
 
+        # for delayed jobs
+        pending_jobs = {}
+
         # Fatal explanation messages span several lines (2, 4, ?)
         #
         # We keep a Hash with the FATAL explanation messages and we persist when
@@ -305,26 +308,26 @@ module LogSense
             end
 
             #
-            # Match enqueueing job
+            # Match enqueuing job
             #
-            data = match_and_process_enqueuing line
+            data = match_and_process_enqueuing_job line
             if data
               id = data[:job_id]
-              pending[id] = data.merge(pending[id] || {})
+              pending_jobs[id] = data.merge(pending_jobs[id] || {})
               next
             end
 
             #
             # Match running
             # 
-            data = match_and_process_running line
+            data = match_and_process_running_job line
             if data
               id = data[:job_id]
               # change the key to pid
               pid = data[:object_id]
-              pending[pid] = data.merge(pending[id] || {})
+              pending_jobs[pid] = data.merge(pending_jobs[id] || {})
 
-              # pending.delete(id)
+              pending_jobs.delete(id)
               next
             end
 
@@ -335,8 +338,8 @@ module LogSense
             if data
               id = data[:object_id]
               # it has to be there!
-              if pending[id]
-                data = data.merge(pending[id])
+              if pending_jobs[id]
+                data = (pending_jobs[id] || {}).merge(data)
               end
               
               ins_job.execute(
@@ -347,8 +350,8 @@ module LogSense
                 data[:host],
                 data[:pid],
                 data[:log_id],
-                data[:job_id],
-                "", # data[:object_id], # completed jobs are destroyed
+                data[:job_id], # no longer necessary
+                data[:object_id], # completed jobs are destroyed
                 data[:method],
                 data[:arguments],
                 data[:exit_status],
@@ -357,6 +360,8 @@ module LogSense
                 filename,
                 line_number
               )
+              pending_jobs.delete(id)
+              next
             end
 
             #
@@ -365,12 +370,12 @@ module LogSense
             data = match_and_process_job_error line
             if data
               # it has to be there!
-              if pending[id]
-                data = data.merge(pending[id])
+              if pending_jobs[id]
+                data = (pending_jobs[id] || {}).merge(data)
               end
               
               ins_job.execute(
-                data[:started_at], # this is temporary (while we wait to parse BEGIN) + required by filter
+                data[:started_at],
                 data[:ended_at],
                 0,
                 data[:worker],
@@ -387,6 +392,8 @@ module LogSense
                 filename,
                 line_number
               )
+
+              pending_jobs.delete(id)
             end
           end
         end
@@ -396,6 +403,20 @@ module LogSense
         fatal_explanation_messages.values.map do |value|
           ins_error.execute(value)
         end
+
+        # DO NOT persist the pending_jobs which have not yet completed (those
+        # still available at: pending_jobs).
+        #
+        # In fact various entries initiated with RUNNING end up with "performed"
+        # (rather than COMPLETED).  Notice that entries COMPLETED always have a
+        # peformed entry as well.
+        #
+        # Since we do not yet process "performed" entry log and in pending jobs
+        # we end up accumulating a bunch of entries which are marked as
+        # "performed"
+        #
+        # Performed entries are tricky since they use JOB_ID, rather than the
+        # object_id and probably requires to change how we enter pending_ids
 
         db
       end
@@ -541,6 +562,8 @@ module LogSense
       # - performed (OBJECT_ID  links to running; JOB_ID links to previous)
       # - completed (OBJECT_ID  links to running; JOB_ID links to previous)
       #
+      # SOMETIMES PERFORMED APPEARS WITH NO COMPLETED.
+      #
       # I, [2024-08-01T06:21:16.302152 #3569287]  INFO -- : [96d14192-c7cc-48a9-9df7-3786de20b085] [ActiveJob] Enqueued ActionMailer::Parameterized::DeliveryJob (Job ID: 01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5) to DelayedJob(mailers) with arguments: "MessageMailer", "build_message", "deliver_now", {:project_id=>1, :email_to=>"activpentrutine@gmail.com", :hash=>{:event_name=>"download", :subject=>"Aviz BRAC-MEGA240176", :download=>#<GlobalID:0x00007f02d8e1ad98 @uri=#<URI::GID gid://btf3/Download/10652>>, :group=>#<GlobalID:0x00007f02d8e1a820 @uri=#<URI::GID gid://btf3/Organization/10061>>}, :locale=>:ro}
       #
       # I, [2024-08-01T06:21:21.235006 #3563911]  INFO -- : 2024-08-01T06:21:21+0200: [Worker(delayed_job host:shair1 pid:3563911)] Job ActionMailer::Parameterized::DeliveryJob [01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5] from DelayedJob(mailers) with arguments: ["MessageMailer", "build_message", "deliver_now", {"project_id"=>1, "email_to"=>"activpentrutine@gmail.com", "hash"=>{"event_name"=>"download", "subject"=>"Aviz BRAC-MEGA240176", "download"=>{"_aj_globalid"=>"gid://btf3/Download/10652"}, "group"=>{"_aj_globalid"=>"gid://btf3/Organization/10061"}, "_aj_symbol_keys"=>["event_name", "subject", "download", "group"]}, "locale"=>{"_aj_serialized"=>"ActiveJob::Serializers::SymbolSerializer", "value"=>"ro"}, "_aj_symbol_keys"=>["project_id", "email_to", "hash", "locale"]}] (id=212885) (queue=mailers) RUNNING
@@ -548,6 +571,10 @@ module LogSense
       # I, [2024-08-01T06:21:21.251282 #3563911]  INFO -- : [ActiveJob] [ActionMailer::Parameterized::DeliveryJob] [01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5] Performing ActionMailer::Parameterized::DeliveryJob (Job ID: 01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5) from DelayedJob(mailers) enqueued at 2024-08-01T04:21:16Z with arguments: "MessageMailer", "build_message", "deliver_now", {:project_id=>1, :email_to=>"activpentrutine@gmail.com", :hash=>{:event_name=>"download", :subject=>"Aviz BRAC-MEGA240176", :download=>#<GlobalID:0x00007fbb86760950 @uri=#<URI::GID gid://btf3/Download/10652>>, :group=>#<GlobalID:0x00007fbb86760220 @uri=#<URI::GID gid://btf3/Organization/10061>>}, :locale=>:ro}
       #
       # I, [2024-08-01T06:21:22.137863 #3563911]  INFO -- : [ActiveJob] [ActionMailer::Parameterized::DeliveryJob] [01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5] Performed ActionMailer::Parameterized::DeliveryJob (Job ID: 01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5) from DelayedJob(mailers) in 886.42ms
+      #
+      #
+      # I, [2024-08-01T06:38:41.005687 #3563911]  INFO -- : 2024-08-01T06:38:41+0200: [Worker(delayed_job host:shair1 pid:3563911)] 1 jobs processed at 1.4476 j/s, 0 failed
+      #
       #
       # I, [2024-08-01T06:21:22.141853 #3563911]  INFO -- : 2024-08-01T06:21:22+0200: [Worker(delayed_job host:shair1 pid:3563911)] Job ActionMailer::Parameterized::DeliveryJob [01e82c5c-fb42-4e5f-b0a7-6fa9512a9fb5] from DelayedJob(mailers) with arguments: ["MessageMailer", "build_message", "deliver_now", {"project_id"=>1, "email_to"=>"activpentrutine@gmail.com", "hash"=>{"event_name"=>"download", "subject"=>"Aviz BRAC-MEGA240176", "download"=>{"_aj_globalid"=>"gid://btf3/Download/10652"}, "group"=>{"_aj_globalid"=>"gid://btf3/Organization/10061"}, "_aj_symbol_keys"=>["event_name", "subject", "download", "group"]}, "locale"=>{"_aj_serialized"=>"ActiveJob::Serializers::SymbolSerializer", "value"=>"ro"}, "_aj_symbol_keys"=>["project_id", "email_to", "hash", "locale"]}] (id=212885) (queue=mailers) COMPLETED after 0.9067
 
@@ -570,9 +597,9 @@ module LogSense
       #
       # these are together, since they return temporary data
       #
-      ENQUEUEING = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{LOG_ID}\] \[ActiveJob\] Enqueued #{METHOD} (Job ID: #{JOB_ID}) to .* with arguments: #{ARGUMENTS}/o
+      ENQUEUEING = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{LOG_ID}\] \[ActiveJob\] Enqueued #{METHOD} \(Job ID: #{JOB_ID}\) to .* with arguments: #{ARGUMENTS}/o
 
-      def match_and_process_enqueuing(line)
+      def match_and_process_enqueuing_job(line)
         matchdata = ENQUEUEING.match line
         if matchdata
           {
@@ -582,9 +609,9 @@ module LogSense
         end
       end
 
-      RUNNING_MESSAGE = /E, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : #{TIMESTAMP_WITH_TZONE}: \[#{WORKER}\] Job #{METHOD} \[#{JOB_ID}\] from .+ with arguments: \[#{ARGUMENTS}\] \(id=#{ID}\) \(queue=.*\) RUNNING/o
+      RUNNING_MESSAGE = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : #{TIMESTAMP_WITH_TZONE}: \[#{WORKER}\] Job #{METHOD} \[#{JOB_ID}\] from .+ with arguments: \[#{ARGUMENTS}\] \(id=#{ID}\) \(queue=.*\) RUNNING/o
 
-      def match_and_process_running(line)
+      def match_and_process_running_job(line)
         matchdata = RUNNING_MESSAGE.match line
         if matchdata
           {
@@ -629,6 +656,8 @@ module LogSense
         [ERROR_MESSAGE_PERMANENT, ERROR_MESSAGE, ERROR_MESSAGE_SHORT].map do |regexp|
           matchdata = regexp.match line
           if matchdata
+            exit_status = matchdata[:error_msg].include? "permanently" ? "F" : "E"
+
             return {
               ended_at: matchdata[:timestamp],
               duration_total_ms: nil, # we could compute the time to failure
