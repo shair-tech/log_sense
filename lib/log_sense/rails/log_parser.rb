@@ -94,7 +94,7 @@ module LogSense
           method TEXT,
           request_format TEXT,
           anon_ip TEXT,
-          timestamp TEXT
+          started_at TEXT
         )
         EOS
 
@@ -107,7 +107,7 @@ module LogSense
          method,
          request_format,
          anon_ip,
-         timestamp
+         started_at
         )
         values (?, ?, ?, ?, ?, ?, ?, ?)
         EOS
@@ -550,7 +550,7 @@ module LogSense
             method: matchdata[:method],
             request_format: matchdata[:request_format],
             anon_ip: matchdata[:anon_ip],
-            timestamp: matchdata[:timestamp],
+            started_at: matchdata[:timestamp],
           }
         end
       end
