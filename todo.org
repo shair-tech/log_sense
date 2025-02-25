@@ -1,7 +1,10 @@
 #+TITLE: Todo
 
 * Todo (2024-08-01)
-
+** T Show page with method
+   - we could generate a page with the result of the calls to a given method
+     (how many calls, distribution, ...). This would be the "show" of a rails app.
+     
 ** T Break rails log_parser in subclasses (one per log type)
 
 ** T Distinguish between exceptions, errors with no timestamps and errors with timestamps  :feature:
