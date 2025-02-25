@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module LogSense
+  # Specification of the Rails Reports
   class RailsReportShaper < ReportShaper
     def shape(data)
       [
