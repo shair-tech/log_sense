@@ -54,6 +54,7 @@ module LogSense
 
       @most_requested_pages = @db.execute resource_query(html, gs)
       @most_requested_resources = @db.execute resource_query(non_html, gs)
+
       @missed_pages = @db.execute resource_query(html, bs)
       @missed_resources = @db.execute resource_query(non_html, bs)
 
