@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.license       = "MIT"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.6.9")
 
-  spec.metadata["allowed_push_host"] = "https://rubygems.org/"
+  # spec.metadata["allowed_push_host"] = "https://rubygems.org/"
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/shair-tech/log_sense/"
@@ -34,5 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "terminal-table", "~> 3.0.0"
 
   spec.add_development_dependency "debug", "~> 1.9.0"
+  spec.add_development_dependency "rubocop"
+  spec.add_development_dependency "bundle-audit"
   spec.add_development_dependency "minitest", "~> 5.24.0"
 end
