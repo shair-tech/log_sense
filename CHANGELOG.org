@@ -2,6 +2,10 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.3.0
+
+- Adds average response time by day
+
 * 2.2.1
 
 - [Bug] Small fixes  

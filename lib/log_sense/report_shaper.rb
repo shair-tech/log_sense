@@ -86,6 +86,56 @@ module LogSense
       }
     end
 
+    def performance_over_time(data, colors: ["#d30001", "#888888"], col: "small-12 cell")
+      {
+        title: "Performance over Time",
+        header: %w[Date Count Min Avg Max],
+        column_alignment: %i[center right right right right],
+        rows: data[:performance_over_time],
+        col: col,
+        echarts_spec: "{
+            xAxis: {
+              type: 'category',
+              data: SERIES_DATA.map(row => row['Date'])
+            },
+            yAxis: [
+              {
+                type: 'value',
+                name: 'Average'
+              },
+              {
+                type: 'value',
+                name: 'Max'
+              }
+            ],
+            tooltip: {
+               trigger: 'axis'
+            },
+            series: [
+              {
+                data: SERIES_DATA.map(row => row['Avg']),
+                type: 'line',
+                color: '#{colors[0]}',
+                label: {
+                   show: true,
+                   position: 'top'
+                },
+              },
+              {
+                data: SERIES_DATA.map(row => row['Max']),
+                type: 'line',
+                color: '#{colors[1]}',
+                yAxisIndex: 1,
+                label: {
+                   show: true,
+                   position: 'top'
+                },
+              },
+            ]
+          }",
+      }
+    end
+
     #
     # Reports shared between rails and apache/nginx
     #

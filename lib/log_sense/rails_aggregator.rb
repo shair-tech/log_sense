@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module LogSense
+  # Aggregate data from Logs
   class RailsAggregator < Aggregator
     WORDS_SEPARATOR = ' · '
 
@@ -41,6 +44,18 @@ module LogSense
                  from Event
                  where #{filter}
                  group by controller order by controller).gsub("\n", "")
+
+      @performance_over_time = @db.execute %(
+          SELECT strftime("%Y-%m-%d", ended_at),
+                 count(controller),
+                 printf("%.2f", min(duration_total_ms)),
+                 printf("%.2f", avg(duration_total_ms)),
+                 printf("%.2f", max(duration_total_ms))
+                 from Event
+                 where #{filter}
+                 group by strftime("%Y-%m-%d", ended_at)
+                 order by strftime("%Y-%m-%d", ended_at)
+      ).gsub("\n", "")
 
       #
       # Use the performance information to build a tree map.

@@ -45,6 +45,7 @@ module LogSense
         time_distribution(data),
         total_statuses(data),
         daily_statuses(data),
+        performance_over_time(data, col: "small-12 cell"),
         {
           title: "Rails Performance",
           header: %w[Controller Hits Min Avg Max],
