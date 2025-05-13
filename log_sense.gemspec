@@ -26,7 +26,9 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-
+  
+  spec.add_dependency "ostruct"
+  spec.add_dependency "csv"
   spec.add_dependency "browser", "~> 6.0.0"
   spec.add_dependency "ipaddr", "~> 1.2.0"
   spec.add_dependency "iso_country_codes", "~> 0.7.0" 
