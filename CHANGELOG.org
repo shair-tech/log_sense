@@ -2,6 +2,11 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.3.1
+
+- Updates geoip db
+- Updates dependencies    
+
 * 2.3.0
 
 - Adds average response time by day

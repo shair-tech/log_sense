@@ -27,14 +27,14 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "browser", "~> 5.3.0"
+  spec.add_dependency "browser", "~> 6.0.0"
   spec.add_dependency "ipaddr", "~> 1.2.0"
   spec.add_dependency "iso_country_codes", "~> 0.7.0" 
-  spec.add_dependency "sqlite3", "~> 2.0.0"
-  spec.add_dependency "terminal-table", "~> 3.0.0"
+  spec.add_dependency "sqlite3", "~> 2.6.0"
+  spec.add_dependency "terminal-table", "~> 4.0.0"
 
-  spec.add_development_dependency "debug", "~> 1.9.0"
+  spec.add_development_dependency "debug"
   spec.add_development_dependency "rubocop"
   spec.add_development_dependency "bundle-audit"
-  spec.add_development_dependency "minitest", "~> 5.24.0"
+  spec.add_development_dependency "minitest"
 end

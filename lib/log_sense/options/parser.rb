@@ -139,7 +139,7 @@ module LogSense
 
           opts.on("-v", "--version", "Prints version information") do
             puts "log_sense version #{LogSense::VERSION}"
-            puts "Copyright (C) 2021-2024 Shair.Tech"
+            puts "Copyright (C) 2021-2025 Shair.Tech"
             puts "Distributed under the terms of the MIT license"
             exit
           end
