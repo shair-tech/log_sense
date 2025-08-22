@@ -33,6 +33,9 @@ module LogSense
           duration_views_ms FLOAT,
           duration_ar_ms FLOAT,
           allocations INTEGER,
+          queries INTEGER,
+          cached_queries INTEGER,
+          gc_duration INTEGER,
           comment TEXT,
           source_file TEXT,
           line_number INTEGER
@@ -180,9 +183,16 @@ module LogSense
         # LOG_LEVEL, [ZULU_TIMESTAMP #NUMBER] INFO --: [ID] Processing by CONTROLLER as FORMAT
         # LOG_LEVEL, [ZULU_TIMESTAMP #NUMBER] INFO --: [ID] Parameters: JSON
         # LOG_LEVEL, [ZULU_TIMESTAMP #NUMBER] INFO --: [ID] Rendered VIEW within LAYOUT (Duration: DURATION | Allocations: ALLOCATIONS)
+        #
+        # For rails_6:
+        #
         # LOG_LEVEL, [ZULU_TIMESTAMP #NUMBER] INFO --: [ID] Completed STATUS STATUS_STRING in DURATION (Views: DURATION | ActiveRecord: DURATION | Allocations: NUMBER)
         #
-        # and they appears in the order shown above: started, processing, ...
+        # For rails_7:
+        #
+        # LOG_LEVEL, [ZULU_TIMESTAMP #NUMBER] INFO --: [ID] Completed STATUS STATUS_STRING in DURATION (Views: DURATION | ActiveRecord: DURATION (N queries, M cached) | GC: DURATION)
+        #
+        # and they appear in the order shown above: started, processing, ...
         #
         # Different requests might be interleaved, of course
         #
@@ -434,6 +444,7 @@ module LogSense
       STATUS = '(?<status>[0-9]+)'
       STATUS_IN_WORDS = '(OK|Unauthorized|Found|Internal Server Error|Bad Request|Method Not Allowed|Request Timeout|Not Implemented|Bad Gateway|Service Unavailable)'
       MSECS = '[0-9.]+'
+      INT = '[0-9]+'
 
       # I, [2021-10-19T08:16:34.343858 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Started GET "/grow/people/471" for 217.77.80.35 at 2021-10-19 08:16:34 +0000
       STARTED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{LOG_ID}\] Started #{VERB} "#{URL}" for #{IP} at/o
@@ -455,7 +466,21 @@ module LogSense
       # I, [2021-10-19T08:16:34.712331 #10477]  INFO -- : [67103c0d-455d-4fe8-951e-87e97628cb66] Completed 200 OK in 367ms (Views: 216.7ms | ActiveRecord: 141.3ms | Allocations: 168792)
       # I, [2021-12-09T16:53:52.657727 #2735058]  INFO -- : [0064e403-9eb2-439d-8fe1-a334c86f5532] Completed 200 OK in 13ms (Views: 11.1ms | ActiveRecord: 1.2ms)
       # I, [2021-12-06T14:28:19.736545 #2804090]  INFO -- : [34091cb5-3e7b-4042-aaf8-6c6510d3f14c] Completed 500 Internal Server Error in 66ms (ActiveRecord: 8.0ms | Allocations: 24885)
-      COMPLETED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{LOG_ID}\] Completed #{STATUS} #{STATUS_IN_WORDS} in (?<total>#{MSECS})ms \((Views: (?<views>#{MSECS})ms \| )?ActiveRecord: (?<arec>#{MSECS})ms( \| Allocations: (?<alloc>[0-9]+))?\)/o
+
+      # REGEXP Fragments
+
+      # views is optional
+      # In strings I need to properly escape \ or it will be mis-interpreted
+      VIEWS = "(Views: (?<views>#{MSECS})ms \\| )?"
+      # active records has two formats (according to Rails version)
+      ACTIVE_RECORDS_BASE = "ActiveRecord: (?<arec>#{MSECS})ms"
+      ACTIVE_RECORDS_QUERIES = "( \\((?<queries>#{INT}) queries, (?<cached_queries>#{INT}) cached\\))?"
+      ACTIVE_RECORDS = "#{ACTIVE_RECORDS_BASE}#{ACTIVE_RECORDS_QUERIES}"
+      # older rails versions have ALLOCATIONS, newer have GC
+      ALLOCATIONS = " \\| Allocations: (?<alloc>#{INT})"
+      GC = " \\| GC: (?<gc_duration>#{MSECS})ms"
+
+      COMPLETED_REGEXP = /I, \[#{TIMESTAMP} #[0-9]+\]  INFO -- : \[#{LOG_ID}\] Completed #{STATUS} #{STATUS_IN_WORDS} in (?<total>#{MSECS})ms \(#{VIEWS}#{ACTIVE_RECORDS}(#{ALLOCATIONS}|#{GC})?\)/o
 
       def match_and_process_completed(line)
         matchdata = (COMPLETED_REGEXP.match line)
@@ -469,7 +494,10 @@ module LogSense
             duration_total_ms: matchdata[:total],
             duration_views_ms: matchdata[:views],
             duration_ar_ms: matchdata[:arec],
-            allocations: matchdata[:alloc],
+            allocations: (matchdata[:alloc] || -1),
+            queries: (matchdata[:queries] || -1),
+            cached_queries: (matchdata[:cached_queries] || -1),
+            gc_duration: (matchdata[:gc_duration] || -1),
             comment: ""
           }
         end

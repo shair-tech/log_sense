@@ -4,8 +4,8 @@
 
 * Introduction
 
-LogSense generates reports and statistics from Ruby on Rails and Apache/Nginx
-log files.
+LogSense analyzes Apache and Rails log files, generating reports and statistics
+about usage and performace.
 
 Main features:
 
@@ -22,10 +22,11 @@ Main features:
   self polls and crawlers.
 - Reports can be generated in HTML, txt, ufw, and SQLite.  HTML reports are
   responsive and come with dark and light theme.
+- It works with Rails' vanilla log format (no need to format the log)
 
 LogSense is Written in Ruby, it runs from the command line, it is fast, and it
 can be installed on any system with a relatively recent version of Ruby.  We
-use it with Ruby 3.1.4 and 3.3.0.
+started using it with Ruby 3.1.4 and we are now at version 3.4.
 
 It is fast. On a ThinkPad P16, a 277M log file is parsed in 15 seconds,
 processing, that is, about 7740 events per second; a 569M log file is parsed in

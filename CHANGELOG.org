@@ -2,6 +2,12 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.4.0
+
+- Updates log_parser to match changes in log lines introduced from Rails 7
+  (or, in other words, fixes a bug which caused log_sense to miss events
+  from logs produced by Rails >= 7 applications)
+  
 * 2.3.1
 
 - Updates geoip db

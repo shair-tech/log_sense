@@ -6,8 +6,18 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Adolfo Villafiorita"]
   spec.email         = ["adolfo@shair.tech"]
 
-  spec.summary       = %q{Generate analytics for Rails and Apache/Nginx log file.}
-  spec.description   = %q{Generate analytics in HTML, txt, and SQLite format for Rails and Apache/Nginx log files.}
+  spec.summary       = %q{Analyze Rails and Apache/Nginx log file, generating statistics and reports.}
+  spec.description   = %q{log_sense is a command-line command which analyzes Rails and Nginx logs and
+    provides detailed data about accesses, performances, and errors.  It is a
+    one stop shop solution for analyzing your Rails application in production.
+
+    Simple to use and working offline, it does not require any modification to
+    your app (e.g., no need to change the log format, no cookies, no JavaScript
+    code, no infrastructure to setup).
+
+    We use it to monitor our applications in production, using a cron job which
+    pulls the logs and calls log_sense to generate HTML reports.
+  }
   spec.homepage      = "https://github.com/shair-tech/log_sense/"
   spec.license       = "MIT"
   spec.required_ruby_version = Gem::Requirement.new(">= 2.6.9")
