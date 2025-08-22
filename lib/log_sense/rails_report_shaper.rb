@@ -46,6 +46,8 @@ module LogSense
         total_statuses(data),
         daily_statuses(data),
         performance_over_time(data, col: "small-12 cell"),
+        queries(data),
+        queries_by_controller(data),
         {
           title: "Rails Performance",
           header: %w[Controller Hits Min Avg Max],

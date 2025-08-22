@@ -136,6 +136,29 @@ module LogSense
       }
     end
 
+    def queries(data, colors: [], col: "small-12 cell")
+      {
+        title: "Number of queries",
+        header: %w[Queries Cached Perc_Cached],
+        column_alignment: %i[right right right],
+        rows: data[:queries],
+        col: col,
+      }      
+    end
+
+    def queries_by_controller(data, colors: [], col: "small-12 cell")
+      {
+        title: "Queries by Controller",
+        header: ["Controller",
+                 "Min queries", "Max queries", "Avg Queries",
+                 "Total queries", "Cached queries", "Perc",
+                 "Total GC"],
+        column_alignment: %i[left right right right right right right right],
+        rows: data[:queries_by_controller],
+        col: col,
+      }      
+    end
+
     #
     # Reports shared between rails and apache/nginx
     #

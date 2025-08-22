@@ -16,53 +16,43 @@ module LogSense
       def parse(streams, options = {})
         db = SQLite3::Database.new ":memory:"
         
+        event_table = {
+          exit_status: "TEXT",
+          started_at: "TEXT",
+          ended_at: "TEXT",
+          log_id: "TEXT",
+          ip: "TEXT",
+          unique_visitor: "TEXT",
+          url: "TEXT",
+          controller: "TEXT",
+          html_verb: "TEXT",
+          status: "INTEGER",
+          duration_total_ms: "FLOAT",
+          duration_views_ms: "FLOAT",
+          duration_ar_ms: "FLOAT",
+          allocations: "INTEGER",
+          queries: "INTEGER",
+          cached_queries: "INTEGER",
+          gc_duration: "FLOAT",
+          comment: "TEXT",
+          source_file: "TEXT",
+          line_number: "INTEGER"
+        }
+
+        table_declaration = event_table.map { |k, v| "#{k} #{v}" }.join(",")
         db.execute <<-EOS
-        CREATE TABLE IF NOT EXISTS Event(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          exit_status TEXT,
-          started_at TEXT,
-          ended_at TEXT,
-          log_id TEXT,
-          ip TEXT,
-          unique_visitor TEXT,
-          url TEXT,
-          controller TEXT,
-          html_verb TEXT,
-          status INTEGER,
-          duration_total_ms FLOAT,
-          duration_views_ms FLOAT,
-          duration_ar_ms FLOAT,
-          allocations INTEGER,
-          queries INTEGER,
-          cached_queries INTEGER,
-          gc_duration INTEGER,
-          comment TEXT,
-          source_file TEXT,
-          line_number INTEGER
-         )
+          CREATE TABLE IF NOT EXISTS Event(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            #{table_declaration}
+        )
         EOS
 
+        tds = event_table.keys.size
         ins = db.prepare <<-EOS
-        insert into Event(
-          exit_status,
-          started_at,
-          ended_at,
-          log_id,
-          ip,
-          unique_visitor,
-          url,
-          controller,
-          html_verb,
-          status,
-          duration_total_ms,
-          duration_views_ms,
-          duration_ar_ms,
-          allocations,
-          comment,
-          source_file,
-          line_number
+         insert into Event(
+           #{event_table.keys.join(", ")}
          )
-         values (#{Array.new(17, "?").join(", ")})
+         values (#{Array.new(tds, "?").join(", ")})
         EOS
 
         db.execute <<-EOS
@@ -254,6 +244,9 @@ module LogSense
                   event[:duration_views_ms],
                   event[:duration_ar_ms],
                   event[:allocations],
+                  event[:queries],
+                  event[:cached_queries],
+                  event[:gc_duration],
                   event[:comment],
                   filename,
                   line_number
@@ -290,6 +283,9 @@ module LogSense
                   event[:duration_views_ms],
                   event[:duration_ar_ms],
                   event[:allocations],
+                  event[:queries],
+                  event[:cached_queries],
+                  event[:gc_duration],
                   event[:comment],
                   filename,
                   line_number
@@ -494,10 +490,10 @@ module LogSense
             duration_total_ms: matchdata[:total],
             duration_views_ms: matchdata[:views],
             duration_ar_ms: matchdata[:arec],
-            allocations: (matchdata[:alloc] || -1),
-            queries: (matchdata[:queries] || -1),
-            cached_queries: (matchdata[:cached_queries] || -1),
-            gc_duration: (matchdata[:gc_duration] || -1),
+            allocations: matchdata[:alloc],
+            queries: matchdata[:queries],
+            cached_queries: matchdata[:cached_queries],
+            gc_duration: matchdata[:gc_duration],
             comment: ""
           }
         end

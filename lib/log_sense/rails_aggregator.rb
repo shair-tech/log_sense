@@ -81,6 +81,22 @@ module LogSense
         }
       end
 
+      @queries = @db.execute %Q(
+        SELECT SUM(queries), SUM(cached_queries),
+               ROUND(SUM(queries) / SUM(cached_queries), 2)
+        FROM Event
+      )
+
+      @queries_by_controller = @db.execute %Q(
+        SELECT controller,
+        MIN(queries), MAX(queries), ROUND(AVG(queries), 2),
+               SUM(queries), SUM(cached_queries),
+               ROUND(SUM(cached_queries) / SUM(queries), 2),
+               SUM(gc_duration)
+        FROM Event
+        GROUP BY Event.controller
+      )
+
       @controller_and_methods_by_device = @db.execute %Q(
           SELECT controller as Controller,
                  method as Method,
@@ -125,7 +141,7 @@ module LogSense
                  ON event.log_id == error.log_id
                  WHERE #{filter} and exit_status == 'S:FAILED'
                  GROUP BY strftime("%Y-%m-%d", started_at)
-      ).gsub("\n", "") || [[]]
+      ) || [[]]
 
       @fatal = @db.execute %(
           SELECT strftime("%Y-%m-%d %H:%M", started_at),
@@ -137,7 +153,7 @@ module LogSense
                  FROM Event JOIN Error
                  ON event.log_id == error.log_id
                  WHERE #{filter} and exit_status == 'S:FAILED'
-      ).gsub("\n", "") || [[]]
+      ) || [[]]
 
       @fatal_grouped = @db.execute %(
          SELECT filename,
@@ -147,7 +163,7 @@ module LogSense
                 count(distinct(error.id))
                 FROM Error
                 GROUP BY description
-      ).gsub("\n", "") || [[]]
+      ) || [[]]
       
       @job_plot = @db.execute %(
           SELECT strftime("%Y-%m-%d", ended_at) as Day,
@@ -156,7 +172,7 @@ module LogSense
                  FROM Job
                  WHERE #{filter}
                  GROUP BY strftime("%Y-%m-%d", ended_at)
-      ).gsub("\n", "") || [[]]
+      ) || [[]]
 
       # worker,
       # host,
@@ -173,7 +189,7 @@ module LogSense
                  attempt
                  FROM Job
                  WHERE #{filter}
-      ).gsub("\n", "") || [[]]
+      ) || [[]]
 
       @job_error_grouped = @db.execute %(
          SELECT worker,
@@ -188,7 +204,7 @@ module LogSense
                 FROM Job
                 WHERE #{filter} and (exit_status == 'S:ERROR' or exit_status == 'S:FAILED')
                 GROUP BY object_id
-      ).gsub("\n", "") || [[]]
+      ) || [[]]
 
       instance_vars_to_hash
     end

@@ -2,6 +2,10 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.5.0
+
+- Add query reports  
+
 * 2.4.0
 
 - Updates log_parser to match changes in log lines introduced from Rails 7
