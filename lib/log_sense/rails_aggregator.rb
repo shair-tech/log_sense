@@ -92,7 +92,7 @@ module LogSense
         MIN(queries), MAX(queries), ROUND(AVG(queries), 2),
                SUM(queries), SUM(cached_queries),
                ROUND(SUM(cached_queries) / SUM(queries), 2),
-               SUM(gc_duration)
+               ROUND(SUM(gc_duration), 2)
         FROM Event
         GROUP BY Event.controller
       )
