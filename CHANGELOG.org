@@ -2,6 +2,10 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.5.1
+
+- Add number of events in SQL queries  
+
 * 2.5.0
 
 - Add query reports  

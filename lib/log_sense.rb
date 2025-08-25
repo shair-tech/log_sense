@@ -6,6 +6,7 @@ require "log_sense/options/checker"
 require "log_sense/apache/log_parser"
 require "log_sense/rails/log_parser"
 
+require "log_sense/formatting_util"
 require "log_sense/aggregator"
 require "log_sense/apache_aggregator"
 require "log_sense/rails_aggregator"

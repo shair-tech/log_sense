@@ -139,8 +139,8 @@ module LogSense
     def queries(data, colors: [], col: "small-12 cell")
       {
         title: "Number of queries",
-        header: %w[Queries Cached Perc_Cached],
-        column_alignment: %i[right right right],
+        header: %w[Queries Total Cached Perc_Cached],
+        column_alignment: %i[center center center center],
         rows: data[:queries],
         col: col,
       }      
@@ -150,6 +150,7 @@ module LogSense
       {
         title: "Queries by Controller",
         header: ["Controller",
+                 "Events",
                  "Min queries", "Max queries", "Avg Queries",
                  "Total queries", "Cached queries", "Perc",
                  "Total GC"],

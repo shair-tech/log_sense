@@ -5,6 +5,9 @@ module LogSense
   class RailsAggregator < Aggregator
     WORDS_SEPARATOR = ' · '
 
+    # with thousands
+    include LogSense::FormattingUtil
+
     def initialize(db, options = { limit: 900 })
       @table = "Event"
       @date_field = "started_at"
@@ -81,17 +84,25 @@ module LogSense
         }
       end
 
-      @queries = @db.execute %Q(
-        SELECT SUM(queries), SUM(cached_queries),
-               ROUND(SUM(queries) / SUM(cached_queries), 2)
+      queries = @db.execute %Q(
+        SELECT SUM(DISTINCT(id)), SUM(queries), SUM(cached_queries),
+               ROUND(1.0 * SUM(cached_queries) / SUM(queries), 2)
         FROM Event
       )
 
+      @queries = queries.map do |row|
+        row.map do |element|
+          FormattingUtil.with_thousands(element)
+        end
+      end
+
       @queries_by_controller = @db.execute %Q(
         SELECT controller,
-        MIN(queries), MAX(queries), ROUND(AVG(queries), 2),
+               COUNT(DISTINCT(id)),
+               MIN(queries), MAX(queries),
+               ROUND(AVG(queries), 2),
                SUM(queries), SUM(cached_queries),
-               ROUND(SUM(cached_queries) / SUM(queries), 2),
+               ROUND(1.0 * SUM(cached_queries) / SUM(queries), 2),
                ROUND(SUM(gc_duration), 2)
         FROM Event
         GROUP BY Event.controller
