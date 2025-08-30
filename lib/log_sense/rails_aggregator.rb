@@ -85,7 +85,7 @@ module LogSense
       end
 
       queries = @db.execute %Q(
-        SELECT SUM(DISTINCT(id)), SUM(queries), SUM(cached_queries),
+        SELECT COUNT(DISTINCT(id)), SUM(queries), SUM(cached_queries),
                ROUND(1.0 * SUM(cached_queries) / SUM(queries), 2)
         FROM Event
       )

@@ -2,6 +2,11 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.5.2
+
+- Fixes a bug in the computation of total events in the Queries/Summary
+  report  
+
 * 2.5.1
 
 - Add number of events in SQL queries  

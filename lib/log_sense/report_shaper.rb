@@ -139,7 +139,7 @@ module LogSense
     def queries(data, colors: [], col: "small-12 cell")
       {
         title: "Number of queries",
-        header: %w[Queries Total Cached Perc_Cached],
+        header: %w[Events Queries Cached Perc_Cached],
         column_alignment: %i[center center center center],
         rows: data[:queries],
         col: col,
