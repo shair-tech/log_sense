@@ -6,17 +6,21 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Adolfo Villafiorita"]
   spec.email         = ["adolfo@shair.tech"]
 
-  spec.summary       = %q{Analyze Rails and Apache/Nginx log file, generating statistics and reports.}
-  spec.description   = %q{log_sense is a command-line command which analyzes Rails and Nginx logs and
-    provides detailed data about accesses, performances, and errors.  It is a
-    one stop shop solution for analyzing your Rails application in production.
+  spec.summary       = %q{Analyze Ruby on Rails and Apache/Nginx log files, generating statistics and reports.}
+  spec.description   = %q{log_sense is a log analysis tool which analyzes Ruby on Rails
+    and Apache/Nginx logs and provides detailed data about accesses, performances, and
+    errors.  It is a one-stop shop solution for analyzing your Rails application
+    in production.
 
-    Simple to use and working offline, it does not require any modification to
-    your app (e.g., no need to change the log format, no cookies, no JavaScript
-    code, no infrastructure to setup).
+    Simple to use and working from the command line, it does not require any
+    modification to your app (e.g., no need to change the log format, no cookies,
+    no JavaScript code, no infrastructure to setup).
 
     We use it to monitor our applications in production, using a cron job which
     pulls the logs and calls log_sense to generate HTML reports.
+
+    Compatible with Ruby on Rails default logs up to version 8.0.2 and with the
+    combined Apache/Nginx format.
   }
   spec.homepage      = "https://github.com/shair-tech/log_sense/"
   spec.license       = "MIT"
@@ -39,11 +43,11 @@ Gem::Specification.new do |spec|
   
   spec.add_dependency "ostruct"
   spec.add_dependency "csv"
-  spec.add_dependency "browser", "~> 6.0.0"
-  spec.add_dependency "ipaddr", "~> 1.2.0"
-  spec.add_dependency "iso_country_codes", "~> 0.7.0" 
-  spec.add_dependency "sqlite3", "~> 2.6.0"
-  spec.add_dependency "terminal-table", "~> 4.0.0"
+  spec.add_dependency "browser"
+  spec.add_dependency "ipaddr"
+  spec.add_dependency "iso_country_codes"
+  spec.add_dependency "sqlite3"
+  spec.add_dependency "terminal-table"
 
   spec.add_development_dependency "debug"
   spec.add_development_dependency "rubocop"

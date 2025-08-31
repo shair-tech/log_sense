@@ -2,6 +2,17 @@
 #+AUTHOR: Adolfo Villafiorita
 #+STARTUP: showall
 
+* 2.6.0
+
+- BrowserSense can now be used to provide information about browsers
+  visiting the app. If you install =browser_sense= and instrument your
+  Rails app with it, log_sense can extract information and produce
+  appropriate reports.
+
+* 2.5.3
+
+- Updates versions of bundled gems
+
 * 2.5.2
 
 - Fixes a bug in the computation of total events in the Queries/Summary
@@ -67,7 +78,7 @@
 * 1.8.0
 
 - Various improvements to the Rails reports
-- Support for BrowserInfo data
+- Support for BrowserSense data
 
 * 1.7.0
 

@@ -119,7 +119,7 @@ module LogSense
                  sum(iif(platform = 'linux', 1, 0)) as Linux,
                  sum(iif(platform != 'ios' and platform != 'android' and platform != 'mac' and platform != 'windows' and platform != 'linux', 1, 0)) as Other,
                  count(distinct(id)) as Total
-                 from BrowserInfo
+                 from BrowserSense
                  where #{filter}
                  group by controller, method, request_format
       )
@@ -130,7 +130,7 @@ module LogSense
       @browsers = @db.execute %Q(
           SELECT browser as Browser,
                  count(distinct(id)) as Visits
-                 from BrowserInfo
+                 from BrowserSense
                  where #{filter}
                  group by browser
       )
@@ -138,7 +138,7 @@ module LogSense
       @platforms = @db.execute %Q(
           SELECT platform as Platform,
                  count(distinct(id)) as Visits
-                 from BrowserInfo
+                 from BrowserSense
                  where #{filter}
                  group by platform
       )

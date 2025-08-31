@@ -78,7 +78,7 @@ module LogSense
         EOS
 
         db.execute <<-EOS
-        CREATE TABLE IF NOT EXISTS BrowserInfo(
+        CREATE TABLE IF NOT EXISTS BrowserSense(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           browser TEXT,
           platform TEXT,
@@ -92,7 +92,7 @@ module LogSense
         EOS
 
         ins_browser_info = db.prepare <<-EOS
-        insert into BrowserInfo(
+        insert into BrowserSense(
          browser,
          platform,
          device_name,
@@ -560,8 +560,8 @@ module LogSense
         end
       end
 
-      # I, [2024-07-01T02:21:34.339058 #1392909]  INFO -- : [815b3e28-8d6e-4741-8605-87654a9ff58c] BrowserInfo: "Unknown Browser","unknown_platform","Unknown","Devise::SessionsController","new","html","4db749654a0fcacbf3868f87723926e7405262f8d596e8514f4997dc80a3cd7e","2024-07-01T02:21:34+02:00"
-      BROWSER_INFO_REGEXP = /BrowserInfo: "(?<browser>.+)","(?<platform>.+)","(?<device_name>.+)","(?<controller>.+)","(?<method>.+)","(?<request_format>.+)","(?<anon_ip>.+)","(?<timestamp>.+)"/o
+      # I, [2024-07-01T02:21:34.339058 #1392909]  INFO -- : [815b3e28-8d6e-4741-8605-87654a9ff58c] BrowserSense: "Unknown Browser","unknown_platform","Unknown","Devise::SessionsController","new","html","4db749654a0fcacbf3868f87723926e7405262f8d596e8514f4997dc80a3cd7e","2024-07-01T02:21:34+02:00"
+      BROWSER_INFO_REGEXP = /Browser(Info|Sense): "(?<browser>.+)","(?<platform>.+)","(?<device_name>.+)","(?<controller>.+)","(?<method>.+)","(?<request_format>.+)","(?<anon_ip>.+)","(?<timestamp>.+)"/o
 
       def match_and_process_browser_info(line)
         matchdata = BROWSER_INFO_REGEXP.match line
